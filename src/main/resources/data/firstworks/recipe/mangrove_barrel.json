@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["SPS", "P P", "SPS"],
+  "key": {
+    "S": { "item": "minecraft:mangrove_slab" },
+    "P": { "item": "minecraft:mangrove_planks" }
+  },
+  "result": { "id": "firstworks:mangrove_barrel" }
+}

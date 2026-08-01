@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["SPS", "P P", "SPS"],
+  "key": {
+    "S": { "item": "minecraft:jungle_slab" },
+    "P": { "item": "minecraft:jungle_planks" }
+  },
+  "result": { "id": "firstworks:jungle_barrel" }
+}

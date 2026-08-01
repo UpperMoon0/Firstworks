@@ -1,0 +1,4 @@
+{
+  "parent": "firstworks:block/barrel_open_template",
+  "textures": { "wood": "minecraft:block/crimson_planks" }
+}

@@ -1,0 +1,48 @@
+package com.nstut.firstworks.registry;
+
+import com.nstut.firstworks.Firstworks;
+import com.nstut.firstworks.content.TreeBarkItem;
+import com.nstut.firstworks.content.TanninSolutionBucketItem;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+public final class ModItems {
+    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(BuiltInRegistries.ITEM, Firstworks.MOD_ID);
+
+    public static final DeferredHolder<Item, Item> TREE_BARK = ITEMS.register("tree_bark",
+            () -> new TreeBarkItem(new Item.Properties()));
+    public static final DeferredHolder<Item, Item> RAW_HIDE = simple("raw_hide");
+    public static final DeferredHolder<Item, Item> SOAKED_HIDE = simple("soaked_hide");
+    public static final DeferredHolder<Item, Item> SCRAPED_HIDE = simple("scraped_hide");
+    public static final DeferredHolder<Item, Item> TANNIN_SOAKED_HIDE = simple("tannin_soaked_hide");
+    public static final DeferredHolder<Item, Item> TANNIN_SOLUTION_BUCKET = ITEMS.register("tannin_solution_bucket",
+            () -> new TanninSolutionBucketItem(ModFluids.TANNIN_SOLUTION.get(),
+                    new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
+    public static final Map<String, DeferredHolder<Item, Item>> BARREL_ITEMS = registerBarrelItems();
+    public static final DeferredHolder<Item, Item> BARREL = BARREL_ITEMS.get("barrel");
+
+    private static Map<String, DeferredHolder<Item, Item>> registerBarrelItems() {
+        Map<String, DeferredHolder<Item, Item>> items = new LinkedHashMap<>();
+        ModBlocks.BARRELS.forEach((name, block) -> items.put(name, ITEMS.register(name,
+                () -> new BlockItem(block.get(), new Item.Properties()))));
+        return items;
+    }
+
+    private static DeferredHolder<Item, Item> simple(String name) {
+        return ITEMS.register(name, () -> new Item(new Item.Properties()));
+    }
+
+    public static void register(IEventBus bus) {
+        ITEMS.register(bus);
+    }
+
+    private ModItems() {}
+}

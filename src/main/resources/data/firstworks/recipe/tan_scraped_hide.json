@@ -1,0 +1,9 @@
+{
+  "type": "firstworks:barrel_processing",
+  "ingredient": { "item": "firstworks:scraped_hide" },
+  "fluid": "firstworks:tannin_solution",
+  "fluid_amount": 250,
+  "result": { "id": "firstworks:tannin_soaked_hide" },
+  "duration": 12000,
+  "sealed": true
+}

@@ -1,0 +1,6 @@
+{
+  "multipart": [
+    { "when": { "sealed": "false" }, "apply": { "model": "firstworks:block/bamboo_barrel_open" } },
+    { "when": { "sealed": "true" }, "apply": { "model": "firstworks:block/bamboo_barrel_sealed" } }
+  ]
+}

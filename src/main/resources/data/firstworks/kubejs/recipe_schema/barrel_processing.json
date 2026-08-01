@@ -1,0 +1,65 @@
+{
+  "keys": [
+    {
+      "name": "ingredient",
+      "role": "input",
+      "type": "ingredient"
+    },
+    {
+      "name": "fluid",
+      "role": "input",
+      "type": "string"
+    },
+    {
+      "name": "fluid_amount",
+      "role": "input",
+      "type": { "type": "int", "min": 1 }
+    },
+    {
+      "name": "result",
+      "role": "output",
+      "type": "optional_item_stack",
+      "optional": {}
+    },
+    {
+      "name": "input_count",
+      "role": "input",
+      "type": { "type": "int", "min": 1 },
+      "optional": 1
+    },
+    {
+      "name": "output_fluid",
+      "role": "output",
+      "type": "string",
+      "optional": "minecraft:empty"
+    },
+    {
+      "name": "output_fluid_amount",
+      "role": "output",
+      "type": { "type": "int", "min": 0 },
+      "optional": 0
+    },
+    {
+      "name": "duration",
+      "role": "input",
+      "type": "ticks",
+      "function_names": ["time", "duration"],
+      "optional": 200
+    },
+    {
+      "name": "sealed",
+      "role": "input",
+      "type": "boolean",
+      "optional": true
+    }
+  ],
+  "unique": ["ingredient", "fluid"],
+  "constructors": [
+    {
+      "keys": ["result", "ingredient", "fluid", "fluid_amount"]
+    },
+    {
+      "keys": ["ingredient", "fluid", "fluid_amount", "output_fluid", "output_fluid_amount"]
+    }
+  ]
+}
