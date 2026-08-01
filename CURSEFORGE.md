@@ -1,34 +1,42 @@
 # Firstworks
 
-Firstworks makes the opening days of survival more hands-on. Simple materials become the beginning of a longer journey as you work hides, gather bark, brew tannin, and prepare leather in wooden barrels.
+Firstworks brings primitive, hands-on processing into the world through functional wooden Barrels. Add materials and fluid, close the lid, and give the process time—no machine screen and no instant conversion. You can see what is inside, watch the workshop take shape around you, and control each batch by hand or with simple redstone.
 
-## A hands-on beginning
+Leatherworking is the first complete production chain included with the mod, but the Barrel is the heart of Firstworks: a reusable, data-driven processing system for grounded survival progression.
 
-Animals drop **Raw Hide** instead of ready-to-use leather. Turning it into leather takes several satisfying steps:
+## The Barrel
 
-1. Soak Raw Hide in a water-filled Barrel.
+- Holds materials and fluids for processing
+- Processes recipes over time while open or sealed, as the recipe requires
+- Displays stored items and fluids directly in the world
+- Opens and seals by hand without a GUI
+- Responds to rising redstone pulses for simple automation
+- Supports item and fluid transfer through standard NeoForge capabilities
+- Comes in every vanilla wood family
+- Accepts custom recipes from datapacks and KubeJS
+
+Fill a Barrel with buckets or bottles, add a material, and seal it to begin a valid process. Opening it early stops the current progress but leaves the contents in place.
+
+## The first workflow: hide tanning
+
+Animals drop **Raw Hide** instead of ready-made leather. Producing leather now demonstrates the full primitive workflow:
+
+1. Soak Raw Hide in water.
 2. Scrape the softened hide with a sword.
-3. Strip trees with an axe to gather Tree Bark.
-4. Brew the bark in water to make Tannin Solution.
-5. Soak the scraped hide in tannin.
-6. Dry the treated hide over a campfire to finish the leather.
+3. Strip logs with an axe to gather Tree Bark.
+4. Brew bark and water into Tannin Solution inside a sealed Barrel.
+5. Tan the scraped hide in the solution.
+6. Dry the treated hide over a campfire.
 
-Each step happens directly in the world. Fill a Barrel, add the material, seal the lid, and watch the contents change as the work progresses.
+The result is still vanilla leather, but it comes from a small workshop and a process you can see rather than a single crafting recipe.
 
-## Features
+## Made for survival and modpacks
 
-- A complete leatherworking journey from Raw Hide to finished leather
-- Tree Bark gathered by stripping logs with an axe
-- Tannin brewed naturally from bark and water
-- Barrels for every vanilla wood type
-- Visible items and fluids inside each Barrel
-- Lids that can be opened by hand or controlled with redstone
-- Long-running processes that reward planning and preparation
-- Clear in-world progress information when Jade is installed
-- A dedicated Barrel Processing recipe page when JEI is installed
+Firstworks can stand alone as a tactile early-game mechanic or serve as the primitive processing layer of a larger progression pack. Barrel recipes are data-driven, leather-drop replacement is configurable, and optional KubeJS events let packs inspect, cancel, and react to processing.
 
-## Built for survival progression
+Optional integrations make the system easier to read without changing its in-world character:
 
-Firstworks gives early materials more purpose and makes finished leather feel earned. It works well on its own or alongside larger survival and technology experiences, where its careful opening chapter can lead naturally into more advanced workshops.
+- **Jade** shows live Barrel status, remaining time, output, and progress.
+- **JEI** adds a dedicated Barrel Processing recipe category.
 
-Available for **Minecraft 1.21.1 on NeoForge**.
+Available for **Minecraft 1.21.1 on NeoForge**. Firstworks does not require Create or the Inventors modpack.

@@ -8,7 +8,7 @@ version="${mod_version}"
 displayName="${mod_name}"
 authors="NsTut"
 description='''
-Firstworks makes the opening days of survival more hands-on. Work raw hides into leather, gather bark, brew tannin, and prepare materials in wooden barrels that live naturally in the world.
+Primitive, in-world processing centered on wooden barrels. Load items and fluids, seal the lid, and let time do the work—beginning with a complete hide-tanning chain.
 '''
 
 [[dependencies.${mod_id}]]

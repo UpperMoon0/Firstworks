@@ -1,26 +1,41 @@
 # Firstworks
 
-Firstworks is a standalone NeoForge 1.21.1 mod about grounded early-game crafts and slow, physical processing. It has no dependency on Create or the Inventors modpack.
+Firstworks is a standalone NeoForge 1.21.1 mod about primitive, in-world processing. Its centerpiece is a wooden Barrel: load it with items and fluids, seal the lid, and let time do the work. There is no machine screen and no instant crafting step—the ingredients, fluid, and finished product remain visible in the world.
 
-## Current gameplay
+The included hide-tanning chain is the first complete use of this system, not its limit. Barrel processes are data-driven and can be expanded by modpacks through datapacks or KubeJS.
 
-- Animals that normally drop leather instead drop raw hide.
-- Craft any Firstworks Barrel from matching planks and slabs, then fill it with one water bucket or four water bottles (1,000 mB).
-- Add up to four raw hides, close the lid, and wait five minutes for soaked hides.
-- Craft soaked hide with any sword to scrape it; each hide consumes one sword durability.
-- Strip logs with an axe to collect two tree bark per block, then brew tannin by adding four bark to 1,000 mB water and sealing the barrel for one Minecraft day.
-- Add scraped hides to tannin solution and seal the barrel for one Minecraft day.
-- Dry tannin-soaked hide on a campfire to finish vanilla leather.
+Firstworks has no dependency on Create or the Inventors modpack.
 
-Empty-hand interaction opens or seals the barrel; completed output is collected before the lid toggles. The barrel has no menu. It exposes standard NeoForge item and fluid capabilities for optional automation: items enter from above, finished items leave below, and side access can see both item slots.
+## Primitive barrel processing
 
-A rising redstone pulse also toggles the lid exactly once. Removing power only rearms the barrel for the next pulse. Manual or redstone-driven unsealing cancels current recipe progress without consuming or ejecting the contents.
+- Craft a Barrel from matching planks and slabs. Every vanilla wood family has a variant.
+- Add ingredients and fluid directly to the open Barrel.
+- Close or open the lid with an empty hand. Valid sealed recipes progress over time.
+- See the stored item and fluid without opening a menu.
+- Collect completed output before toggling the lid again.
+- Toggle the lid with a rising redstone pulse for simple early automation.
 
-Barrel processes are datapack recipes using the `firstworks:barrel_processing` type. Recipes may consume an ingredient and fluid, produce an item and/or replacement fluid, set their duration, and require either a sealed or open barrel.
+Opening a working Barrel cancels its current progress without consuming or ejecting the contents. Standard NeoForge item and fluid capabilities are also exposed for modded automation: items enter from above, finished items leave below, and side access can inspect both item slots.
 
-## KubeJS
+## Built-in leatherworking
 
-KubeJS is optional. When installed, Firstworks registers the typed `event.recipes.firstworks.barrel_processing` recipe helper and two server events.
+Firstworks uses the Barrel to turn leather into a physical early-game production chain:
+
+1. Animals that normally drop leather drop Raw Hide instead.
+2. Soak Raw Hides in water.
+3. Scrape each Soaked Hide with any sword, consuming one durability.
+4. Strip logs with an axe to collect two Tree Bark.
+5. Seal Tree Bark in water to brew Tannin Solution.
+6. Tan Scraped Hide in the solution for one Minecraft day.
+7. Dry the Tannin-Soaked Hide on a campfire to produce vanilla leather.
+
+Animal leather replacement is controlled by `config/firstworks-common.toml`. Packs that provide their own early-game progression can disable it while continuing to use the Barrel system.
+
+## Datapacks and KubeJS
+
+Barrel processes use the `firstworks:barrel_processing` recipe type. A recipe can consume an ingredient and fluid, produce an item and/or replacement fluid, define its duration, and require the Barrel to be sealed or open.
+
+KubeJS is optional. When installed, Firstworks registers the typed `event.recipes.firstworks.barrel_processing` helper and events for the start and completion of a Barrel process.
 
 ```js
 ServerEvents.recipes(event => {
@@ -41,7 +56,7 @@ ServerEvents.recipes(event => {
 })
 
 FirstworksEvents.barrelProcessStarting(event => {
-  // event.cancel() prevents this process until the barrel contents or lid changes.
+  // event.cancel() prevents this process until the contents or lid changes.
 })
 
 FirstworksEvents.barrelProcessCompleted(event => {
@@ -49,12 +64,11 @@ FirstworksEvents.barrelProcessCompleted(event => {
 })
 ```
 
-Animal leather replacement is controlled by `config/firstworks-common.toml`. Packs that own their loot progression can disable it and provide raw hides through KubeJS instead.
+## Optional integrations
 
-## Jade and JEI
-
-Both integrations are optional. Jade shows a Barrel's live status, remaining time, and progress bar in-world. JEI provides a Barrel Processing category with item and fluid inputs, item or fluid outputs, processing duration, and every wood variant as a catalyst.
+- **Jade** shows the Barrel's live state, remaining time, output, and progress bar in-world.
+- **JEI** provides a Barrel Processing recipe category with item and fluid inputs, outputs, duration, and all wood variants as catalysts.
 
 ## Building
 
-Run `./gradlew build` (`gradlew.bat build` on Windows). The normal distributable jar is created under `build/libs`.
+Run `./gradlew build` (`gradlew.bat build` on Windows). The distributable jar is created under `build/libs`.
