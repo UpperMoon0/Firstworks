@@ -17,19 +17,29 @@ Firstworks has no dependency on Create or the Inventors modpack.
 
 Opening a working Barrel cancels its current progress without consuming or ejecting the contents. Standard NeoForge item and fluid capabilities are also exposed for modded automation: items enter from above, finished items leave below, and side access can inspect both item slots.
 
-## Built-in leatherworking
+## Built-in cordage and leatherworking
+
+Grass and ferns have a 30% chance to provide Plant Fibre when gathered normally; using any sword guarantees the fibre. Hand-twist it into Crude Cordage for wooden and stone tools, then ret fibre in a water-filled Barrel, spin it with a reusable Hand Spindle, and combine the resulting Twine into Rope. Vanilla iron, gold, and diamond tools require Rope by default; netherite upgrades retain the bound diamond tool beneath them.
+
+The vanilla tool binding changes are controlled by `bindVanillaToolRecipes` in `config/firstworks-common.toml`. Disabling the option restores vanilla tool recipes after a datapack reload while leaving every cordage material and process available.
 
 Firstworks uses the Barrel to turn leather into a physical early-game production chain:
 
 1. Animals that normally drop leather drop Raw Hide instead.
 2. Soak Raw Hides in water.
 3. Scrape each Soaked Hide with any sword, consuming one durability.
-4. Strip logs with an axe to collect two Tree Bark.
+4. Strip logs with an axe to collect one to three Tree Bark.
 5. Seal Tree Bark in water to brew Tannin Solution.
-6. Tan Scraped Hide in the solution for one Minecraft day.
-7. Dry the Tannin-Soaked Hide on a campfire to produce vanilla leather.
+6. Tan Scraped Hide in the solution.
+7. Dry the Tannin-Soaked Hide in a furnace to produce vanilla leather.
 
 Animal leather replacement is controlled by `config/firstworks-common.toml`. Packs that provide their own early-game progression can disable it while continuing to use the Barrel system.
+
+## Fleece and wool
+
+Sheep provide color-aware Raw Fleece instead of finished wool. Wash Raw Fleece with water in a sealed Barrel to make Clean Wool, then combine four matching pieces into the corresponding wool block. A single dye recolors a batch of Raw Fleece or Clean Wool. Beds require three Cloth, three matching Clean Wool, and three planks.
+
+This progression is controlled by `enableTextileProgression` in `config/firstworks-common.toml`. Disabling it restores vanilla sheep drops, shearing, string-to-wool, and bed recipes after a datapack reload.
 
 ## Datapacks and KubeJS
 

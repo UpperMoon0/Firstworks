@@ -3,6 +3,7 @@ package com.nstut.firstworks.registry;
 import com.nstut.firstworks.Firstworks;
 import com.nstut.firstworks.content.TreeBarkItem;
 import com.nstut.firstworks.content.TanninSolutionBucketItem;
+import com.nstut.firstworks.content.ColoredFleeceItem;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -23,6 +24,17 @@ public final class ModItems {
     public static final DeferredHolder<Item, Item> SOAKED_HIDE = simple("soaked_hide");
     public static final DeferredHolder<Item, Item> SCRAPED_HIDE = simple("scraped_hide");
     public static final DeferredHolder<Item, Item> TANNIN_SOAKED_HIDE = simple("tannin_soaked_hide");
+    public static final DeferredHolder<Item, Item> PLANT_FIBRE = simple("plant_fibre");
+    public static final DeferredHolder<Item, Item> CRUDE_CORDAGE = simple("crude_cordage");
+    public static final DeferredHolder<Item, Item> RETTED_FIBRE = simple("retted_fibre");
+    public static final DeferredHolder<Item, Item> HAND_SPINDLE = simple("hand_spindle");
+    public static final DeferredHolder<Item, Item> TWINE = simple("twine");
+    public static final DeferredHolder<Item, Item> ROPE = simple("rope");
+    public static final DeferredHolder<Item, Item> CLOTH = simple("cloth");
+    public static final DeferredHolder<Item, Item> RAW_FLEECE = ITEMS.register("raw_fleece",
+            () -> new ColoredFleeceItem(new Item.Properties()));
+    public static final DeferredHolder<Item, Item> CLEAN_WOOL = ITEMS.register("clean_wool",
+            () -> new ColoredFleeceItem(new Item.Properties()));
     public static final DeferredHolder<Item, Item> TANNIN_SOLUTION_BUCKET = ITEMS.register("tannin_solution_bucket",
             () -> new TanninSolutionBucketItem(ModFluids.TANNIN_SOLUTION.get(),
                     new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));

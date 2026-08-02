@@ -1,0 +1,9 @@
+{
+  "type": "firstworks:barrel_processing",
+  "ingredient": { "item": "firstworks:raw_fleece" },
+  "fluid": "minecraft:water",
+  "fluid_amount": 250,
+  "result": { "id": "firstworks:clean_wool" },
+  "duration": 600,
+  "sealed": true
+}

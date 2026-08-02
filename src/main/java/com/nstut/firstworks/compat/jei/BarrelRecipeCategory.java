@@ -2,7 +2,9 @@ package com.nstut.firstworks.compat.jei;
 
 import com.nstut.firstworks.content.barrel.BarrelRecipe;
 import com.nstut.firstworks.registry.ModBlocks;
+import com.nstut.firstworks.registry.ModItems;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -40,9 +42,15 @@ public final class BarrelRecipeCategory implements IRecipeCategory<BarrelRecipe>
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, BarrelRecipe recipe, IFocusGroup focuses) {
-        builder.addSlot(RecipeIngredientRole.INPUT, 4, 5)
-                .setStandardSlotBackground()
-                .addIngredients(recipe.ingredient());
+        boolean washingFleece = recipe.ingredient().test(new net.minecraft.world.item.ItemStack(ModItems.RAW_FLEECE.get()))
+                && recipe.result().is(ModItems.CLEAN_WOOL.get());
+        IRecipeSlotBuilder inputItem = builder.addSlot(RecipeIngredientRole.INPUT, 4, 5)
+                .setStandardSlotBackground();
+        if (washingFleece) {
+            inputItem.addItemStacks(FirstworksJeiPlugin.fleeceVariants(ModItems.RAW_FLEECE.get(), recipe.inputCount()));
+        } else {
+            inputItem.addIngredients(recipe.ingredient());
+        }
 
         Fluid inputFluid = BuiltInRegistries.FLUID.get(recipe.fluid());
         builder.addSlot(RecipeIngredientRole.INPUT, 27, 5)
@@ -60,9 +68,15 @@ public final class BarrelRecipeCategory implements IRecipeCategory<BarrelRecipe>
                     .addFluidStack(outputFluid, recipe.outputFluidAmount());
         }
         if (!recipe.result().isEmpty()) {
-            builder.addSlot(RecipeIngredientRole.OUTPUT, hasOutputFluid ? 108 : 85, 5)
-                    .setStandardSlotBackground()
-                    .addItemStack(recipe.result());
+            IRecipeSlotBuilder outputItem = builder.addSlot(RecipeIngredientRole.OUTPUT, hasOutputFluid ? 108 : 85, 5)
+                    .setStandardSlotBackground();
+            if (washingFleece) {
+                outputItem.addItemStacks(FirstworksJeiPlugin.fleeceVariants(
+                        ModItems.CLEAN_WOOL.get(), recipe.result().getCount()));
+                builder.createFocusLink(inputItem, outputItem);
+            } else {
+                outputItem.addItemStack(recipe.result());
+            }
         }
     }
 

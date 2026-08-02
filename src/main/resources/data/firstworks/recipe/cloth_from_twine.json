@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["TT", "TT"],
+  "key": { "T": { "item": "firstworks:twine" } },
+  "result": { "id": "firstworks:cloth" }
+}

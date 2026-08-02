@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import com.nstut.firstworks.registry.ModBlockEntities;
 import com.nstut.firstworks.registry.ModBlocks;
 import com.nstut.firstworks.registry.ModCreativeTabs;
+import com.nstut.firstworks.registry.ModDataComponents;
 import com.nstut.firstworks.registry.ModFluids;
 import com.nstut.firstworks.registry.ModItems;
 import com.nstut.firstworks.registry.ModRecipes;
@@ -20,6 +21,7 @@ public final class Firstworks {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public Firstworks(IEventBus modBus, ModContainer container) {
+        ModDataComponents.register(modBus);
         ModItems.register(modBus);
         ModCreativeTabs.register(modBus);
         ModBlocks.register(modBus);

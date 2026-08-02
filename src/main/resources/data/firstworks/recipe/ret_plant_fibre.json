@@ -1,0 +1,10 @@
+{
+  "type": "firstworks:barrel_processing",
+  "ingredient": { "item": "firstworks:plant_fibre" },
+  "input_count": 4,
+  "fluid": "minecraft:water",
+  "fluid_amount": 250,
+  "result": { "id": "firstworks:retted_fibre", "count": 4 },
+  "duration": 1200,
+  "sealed": true
+}

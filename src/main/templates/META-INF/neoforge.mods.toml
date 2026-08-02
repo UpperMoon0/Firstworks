@@ -8,7 +8,7 @@ version="${mod_version}"
 displayName="${mod_name}"
 authors="NsTut"
 description='''
-Primitive, in-world processing centered on wooden barrels. Load items and fluids, seal the lid, and let time do the work—beginning with a complete hide-tanning chain.
+Gather fibre, bind your first tools, spin rope, tan hides, and process materials in wooden barrels that work directly in the world.
 '''
 
 [[dependencies.${mod_id}]]

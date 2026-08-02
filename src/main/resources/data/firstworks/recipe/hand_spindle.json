@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "minecraft:stick" },
+    { "item": "minecraft:flint" },
+    { "item": "firstworks:crude_cordage" }
+  ],
+  "result": { "id": "firstworks:hand_spindle" }
+}

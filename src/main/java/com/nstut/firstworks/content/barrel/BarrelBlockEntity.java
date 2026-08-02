@@ -1,8 +1,11 @@
 package com.nstut.firstworks.content.barrel;
 
 import com.nstut.firstworks.compat.OptionalIntegrations;
+import com.nstut.firstworks.content.ColoredFleeceItem;
 import com.nstut.firstworks.registry.ModBlockEntities;
+import com.nstut.firstworks.registry.ModDataComponents;
 import com.nstut.firstworks.registry.ModFluids;
+import com.nstut.firstworks.registry.ModItems;
 import com.nstut.firstworks.registry.ModRecipes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -10,6 +13,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
@@ -82,6 +86,10 @@ public class BarrelBlockEntity extends BlockEntity {
             if (!recipe.outputFluid().equals(BarrelRecipe.NO_FLUID)
                     && tank.getFluidAmount() != recipe.fluidAmount() * batches) continue;
             ItemStack result = recipe.result().isEmpty() ? ItemStack.EMPTY : recipe.result().copyWithCount(recipe.result().getCount() * batches);
+            if (ingredient.is(ModItems.RAW_FLEECE.get()) && result.is(ModItems.CLEAN_WOOL.get())) {
+                DyeColor color = ColoredFleeceItem.color(ingredient);
+                if (color != DyeColor.WHITE) result.set(ModDataComponents.FLEECE_COLOR.get(), color);
+            }
             if (!output.isEmpty() && (!ItemStack.isSameItemSameComponents(output, result)
                     || output.getCount() + result.getCount() > output.getMaxStackSize())) continue;
             Fluid outputFluid = BuiltInRegistries.FLUID.getOptional(recipe.outputFluid()).orElse(Fluids.EMPTY);

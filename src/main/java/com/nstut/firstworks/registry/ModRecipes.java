@@ -3,6 +3,10 @@ package com.nstut.firstworks.registry;
 import com.nstut.firstworks.Firstworks;
 import com.nstut.firstworks.content.barrel.BarrelRecipe;
 import com.nstut.firstworks.content.ScrapingRecipe;
+import com.nstut.firstworks.content.SpinningRecipe;
+import com.nstut.firstworks.content.FleeceDyeingRecipe;
+import com.nstut.firstworks.content.WoolBlockRecipe;
+import com.nstut.firstworks.content.TextileBedRecipe;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -20,6 +24,14 @@ public final class ModRecipes {
             "barrel_processing", BarrelRecipe.Serializer::new);
     public static final DeferredHolder<RecipeSerializer<?>, ScrapingRecipe.Serializer> SCRAPING_SERIALIZER = SERIALIZERS.register(
             "scraping", ScrapingRecipe.Serializer::new);
+    public static final DeferredHolder<RecipeSerializer<?>, SpinningRecipe.Serializer> SPINNING_SERIALIZER = SERIALIZERS.register(
+            "spinning", SpinningRecipe.Serializer::new);
+    public static final DeferredHolder<RecipeSerializer<?>, FleeceDyeingRecipe.Serializer> FLEECE_DYEING_SERIALIZER = SERIALIZERS.register(
+            "fleece_dyeing", FleeceDyeingRecipe.Serializer::new);
+    public static final DeferredHolder<RecipeSerializer<?>, WoolBlockRecipe.Serializer> WOOL_BLOCK_SERIALIZER = SERIALIZERS.register(
+            "wool_block", WoolBlockRecipe.Serializer::new);
+    public static final DeferredHolder<RecipeSerializer<?>, TextileBedRecipe.Serializer> TEXTILE_BED_SERIALIZER = SERIALIZERS.register(
+            "textile_bed", TextileBedRecipe.Serializer::new);
 
     public static void register(IEventBus bus) {
         TYPES.register(bus);
