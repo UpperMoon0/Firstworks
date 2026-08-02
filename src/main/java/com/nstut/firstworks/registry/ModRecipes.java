@@ -2,6 +2,7 @@ package com.nstut.firstworks.registry;
 
 import com.nstut.firstworks.Firstworks;
 import com.nstut.firstworks.content.barrel.BarrelRecipe;
+import com.nstut.firstworks.content.loom.LoomRecipe;
 import com.nstut.firstworks.content.ScrapingRecipe;
 import com.nstut.firstworks.content.SpinningRecipe;
 import com.nstut.firstworks.content.FleeceDyeingRecipe;
@@ -22,8 +23,14 @@ public final class ModRecipes {
             "barrel_processing", () -> RecipeType.simple(Firstworks.id("barrel_processing")));
     public static final DeferredHolder<RecipeSerializer<?>, BarrelRecipe.Serializer> BARREL_PROCESSING_SERIALIZER = SERIALIZERS.register(
             "barrel_processing", BarrelRecipe.Serializer::new);
+    public static final DeferredHolder<RecipeType<?>, RecipeType<LoomRecipe>> LOOM_WEAVING_TYPE = TYPES.register(
+            "loom_weaving", () -> RecipeType.simple(Firstworks.id("loom_weaving")));
+    public static final DeferredHolder<RecipeSerializer<?>, LoomRecipe.Serializer> LOOM_WEAVING_SERIALIZER = SERIALIZERS.register(
+            "loom_weaving", LoomRecipe.Serializer::new);
     public static final DeferredHolder<RecipeSerializer<?>, ScrapingRecipe.Serializer> SCRAPING_SERIALIZER = SERIALIZERS.register(
             "scraping", ScrapingRecipe.Serializer::new);
+    public static final DeferredHolder<RecipeType<?>, RecipeType<SpinningRecipe>> SPINNING_TYPE = TYPES.register(
+            "spinning", () -> RecipeType.simple(Firstworks.id("spinning")));
     public static final DeferredHolder<RecipeSerializer<?>, SpinningRecipe.Serializer> SPINNING_SERIALIZER = SERIALIZERS.register(
             "spinning", SpinningRecipe.Serializer::new);
     public static final DeferredHolder<RecipeSerializer<?>, FleeceDyeingRecipe.Serializer> FLEECE_DYEING_SERIALIZER = SERIALIZERS.register(

@@ -1,0 +1,34 @@
+{
+  "keys": [
+    {
+      "name": "ingredient",
+      "role": "input",
+      "type": "ingredient"
+    },
+    {
+      "name": "result",
+      "role": "output",
+      "type": "item_stack"
+    },
+    {
+      "name": "input_count",
+      "role": "input",
+      "type": { "type": "int", "min": 1 },
+      "function_names": ["inputCount"],
+      "optional": 1
+    },
+    {
+      "name": "duration",
+      "role": "input",
+      "type": "ticks",
+      "function_names": ["time", "duration"],
+      "optional": 32
+    }
+  ],
+  "unique": ["ingredient"],
+  "constructors": [
+    {
+      "keys": ["result", "ingredient"]
+    }
+  ]
+}

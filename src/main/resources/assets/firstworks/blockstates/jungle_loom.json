@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "firstworks:block/jungle_loom" },
+    "facing=east": { "model": "firstworks:block/jungle_loom", "y": 90 },
+    "facing=south": { "model": "firstworks:block/jungle_loom", "y": 180 },
+    "facing=west": { "model": "firstworks:block/jungle_loom", "y": 270 }
+  }
+}

@@ -1,4 +1,8 @@
 {
-  "parent": "minecraft:item/generated",
-  "textures": { "layer0": "minecraft:item/brush" }
+  "parent": "firstworks:item/hand_spindle_base",
+  "overrides": [
+    { "predicate": { "firstworks:spinning": 0.25 }, "model": "firstworks:item/hand_spindle_spin_1" },
+    { "predicate": { "firstworks:spinning": 0.5 }, "model": "firstworks:item/hand_spindle_spin_2" },
+    { "predicate": { "firstworks:spinning": 0.75 }, "model": "firstworks:item/hand_spindle_spin_3" }
+  ]
 }

@@ -1,0 +1,7 @@
+{
+  "parent": "firstworks:block/loom_frame_template",
+  "textures": {
+    "wood": "minecraft:block/crimson_planks",
+    "log": "minecraft:block/stripped_crimson_stem"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "firstworks:block/mangrove_loom" },
+    "facing=east": { "model": "firstworks:block/mangrove_loom", "y": 90 },
+    "facing=south": { "model": "firstworks:block/mangrove_loom", "y": 180 },
+    "facing=west": { "model": "firstworks:block/mangrove_loom", "y": 270 }
+  }
+}

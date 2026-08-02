@@ -2,6 +2,7 @@ package com.nstut.firstworks.registry;
 
 import com.nstut.firstworks.Firstworks;
 import com.nstut.firstworks.content.barrel.BarrelBlockEntity;
+import com.nstut.firstworks.content.loom.LoomBlockEntity;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -16,6 +17,9 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BarrelBlockEntity>> BARREL = TYPES.register(
             "barrel", () -> BlockEntityType.Builder.of(BarrelBlockEntity::new,
                     ModBlocks.BARRELS.values().stream().map(DeferredHolder::get).toArray(Block[]::new)).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LoomBlockEntity>> LOOM = TYPES.register(
+            "loom", () -> BlockEntityType.Builder.of(LoomBlockEntity::new,
+                    ModBlocks.LOOMS.values().stream().map(DeferredHolder::get).toArray(Block[]::new)).build(null));
 
     public static void register(IEventBus bus) {
         TYPES.register(bus);
@@ -25,6 +29,7 @@ public final class ModBlockEntities {
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, BARREL.get(), (barrel, side) -> barrel.getTank());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BARREL.get(), (barrel, side) -> barrel.getItemHandler(side));
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, LOOM.get(), (loom, side) -> loom.getItemHandler(side));
     }
 
     private ModBlockEntities() {}

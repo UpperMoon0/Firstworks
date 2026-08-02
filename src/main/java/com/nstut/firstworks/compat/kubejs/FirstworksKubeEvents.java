@@ -9,4 +9,10 @@ public interface FirstworksKubeEvents {
     EventHandler BARREL_PROCESS_STARTING = GROUP.server("barrelProcessStarting", () -> BarrelProcessKubeEvent.class)
             .hasResult();
     EventHandler BARREL_PROCESS_COMPLETED = GROUP.server("barrelProcessCompleted", () -> BarrelProcessKubeEvent.class);
+    EventHandler LOOM_WEAVING_STARTING = GROUP.server("loomWeavingStarting", () -> LoomWeavingKubeEvent.class)
+            .hasResult();
+    EventHandler LOOM_WEAVING_COMPLETED = GROUP.server("loomWeavingCompleted", () -> LoomWeavingKubeEvent.class);
+    EventHandler SPINDLE_SPINNING_STARTING = GROUP.server("spindleSpinningStarting", () -> SpindleSpinningKubeEvent.class)
+            .hasResult();
+    EventHandler SPINDLE_SPINNING_COMPLETED = GROUP.server("spindleSpinningCompleted", () -> SpindleSpinningKubeEvent.class);
 }

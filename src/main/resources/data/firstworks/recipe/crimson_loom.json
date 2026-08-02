@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["P P", "SPS", "P P"],
+  "key": {
+    "P": { "item": "minecraft:crimson_planks" },
+    "S": { "item": "minecraft:crimson_slab" }
+  },
+  "result": { "id": "firstworks:crimson_loom" }
+}

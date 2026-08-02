@@ -1,4 +1,4 @@
 {
   "parent": "minecraft:item/generated",
-  "textures": { "layer0": "minecraft:item/dried_kelp" }
+  "textures": { "layer0": "firstworks:item/retted_fibre" }
 }

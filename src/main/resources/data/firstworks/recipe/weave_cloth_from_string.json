@@ -1,0 +1,7 @@
+{
+  "type": "firstworks:loom_weaving",
+  "ingredient": { "item": "minecraft:string" },
+  "input_count": 4,
+  "result": { "id": "firstworks:cloth" },
+  "strokes": 4
+}

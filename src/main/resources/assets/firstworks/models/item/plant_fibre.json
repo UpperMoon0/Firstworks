@@ -1,4 +1,4 @@
 {
   "parent": "minecraft:item/generated",
-  "textures": { "layer0": "minecraft:item/wheat" }
+  "textures": { "layer0": "firstworks:item/plant_fibre" }
 }

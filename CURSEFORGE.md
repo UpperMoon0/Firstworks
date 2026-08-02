@@ -1,8 +1,8 @@
 # Firstworks
 
-Firstworks brings primitive, hands-on processing into the world through functional wooden Barrels. Add materials and fluid, close the lid, and give the process time—no machine screen and no instant conversion. You can see what is inside, watch the workshop take shape around you, and control each batch by hand or with simple redstone.
+Firstworks brings primitive, hands-on processing into the world through functional wooden Barrels and hand-operated Looms. Load materials directly into each workstation and watch the work take shape without a machine screen or instant conversion.
 
-Cordage and leatherworking are the first complete production chains included with the mod, but the Barrel is the heart of Firstworks: a reusable processing system for grounded survival progression.
+Cordage, weaving, and leatherworking form the first complete production chains, built around reusable processing systems for grounded survival progression.
 
 ## The Barrel
 
@@ -19,7 +19,7 @@ Fill a Barrel with buckets or bottles, add a material, and seal it to begin a va
 
 ## Fibre, cordage, and stronger tools
 
-Gather Plant Fibre from grass and ferns, twist emergency Crude Cordage, ret better fibres in a Barrel, and spin them into Twine and Rope. Gathering by hand has a modest chance to produce fibre, while using a sword guarantees it. Wooden and stone tools need a simple binding, while iron, gold, and diamond tools call for proper Rope. This tool change can be disabled without removing the cordage materials.
+Gather Plant Fibre from grass and ferns, twist emergency Crude Cordage, and ret better fibres in a Barrel. Hold a reusable Hand Spindle with fibre in your offhand to spin it into Twine, complete with a rotating three-dimensional spindle, working sounds, and particles. Twine can be woven into Cloth or combined into Rope. Gathering by hand has a modest chance to produce fibre, while using a sword guarantees it. Wooden and stone tools need a simple binding, while iron, gold, and diamond tools call for proper Rope.
 
 ## Hide tanning
 
@@ -38,13 +38,28 @@ The result is still vanilla leather, but it comes from a small workshop and a pr
 
 Sheep provide Raw Fleece in the color of their coat. Wash it in a sealed Barrel to make Clean Wool, recolor it with dyes when needed, and pack matching wool into blocks. A proper bed brings the fibre and wool crafts together, requiring Cloth, Clean Wool, and planks.
 
+## Weaving by hand
+
+Turn Twine or String into Cloth on a functional wooden Loom. Load thread directly onto the frame, then work the shuttle by hand as the woven material visibly grows. Finished Cloth is collected from the Loom itself, and unfinished thread can be removed without opening a menu.
+
+- A Loom for every vanilla wood family
+- Accurate frame-shaped collision and selection bounds
+- Smooth shuttle movement and visible weaving progress
+- Output-driven weave colors that also work with custom recipes
+- Data-driven Barrel, spindle, and Loom recipes with typed KubeJS recipe/event support
+- Item capabilities for loading thread and extracting finished work
+
 ## Made for survival and modpacks
 
 Firstworks can stand alone as a tactile early-game mechanic or serve as the primitive processing layer of a larger progression pack. Its leather, textile, and tool-binding progressions can each be adjusted to fit the experience you want.
 
 Optional integrations make the system easier to read without changing its in-world character:
 
-- **Jade** shows live Barrel status, remaining time, output, and progress.
-- **JEI** adds a dedicated Barrel Processing recipe category.
+- **Jade** shows live Barrel status and Loom loading, weaving progress, and completed output.
+- **JEI** adds dedicated Barrel Processing, Hand Spinning, and Loom Weaving recipe categories.
+
+## Credits
+
+Firstworks is inspired by [TerraFirmaCraft](https://www.curseforge.com/minecraft/mc-mods/terrafirmacraft) and its hands-on approach to believable survival progression.
 
 Available for **Minecraft 1.21.1 on NeoForge**. Firstworks does not require Create or the Inventors modpack.

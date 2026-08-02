@@ -1,3 +1,7 @@
 {
-  "type": "firstworks:spinning"
+  "type": "firstworks:spinning",
+  "ingredient": { "item": "firstworks:retted_fibre" },
+  "input_count": 2,
+  "result": { "id": "firstworks:twine", "count": 2 },
+  "duration": 32
 }

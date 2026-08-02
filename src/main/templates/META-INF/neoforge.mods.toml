@@ -8,7 +8,7 @@ version="${mod_version}"
 displayName="${mod_name}"
 authors="NsTut"
 description='''
-Gather fibre, bind your first tools, spin rope, tan hides, and process materials in wooden barrels that work directly in the world.
+Gather fibre, bind your first tools, spin thread, weave cloth, and tan hides with hands-on tools, wooden barrels, and looms that work directly in the world.
 '''
 
 [[dependencies.${mod_id}]]

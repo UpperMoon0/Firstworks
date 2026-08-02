@@ -1,6 +1,6 @@
 # Firstworks
 
-Firstworks is a standalone NeoForge 1.21.1 mod about primitive, in-world processing. Its centerpiece is a wooden Barrel: load it with items and fluids, seal the lid, and let time do the work. There is no machine screen and no instant crafting step—the ingredients, fluid, and finished product remain visible in the world.
+Firstworks is a standalone NeoForge 1.21.1 mod about primitive, in-world processing. Its wooden Barrels and hand-operated Looms turn early materials into visible workshop projects without machine screens or instant conversions.
 
 The included hide-tanning chain is the first complete use of this system, not its limit. Barrel processes are data-driven and can be expanded by modpacks through datapacks or KubeJS.
 
@@ -19,7 +19,7 @@ Opening a working Barrel cancels its current progress without consuming or eject
 
 ## Built-in cordage and leatherworking
 
-Grass and ferns have a 30% chance to provide Plant Fibre when gathered normally; using any sword guarantees the fibre. Hand-twist it into Crude Cordage for wooden and stone tools, then ret fibre in a water-filled Barrel, spin it with a reusable Hand Spindle, and combine the resulting Twine into Rope. Vanilla iron, gold, and diamond tools require Rope by default; netherite upgrades retain the bound diamond tool beneath them.
+Grass and ferns have a 30% chance to provide Plant Fibre when gathered normally; using any sword guarantees the fibre. Hand-twist it into Crude Cordage for wooden and stone tools, then ret fibre in a water-filled Barrel. To spin it, hold the reusable Hand Spindle in your main hand, place two Retted Fibre in your offhand, and hold use until they become two Twine. Releasing early cancels without consuming the fibre. Twine can then be woven into Cloth or combined into Rope. Vanilla iron, gold, and diamond tools require Rope by default; netherite upgrades retain the bound diamond tool beneath them.
 
 The vanilla tool binding changes are controlled by `bindVanillaToolRecipes` in `config/firstworks-common.toml`. Disabling the option restores vanilla tool recipes after a datapack reload while leaving every cordage material and process available.
 
@@ -39,13 +39,15 @@ Animal leather replacement is controlled by `config/firstworks-common.toml`. Pac
 
 Sheep provide color-aware Raw Fleece instead of finished wool. Wash Raw Fleece with water in a sealed Barrel to make Clean Wool, then combine four matching pieces into the corresponding wool block. A single dye recolors a batch of Raw Fleece or Clean Wool. Beds require three Cloth, three matching Clean Wool, and three planks.
 
+Cloth must be woven on a Firstworks Loom. Add four Twine or String directly to the frame, then use the Loom four times with an empty hand to work the shuttle and finish one Cloth. The growing weave uses the output item's own sprite and tint, including custom recipe outputs. Sneak-use with an empty hand retrieves unfinished thread. Looms are available in every vanilla wood family and expose item input/output capabilities while keeping the weaving itself manual.
+
 This progression is controlled by `enableTextileProgression` in `config/firstworks-common.toml`. Disabling it restores vanilla sheep drops, shearing, string-to-wool, and bed recipes after a datapack reload.
 
 ## Datapacks and KubeJS
 
-Barrel processes use the `firstworks:barrel_processing` recipe type. A recipe can consume an ingredient and fluid, produce an item and/or replacement fluid, define its duration, and require the Barrel to be sealed or open.
+Barrel processes use the `firstworks:barrel_processing` recipe type. Loom recipes use `firstworks:loom_weaving`, while held-spindle recipes use `firstworks:spinning`. Both define their input, output, work required, and batch size.
 
-KubeJS is optional. When installed, Firstworks registers the typed `event.recipes.firstworks.barrel_processing` helper and events for the start and completion of a Barrel process.
+KubeJS is optional. When installed, Firstworks registers typed helpers for both processing systems and cancellable start/completion events.
 
 ```js
 ServerEvents.recipes(event => {
@@ -63,6 +65,16 @@ ServerEvents.recipes(event => {
     'firstworks:tannin_solution',
     1000
   ).time(24000).id('example:tannin')
+
+  event.recipes.firstworks.loom_weaving(
+    'minecraft:white_banner',
+    'minecraft:string'
+  ).inputCount(6).strokes(6).id('example:woven_banner')
+
+  event.recipes.firstworks.spinning(
+    'minecraft:string',
+    'minecraft:cobweb'
+  ).inputCount(1).time(40).id('example:spin_cobweb')
 })
 
 FirstworksEvents.barrelProcessStarting(event => {
@@ -72,12 +84,32 @@ FirstworksEvents.barrelProcessStarting(event => {
 FirstworksEvents.barrelProcessCompleted(event => {
   console.info(`Completed ${event.recipeId} at ${event.pos}`)
 })
+
+FirstworksEvents.loomWeavingStarting(event => {
+  // event.cancel() prevents weaving until the Loom's input changes.
+})
+
+FirstworksEvents.loomWeavingCompleted(event => {
+  console.info(`Wove ${event.result} at ${event.pos}`)
+})
+
+FirstworksEvents.spindleSpinningStarting(event => {
+  // event.cancel() prevents this spinning attempt.
+})
+
+FirstworksEvents.spindleSpinningCompleted(event => {
+  console.info(`${event.player.name.string} spun ${event.result}`)
+})
 ```
 
 ## Optional integrations
 
-- **Jade** shows the Barrel's live state, remaining time, output, and progress bar in-world.
-- **JEI** provides a Barrel Processing recipe category with item and fluid inputs, outputs, duration, and all wood variants as catalysts.
+- **Jade** shows live Barrel processing and Loom loading, stroke progress, cancellation, and completed output.
+- **JEI** provides dedicated Barrel Processing, Hand Spinning, and Loom Weaving categories with their tools and wood variants registered as catalysts.
+
+## Credits
+
+Firstworks is inspired by [TerraFirmaCraft](https://www.curseforge.com/minecraft/mc-mods/terrafirmacraft) and its hands-on approach to believable survival progression.
 
 ## Building
 

@@ -2,8 +2,10 @@ package com.nstut.firstworks.compat.jei;
 
 import com.nstut.firstworks.Firstworks;
 import com.nstut.firstworks.content.barrel.BarrelRecipe;
+import com.nstut.firstworks.content.loom.LoomRecipe;
 import com.nstut.firstworks.content.ColoredFleeceItem;
 import com.nstut.firstworks.content.TextileColors;
+import com.nstut.firstworks.content.SpinningRecipe;
 import com.nstut.firstworks.registry.ModBlocks;
 import com.nstut.firstworks.registry.ModRecipes;
 import com.nstut.firstworks.registry.ModItems;
@@ -38,6 +40,10 @@ import java.util.Map;
 public final class FirstworksJeiPlugin implements IModPlugin {
     public static final RecipeType<BarrelRecipe> BARREL_PROCESSING =
             RecipeType.create(Firstworks.MOD_ID, "barrel_processing", BarrelRecipe.class);
+    public static final RecipeType<LoomRecipe> LOOM_WEAVING =
+            RecipeType.create(Firstworks.MOD_ID, "loom_weaving", LoomRecipe.class);
+    public static final RecipeType<SpinningRecipe> SPINDLE_SPINNING =
+            RecipeType.create(Firstworks.MOD_ID, "spinning", SpinningRecipe.class);
     private static final ResourceLocation UID = Firstworks.id("jei_plugin");
 
     @Override
@@ -48,6 +54,8 @@ public final class FirstworksJeiPlugin implements IModPlugin {
     @Override
     public void registerCategories(IRecipeCategoryRegistration registration) {
         registration.addRecipeCategories(new BarrelRecipeCategory(registration.getJeiHelpers().getGuiHelper()));
+        registration.addRecipeCategories(new LoomRecipeCategory(registration.getJeiHelpers().getGuiHelper()));
+        registration.addRecipeCategories(new SpinningRecipeCategory(registration.getJeiHelpers().getGuiHelper()));
     }
 
     @Override
@@ -65,6 +73,14 @@ public final class FirstworksJeiPlugin implements IModPlugin {
                 .map(holder -> holder.value())
                 .toList();
         registration.addRecipes(BARREL_PROCESSING, recipes);
+        var loomRecipes = Minecraft.getInstance().level.getRecipeManager()
+                .getAllRecipesFor(ModRecipes.LOOM_WEAVING_TYPE.get())
+                .stream().map(holder -> holder.value()).toList();
+        registration.addRecipes(LOOM_WEAVING, loomRecipes);
+        var spinningRecipes = Minecraft.getInstance().level.getRecipeManager()
+                .getAllRecipesFor(ModRecipes.SPINNING_TYPE.get())
+                .stream().map(holder -> holder.value()).toList();
+        registration.addRecipes(SPINDLE_SPINNING, spinningRecipes);
 
         var manager = Minecraft.getInstance().level.getRecipeManager();
         List<RecipeHolder<CraftingRecipe>> textileDisplays = new ArrayList<>();
@@ -81,6 +97,9 @@ public final class FirstworksJeiPlugin implements IModPlugin {
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
         ModBlocks.BARRELS.values().forEach(barrel ->
                 registration.addRecipeCatalyst(barrel.get(), BARREL_PROCESSING));
+        ModBlocks.LOOMS.values().forEach(loom ->
+                registration.addRecipeCatalyst(loom.get(), LOOM_WEAVING));
+        registration.addRecipeCatalyst(ModItems.HAND_SPINDLE.get(), SPINDLE_SPINNING);
     }
 
     static List<ItemStack> fleeceVariants(Item item, int count) {
