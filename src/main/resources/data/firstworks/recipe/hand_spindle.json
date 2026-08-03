@@ -4,7 +4,7 @@
   "ingredients": [
     { "item": "minecraft:stick" },
     { "item": "minecraft:flint" },
-    { "item": "firstworks:crude_cordage" }
+    { "tag": "firstworks:primitive_bindings" }
   ],
   "result": { "id": "firstworks:hand_spindle" }
 }

@@ -3,5 +3,5 @@
   "ingredient": { "item": "firstworks:twine" },
   "input_count": 4,
   "result": { "id": "firstworks:cloth" },
-  "strokes": 4
+  "strokes": 16
 }

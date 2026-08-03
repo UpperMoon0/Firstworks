@@ -20,6 +20,15 @@
     }},
     { "from": [6.5, 9, 6.5], "to": [9.5, 10, 9.5], "faces": {
       "down":{"texture":"#thread"}, "up":{"texture":"#thread"}, "north":{"texture":"#thread"}, "south":{"texture":"#thread"}, "west":{"texture":"#thread"}, "east":{"texture":"#thread"}
+    }},
+    { "from": [7.25, 14.5, 7.25], "to": [8.75, 15.6, 8.75], "faces": {
+      "down":{"texture":"#wood"}, "up":{"texture":"#wood"}, "north":{"texture":"#wood"}, "south":{"texture":"#wood"}, "west":{"texture":"#wood"}, "east":{"texture":"#wood"}
+    }},
+    { "from": [7, 15.4, 7], "to": [10, 16, 9], "faces": {
+      "down":{"texture":"#wood"}, "up":{"texture":"#wood"}, "north":{"texture":"#wood"}, "south":{"texture":"#wood"}, "west":{"texture":"#wood"}, "east":{"texture":"#wood"}
+    }},
+    { "from": [9.1, 14, 7.25], "to": [10.15, 15.7, 8.75], "faces": {
+      "down":{"texture":"#wood"}, "up":{"texture":"#wood"}, "north":{"texture":"#wood"}, "south":{"texture":"#wood"}, "west":{"texture":"#wood"}, "east":{"texture":"#wood"}
     }}
   ],
   "display": {

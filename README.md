@@ -15,11 +15,11 @@ Firstworks has no dependency on Create or the Inventors modpack.
 - Collect completed output before toggling the lid again.
 - Toggle the lid with a rising redstone pulse for simple early automation.
 
-Opening a working Barrel cancels its current progress without consuming or ejecting the contents. Standard NeoForge item and fluid capabilities are also exposed for modded automation: items enter from above, finished items leave below, and side access can inspect both item slots.
+Opening a working Barrel cancels its current progress without consuming or ejecting the contents. Standard NeoForge item and fluid capabilities are also exposed for modded automation: items enter from above, finished items leave below, and side access can inspect both item slots. Sealing the lid locks all automated item and fluid insertion and extraction until the Barrel is opened again.
 
 ## Built-in cordage and leatherworking
 
-Grass and ferns have a 30% chance to provide Plant Fibre when gathered normally; using any sword guarantees the fibre. Hand-twist it into Crude Cordage for wooden and stone tools, then ret fibre in a water-filled Barrel. To spin it, hold the reusable Hand Spindle in your main hand, place two Retted Fibre in your offhand, and hold use until they become two Twine. Releasing early cancels without consuming the fibre. Twine can then be woven into Cloth or combined into Rope. Vanilla iron, gold, and diamond tools require Rope by default; netherite upgrades retain the bound diamond tool beneath them.
+Grass and ferns have a 30% chance to provide Plant Fibre when gathered normally; using any sword guarantees the fibre. Hand-twist it into Crude Cordage for wooden and stone tools, then ret fibre in a water-filled Barrel. To spin it, hold the durable Hand Spindle in your main hand, place two Retted Fibre in your offhand, and hold use until they become two Twine. Releasing early cancels without consuming the fibre. Twine can then be woven into Cloth or combined into Rope. Vanilla iron, gold, and diamond tools require Rope by default; netherite upgrades retain the bound diamond tool beneath them.
 
 The vanilla tool binding changes are controlled by `bindVanillaToolRecipes` in `config/firstworks-common.toml`. Disabling the option restores vanilla tool recipes after a datapack reload while leaving every cordage material and process available.
 
@@ -39,7 +39,7 @@ Animal leather replacement is controlled by `config/firstworks-common.toml`. Pac
 
 Sheep provide color-aware Raw Fleece instead of finished wool. Wash Raw Fleece with water in a sealed Barrel to make Clean Wool, then combine four matching pieces into the corresponding wool block. A single dye recolors a batch of Raw Fleece or Clean Wool. Beds require three Cloth, three matching Clean Wool, and three planks.
 
-Cloth must be woven on a Firstworks Loom. Add four Twine or String directly to the frame, then use the Loom four times with an empty hand to work the shuttle and finish one Cloth. The growing weave uses the output item's own sprite and tint, including custom recipe outputs. Sneak-use with an empty hand retrieves unfinished thread. Looms are available in every vanilla wood family and expose item input/output capabilities while keeping the weaving itself manual.
+Cloth must be woven on a Firstworks Loom. Add four Twine or String directly to the frame, then use the Loom sixteen times with an empty hand to work the shuttle and finish one Cloth. The growing weave uses the output item's own sprite and tint, including custom recipe outputs. Sneak-use with an empty hand retrieves unfinished thread. Looms are available in every vanilla wood family and expose item input/output capabilities. Each stroke is a normal empty-hand block interaction, allowing automation tools such as a Create Deployer in use mode to operate the Loom without a hard Create dependency. Datapack and KubeJS recipes can set their own `strokes` value for easier or more demanding materials.
 
 This progression is controlled by `enableTextileProgression` in `config/firstworks-common.toml`. Disabling it restores vanilla sheep drops, shearing, string-to-wool, and bed recipes after a datapack reload.
 

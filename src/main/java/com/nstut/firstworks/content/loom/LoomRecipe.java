@@ -38,7 +38,7 @@ public record LoomRecipe(Ingredient ingredient, int inputCount, ItemStack result
                 Ingredient.CODEC.fieldOf("ingredient").forGetter(LoomRecipe::ingredient),
                 Codec.INT.optionalFieldOf("input_count", 1).forGetter(LoomRecipe::inputCount),
                 ItemStack.CODEC.fieldOf("result").forGetter(LoomRecipe::result),
-                Codec.INT.optionalFieldOf("strokes", 4).forGetter(LoomRecipe::strokes)
+                Codec.INT.optionalFieldOf("strokes", 16).forGetter(LoomRecipe::strokes)
         ).apply(instance, LoomRecipe::new));
         private static final StreamCodec<RegistryFriendlyByteBuf, LoomRecipe> STREAM_CODEC = StreamCodec.of(
                 (buffer, recipe) -> {

@@ -131,11 +131,11 @@ public class LoomBlockEntity extends BlockEntity {
     }
 
     public float getShuttleOffset(float partialTick) {
-        if (level == null) return shuttleRight ? 0.27F : -0.27F;
+        if (level == null) return shuttleRight ? 0.20F : -0.20F;
         float elapsed = Math.max(0.0F, level.getGameTime() + partialTick - lastStrokeTick);
         float t = Math.min(1.0F, elapsed / 6.0F);
         float eased = 0.5F - 0.5F * (float) Math.cos(Math.PI * t);
-        float from = shuttleRight ? -0.27F : 0.27F;
+        float from = shuttleRight ? -0.20F : 0.20F;
         float to = -from;
         return from + (to - from) * eased;
     }

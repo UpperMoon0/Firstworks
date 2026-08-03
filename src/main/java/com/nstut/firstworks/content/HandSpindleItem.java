@@ -11,6 +11,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -79,8 +80,10 @@ public final class HandSpindleItem extends Item {
         player.getInventory().placeItemBackInInventory(result.copy());
         level.playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.UI_LOOM_TAKE_RESULT, SoundSource.PLAYERS, 0.75F, 1.1F);
-        player.awardStat(Stats.ITEM_USED.get(player.getMainHandItem().getItem()));
+        ItemStack spindle = player.getMainHandItem();
+        player.awardStat(Stats.ITEM_USED.get(spindle.getItem()));
         OptionalIntegrations.fireSpindleSpinningCompleted(level, player, holder.id(), recipe, consumed, result);
+        if (!player.hasInfiniteMaterials()) spindle.hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
     }
 
     private static Optional<RecipeHolder<SpinningRecipe>> findRecipe(Level level, ItemStack input) {

@@ -3,5 +3,5 @@
   "ingredient": { "item": "minecraft:string" },
   "input_count": 4,
   "result": { "id": "firstworks:cloth" },
-  "strokes": 4
+  "strokes": 16
 }

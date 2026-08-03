@@ -8,7 +8,7 @@ version="${mod_version}"
 displayName="${mod_name}"
 authors="NsTut"
 description='''
-Gather fibre, bind your first tools, spin thread, weave cloth, and tan hides with hands-on tools, wooden barrels, and looms that work directly in the world.
+Firstworks builds primitive survival around tactile, in-world work. Use simple tools and configurable processing systems to shape early resources through visible steps, creating a grounded foundation for standalone play and larger progression packs.
 '''
 
 [[dependencies.${mod_id}]]

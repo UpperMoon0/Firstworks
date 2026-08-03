@@ -29,7 +29,7 @@ public final class ModItems {
     public static final DeferredHolder<Item, Item> CRUDE_CORDAGE = simple("crude_cordage");
     public static final DeferredHolder<Item, Item> RETTED_FIBRE = simple("retted_fibre");
     public static final DeferredHolder<Item, Item> HAND_SPINDLE = ITEMS.register("hand_spindle",
-            () -> new HandSpindleItem(new Item.Properties()));
+            () -> new HandSpindleItem(new Item.Properties().durability(128)));
     public static final DeferredHolder<Item, Item> TWINE = simple("twine");
     public static final DeferredHolder<Item, Item> ROPE = simple("rope");
     public static final DeferredHolder<Item, Item> CLOTH = simple("cloth");

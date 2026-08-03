@@ -22,7 +22,7 @@
       "role": "input",
       "type": { "type": "int", "min": 1 },
       "function_names": ["strokes"],
-      "optional": 4
+      "optional": 16
     }
   ],
   "unique": ["ingredient"],

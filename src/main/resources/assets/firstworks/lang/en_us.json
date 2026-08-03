@@ -50,7 +50,7 @@
   "jade.firstworks.loom.empty": "Add thread to begin",
   "jade.firstworks.loom.loading": "Thread loaded: %s / %s",
   "jade.firstworks.loom.weaving": "Weaving: %s",
-  "jade.firstworks.loom.stroke": "Stroke %s / %s - use empty hand",
+  "jade.firstworks.loom.stroke": "Stroke %s / %s",
   "jade.firstworks.loom.output": "Ready: %s",
   "jade.firstworks.loom.cancelled": "Weaving cancelled by a script",
   "config.jade.plugin_firstworks.loom_progress": "Loom Weaving",

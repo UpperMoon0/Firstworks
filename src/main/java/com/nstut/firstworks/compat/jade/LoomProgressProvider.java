@@ -74,7 +74,7 @@ public enum LoomProgressProvider implements IBlockComponentProvider, IServerData
                 Mth.clamp((float) progress / strokes, 0.0F, 1.0F),
                 Component.translatable("jade.firstworks.loom.stroke", progress, strokes)
                         .withStyle(ChatFormatting.WHITE),
-                IElementHelper.get().progressStyle().color(0xFF8B5A2B, 0xFFD8C3A5).textColor(0xFFFFFFFF),
+                IElementHelper.get().progressStyle().color(0xFF302B27, 0xFF51463C).textColor(0xFFFFFFFF),
                 BoxStyle.getTransparent(), false).size(new Vec2(140, 12)));
     }
 

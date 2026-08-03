@@ -27,7 +27,8 @@ public final class ModBlockEntities {
     }
 
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, BARREL.get(), (barrel, side) -> barrel.getTank());
+        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, BARREL.get(),
+                (barrel, side) -> barrel.getAutomationFluidHandler());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BARREL.get(), (barrel, side) -> barrel.getItemHandler(side));
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, LOOM.get(), (loom, side) -> loom.getItemHandler(side));
     }

@@ -36,12 +36,10 @@ public class LoomBlock extends BaseEntityBlock {
     public static final MapCodec<LoomBlock> CODEC = simpleCodec(LoomBlock::new);
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     private static final VoxelShape NORTH_SHAPE = Shapes.or(
-            box(1, 0, 2, 4, 2, 14), box(12, 0, 2, 15, 2, 14),
-            box(1, 1, 6, 4, 16, 10), box(12, 1, 6, 15, 16, 10),
-            box(1, 14, 5, 15, 16, 11), box(2, 3, 6, 14, 5, 10),
-            box(3, 11, 6, 13, 13, 10), box(3, 5, 6, 13, 7, 10),
-            box(2, 8, 5, 14, 10, 7),
-            box(0, 8.5, 5.5, 2, 9.5, 6.5), box(14, 8.5, 5.5, 16, 9.5, 6.5)
+            box(0.75, 0, 2, 4.25, 1.75, 14), box(11.75, 0, 2, 15.25, 1.75, 14),
+            box(1.25, 1, 6.25, 3.75, 15, 9.75), box(12.25, 1, 6.25, 14.75, 15, 9.75),
+            box(0.5, 13.75, 5.25, 15.5, 16, 10.75), box(2.5, 2.75, 5.5, 13.5, 4.25, 10.5),
+            box(3, 11.5, 5.75, 13, 13, 10.25), box(3, 5.25, 5.75, 13, 6.75, 10.25)
     ).optimize();
     private static final Map<Direction, VoxelShape> SHAPES = makeShapes();
 

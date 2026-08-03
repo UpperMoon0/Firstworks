@@ -33,6 +33,7 @@ import org.jetbrains.annotations.Nullable;
 public class BarrelBlockEntity extends BlockEntity {
     public static final int CAPACITY = 4_000;
     private final FluidTank tank;
+    private final IFluidHandler automationFluidHandler;
     private ItemStack ingredient = ItemStack.EMPTY;
     private ItemStack output = ItemStack.EMPTY;
     private int progress;
@@ -48,6 +49,23 @@ public class BarrelBlockEntity extends BlockEntity {
             protected void onContentsChanged() {
                 processCancelled = false;
                 setChangedAndSync();
+            }
+        };
+        automationFluidHandler = new IFluidHandler() {
+            @Override public int getTanks() { return tank.getTanks(); }
+            @Override public FluidStack getFluidInTank(int tankIndex) { return tank.getFluidInTank(tankIndex); }
+            @Override public int getTankCapacity(int tankIndex) { return tank.getTankCapacity(tankIndex); }
+            @Override public boolean isFluidValid(int tankIndex, FluidStack stack) {
+                return !isSealed() && tank.isFluidValid(tankIndex, stack);
+            }
+            @Override public int fill(FluidStack resource, FluidAction action) {
+                return isSealed() ? 0 : tank.fill(resource, action);
+            }
+            @Override public FluidStack drain(FluidStack resource, FluidAction action) {
+                return isSealed() ? FluidStack.EMPTY : tank.drain(resource, action);
+            }
+            @Override public FluidStack drain(int maxDrain, FluidAction action) {
+                return isSealed() ? FluidStack.EMPTY : tank.drain(maxDrain, action);
             }
         };
     }
@@ -191,7 +209,7 @@ public class BarrelBlockEntity extends BlockEntity {
     }
 
     public boolean takeOutput(Player player) {
-        if (output.isEmpty()) return false;
+        if (isSealed() || output.isEmpty()) return false;
         player.getInventory().placeItemBackInInventory(output.copy());
         output = ItemStack.EMPTY;
         progress = 0;
@@ -214,6 +232,7 @@ public class BarrelBlockEntity extends BlockEntity {
     }
 
     public FluidTank getTank() { return tank; }
+    public IFluidHandler getAutomationFluidHandler() { return automationFluidHandler; }
     public IItemHandler getItemHandler(@Nullable Direction side) {
         if (side == Direction.UP) return inputHandler;
         if (side == Direction.DOWN) return outputHandler;
@@ -223,6 +242,7 @@ public class BarrelBlockEntity extends BlockEntity {
     public ItemStack getOutput() { return output; }
     public int getProgress() { return progress; }
     public boolean isProcessCancelled() { return processCancelled; }
+    private boolean isSealed() { return getBlockState().getValue(BarrelBlock.SEALED); }
     public java.util.Optional<RecipeHolder<BarrelRecipe>> getActiveRecipe() {
         Process process = currentProcess();
         if (process == null || level == null) return java.util.Optional.empty();
@@ -281,14 +301,14 @@ public class BarrelBlockEntity extends BlockEntity {
             return slot == 0 ? ingredient.copy() : slot == 1 ? output.copy() : ItemStack.EMPTY;
         }
         @Override public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-            return slot == 0 && allowInput ? insertIngredientStack(stack, simulate) : stack;
+            return !isSealed() && slot == 0 && allowInput ? insertIngredientStack(stack, simulate) : stack;
         }
         @Override public ItemStack extractItem(int slot, int amount, boolean simulate) {
-            return slot == 1 && allowOutput ? extractOutput(amount, simulate) : ItemStack.EMPTY;
+            return !isSealed() && slot == 1 && allowOutput ? extractOutput(amount, simulate) : ItemStack.EMPTY;
         }
         @Override public int getSlotLimit(int slot) { return 64; }
         @Override public boolean isItemValid(int slot, ItemStack stack) {
-            return slot == 0 && allowInput && canInsert(stack);
+            return !isSealed() && slot == 0 && allowInput && canInsert(stack);
         }
     }
 }

@@ -12,6 +12,7 @@ Cordage, weaving, and leatherworking form the first complete production chains, 
 - Opens and seals by hand without a GUI
 - Responds to rising redstone pulses for simple automation
 - Supports item and fluid transfer through standard NeoForge capabilities
+- Locks automated item and fluid transfer while sealed
 - Comes in every vanilla wood family
 - Accepts custom recipes from datapacks and KubeJS
 
@@ -19,7 +20,7 @@ Fill a Barrel with buckets or bottles, add a material, and seal it to begin a va
 
 ## Fibre, cordage, and stronger tools
 
-Gather Plant Fibre from grass and ferns, twist emergency Crude Cordage, and ret better fibres in a Barrel. Hold a reusable Hand Spindle with fibre in your offhand to spin it into Twine, complete with a rotating three-dimensional spindle, working sounds, and particles. Twine can be woven into Cloth or combined into Rope. Gathering by hand has a modest chance to produce fibre, while using a sword guarantees it. Wooden and stone tools need a simple binding, while iron, gold, and diamond tools call for proper Rope.
+Gather Plant Fibre from grass and ferns, twist emergency Crude Cordage, and ret better fibres in a Barrel. Hold a durable Hand Spindle with fibre in your offhand to spin it into Twine, complete with a rotating three-dimensional spindle, working sounds, and particles. Twine can be woven into Cloth or combined into Rope. Gathering by hand has a modest chance to produce fibre, while using a sword guarantees it. Wooden and stone tools need a simple binding, while iron, gold, and diamond tools call for proper Rope.
 
 ## Hide tanning
 
@@ -48,6 +49,7 @@ Turn Twine or String into Cloth on a functional wooden Loom. Load thread directl
 - Output-driven weave colors that also work with custom recipes
 - Data-driven Barrel, spindle, and Loom recipes with typed KubeJS recipe/event support
 - Item capabilities for loading thread and extracting finished work
+- Empty-hand interaction compatible with deployer-style automation
 
 ## Made for survival and modpacks
 
