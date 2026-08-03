@@ -7,6 +7,7 @@ import com.nstut.firstworks.content.ColoredFleeceItem;
 import com.nstut.firstworks.content.HandSpindleItem;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.FlintAndSteelItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.neoforged.bus.api.IEventBus;
@@ -27,6 +28,8 @@ public final class ModItems {
     public static final DeferredHolder<Item, Item> TANNIN_SOAKED_HIDE = simple("tannin_soaked_hide");
     public static final DeferredHolder<Item, Item> PLANT_FIBRE = simple("plant_fibre");
     public static final DeferredHolder<Item, Item> CRUDE_CORDAGE = simple("crude_cordage");
+    public static final DeferredHolder<Item, Item> FIRE_STARTER = ITEMS.register("fire_starter",
+            () -> new FlintAndSteelItem(new Item.Properties().durability(1)));
     public static final DeferredHolder<Item, Item> RETTED_FIBRE = simple("retted_fibre");
     public static final DeferredHolder<Item, Item> HAND_SPINDLE = ITEMS.register("hand_spindle",
             () -> new HandSpindleItem(new Item.Properties().durability(128)));

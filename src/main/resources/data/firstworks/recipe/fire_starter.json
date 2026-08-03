@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "tools",
+  "ingredients": [
+    { "item": "minecraft:flint" },
+    { "item": "firstworks:plant_fibre" },
+    { "tag": "firstworks:primitive_bindings" }
+  ],
+  "result": { "id": "firstworks:fire_starter" }
+}

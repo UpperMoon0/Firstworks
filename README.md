@@ -21,6 +21,8 @@ Opening a working Barrel cancels its current progress without consuming or eject
 
 Grass and ferns have a 30% chance to provide Plant Fibre when gathered normally; using any sword guarantees the fibre. Hand-twist it into Crude Cordage for wooden and stone tools, then ret fibre in a water-filled Barrel. To spin it, hold the durable Hand Spindle in your main hand, place two Retted Fibre in your offhand, and hold use until they become two Twine. Releasing early cancels without consuming the fibre. Twine can then be woven into Cloth or combined into Rope. Vanilla iron, gold, and diamond tools require Rope by default; netherite upgrades retain the bound diamond tool beneath them.
 
+Combine flint, Plant Fibre, and Crude Cordage or Rope into a Fire Starter. It has the same ignition targets as flint and steel, including extinguished campfires, but breaks after one successful use.
+
 The vanilla tool binding changes are controlled by `bindVanillaToolRecipes` in `config/firstworks-common.toml`. Disabling the option restores vanilla tool recipes after a datapack reload while leaving every cordage material and process available.
 
 Firstworks uses the Barrel to turn leather into a physical early-game production chain:
