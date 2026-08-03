@@ -4,12 +4,14 @@ import com.nstut.firstworks.Firstworks;
 import com.nstut.firstworks.content.TreeBarkItem;
 import com.nstut.firstworks.content.TanninSolutionBucketItem;
 import com.nstut.firstworks.content.ColoredFleeceItem;
+import com.nstut.firstworks.content.ClayBucketItem;
 import com.nstut.firstworks.content.HandSpindleItem;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.FlintAndSteelItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.material.Fluids;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -30,6 +32,18 @@ public final class ModItems {
     public static final DeferredHolder<Item, Item> CRUDE_CORDAGE = simple("crude_cordage");
     public static final DeferredHolder<Item, Item> FIRE_STARTER = ITEMS.register("fire_starter",
             () -> new FlintAndSteelItem(new Item.Properties().durability(1)));
+    public static final DeferredHolder<Item, Item> UNFIRED_CLAY_BUCKET = simple("unfired_clay_bucket");
+    public static final DeferredHolder<Item, Item> UNFIRED_CLAY_BRICK = simple("unfired_clay_brick");
+    public static final DeferredHolder<Item, Item> MORTAR = simple("mortar");
+    public static final DeferredHolder<Item, Item> BRICK_MOLD = ITEMS.register("brick_mold",
+            () -> new BlockItem(ModBlocks.BRICK_MOLD.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> CLAY_BUCKET = ITEMS.register("clay_bucket",
+            () -> new ClayBucketItem(Fluids.EMPTY, new Item.Properties().stacksTo(1)));
+    public static final DeferredHolder<Item, Item> WATER_CLAY_BUCKET = ITEMS.register("water_clay_bucket",
+            () -> new ClayBucketItem(Fluids.WATER, new Item.Properties().stacksTo(1)));
+    public static final DeferredHolder<Item, Item> TANNIN_CLAY_BUCKET = ITEMS.register("tannin_clay_bucket",
+            () -> new ClayBucketItem(ModFluids.TANNIN_SOLUTION.get(),
+                    new Item.Properties().craftRemainder(CLAY_BUCKET.get()).stacksTo(1)));
     public static final DeferredHolder<Item, Item> RETTED_FIBRE = simple("retted_fibre");
     public static final DeferredHolder<Item, Item> HAND_SPINDLE = ITEMS.register("hand_spindle",
             () -> new HandSpindleItem(new Item.Properties().durability(128)));

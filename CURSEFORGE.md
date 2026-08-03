@@ -24,6 +24,8 @@ Gather Plant Fibre from grass and ferns, twist emergency Crude Cordage, and ret 
 
 Flint, Plant Fibre, and either primitive binding also make a single-use Fire Starter. It can ignite or relight the same targets as flint and steel, but is consumed after one successful use.
 
+An early Clay Bucket bridges the gap before iron: shape it from clay, fire it on a campfire, then use it to collect and place water or Tannin Solution for Barrel work. Tannin Solution behaves like brown-tinted water when placed, while the clay vessel deliberately refuses lava and unrelated fluids.
+
 ## Hide tanning
 
 Animals drop **Raw Hide** instead of ready-made leather. Producing leather now demonstrates the full primitive workflow:
@@ -52,6 +54,10 @@ Turn Twine or String into Cloth on a functional wooden Loom. Load thread directl
 - Data-driven Barrel, spindle, and Loom recipes with typed KubeJS recipe/event support
 - Item capabilities for loading thread and extracting finished work
 - Empty-hand interaction compatible with deployer-style automation
+
+## Primitive masonry
+
+Load one clay ball into a single-cavity Wooden Brick Mold and press twice with an empty hand. The material visibly spreads farther across the cavity after each press, ending as a fully packed clay-textured surface tinted from the recipe output. Collect the unfired brick and fire it over a campfire, then mix sand and water into Wet Mortar in a sealed Barrel to bind structural blocks. The Mold supports hopper loading, output extraction, empty-handed Create Deployers, and custom press counts through datapacks or KubeJS.
 
 ## Made for survival and modpacks
 

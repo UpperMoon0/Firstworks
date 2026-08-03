@@ -158,6 +158,20 @@ public class BarrelBlockEntity extends BlockEntity {
         return new ItemStack(bucket);
     }
 
+    public ItemStack drainClayBucket() {
+        if (tank.getFluidAmount() < 1_000) return ItemStack.EMPTY;
+        ItemStack filled;
+        if (tank.getFluid().is(Fluids.WATER)) {
+            filled = new ItemStack(ModItems.WATER_CLAY_BUCKET.get());
+        } else if (tank.getFluid().is(ModFluids.TANNIN_SOLUTION.get())) {
+            filled = new ItemStack(ModItems.TANNIN_CLAY_BUCKET.get());
+        } else {
+            return ItemStack.EMPTY;
+        }
+        tank.drain(1_000, IFluidHandler.FluidAction.EXECUTE);
+        return filled;
+    }
+
     public boolean insertIngredient(ItemStack held, boolean creative) {
         if (!ingredient.isEmpty() && !ItemStack.isSameItemSameComponents(ingredient, held)) return false;
         if (ingredient.getCount() >= ingredient.getMaxStackSize()) return false;

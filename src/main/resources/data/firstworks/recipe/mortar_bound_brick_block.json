@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "B": { "item": "minecraft:brick" },
+    "M": { "item": "firstworks:mortar" }
+  },
+  "pattern": [
+    "BB",
+    "MB"
+  ],
+  "result": { "id": "minecraft:bricks" }
+}

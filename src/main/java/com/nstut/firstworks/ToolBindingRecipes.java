@@ -29,10 +29,11 @@ public final class ToolBindingRecipes {
     public static void bindVanillaTools(OnDatapackSyncEvent event) {
         boolean bindTools = FirstworksConfig.BIND_VANILLA_TOOL_RECIPES.getAsBoolean();
         boolean textiles = FirstworksConfig.ENABLE_TEXTILE_PROGRESSION.getAsBoolean();
-        rewrite(event.getPlayerList().getServer().getRecipeManager(), bindTools, textiles);
+        boolean masonry = FirstworksConfig.ENABLE_MASONRY_PROGRESSION.getAsBoolean();
+        rewrite(event.getPlayerList().getServer().getRecipeManager(), bindTools, textiles, masonry);
     }
 
-    private static void rewrite(RecipeManager manager, boolean bindTools, boolean textiles) {
+    private static void rewrite(RecipeManager manager, boolean bindTools, boolean textiles, boolean masonry) {
         Ingredient primitiveBinding = Ingredient.of(ModItems.CRUDE_CORDAGE.get(), ModItems.ROPE.get());
         Ingredient rope = Ingredient.of(ModItems.ROPE.get());
         Map<ResourceLocation, Recipe<?>> replacements = new HashMap<>();
@@ -59,6 +60,14 @@ public final class ToolBindingRecipes {
                 continue;
             }
             if (!textiles && isFirstworksTextileRecipe(holder.id())) {
+                removed++;
+                continue;
+            }
+            if (masonry && isVanillaMasonryRecipe(holder.id())) {
+                removed++;
+                continue;
+            }
+            if (!masonry && isFirstworksMasonryRecipe(holder.id())) {
                 removed++;
                 continue;
             }
@@ -89,6 +98,17 @@ public final class ToolBindingRecipes {
     private static boolean isFirstworksTextileRecipe(ResourceLocation id) {
         return id.getNamespace().equals(Firstworks.MOD_ID) && Set.of(
                 "wash_raw_fleece", "fleece_dyeing", "wool_block", "textile_bed").contains(id.getPath());
+    }
+
+    private static boolean isVanillaMasonryRecipe(ResourceLocation id) {
+        return id.getNamespace().equals("minecraft") && Set.of(
+                "brick", "brick_from_blasting", "bricks").contains(id.getPath());
+    }
+
+    private static boolean isFirstworksMasonryRecipe(ResourceLocation id) {
+        return id.getNamespace().equals(Firstworks.MOD_ID) && Set.of(
+                "brick_mold", "mold_unfired_clay_brick", "fire_clay_brick", "fire_clay_brick_from_smelting",
+                "mix_mortar", "mortar_bound_brick_block").contains(id.getPath());
     }
 
     private static void addTier(Map<ResourceLocation, Recipe<?>> recipes, String tier, Ingredient material,

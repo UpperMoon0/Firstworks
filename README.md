@@ -23,6 +23,8 @@ Grass and ferns have a 30% chance to provide Plant Fibre when gathered normally;
 
 Combine flint, Plant Fibre, and Crude Cordage or Rope into a Fire Starter. It has the same ignition targets as flint and steel, including extinguished campfires, but breaks after one successful use.
 
+Before metalworking, shape three clay balls into an Unfired Clay Bucket and fire it on a campfire. The finished vessel can collect and place water or Tannin Solution and move either fluid into and out of Barrels, but it rejects lava and unrelated fluids. Tannin Solution flows, forms sources, hydrates farmland, extinguishes fire, and otherwise behaves like tinted water in the world. Filled variants reuse one tintable fluid overlay rather than requiring a separate fluid sprite.
+
 The vanilla tool binding changes are controlled by `bindVanillaToolRecipes` in `config/firstworks-common.toml`. Disabling the option restores vanilla tool recipes after a datapack reload while leaving every cordage material and process available.
 
 Firstworks uses the Barrel to turn leather into a physical early-game production chain:
@@ -44,6 +46,12 @@ Sheep provide color-aware Raw Fleece instead of finished wool. Wash Raw Fleece w
 Cloth must be woven on a Firstworks Loom. Add four Twine or String directly to the frame, then use the Loom sixteen times with an empty hand to work the shuttle and finish one Cloth. The growing weave uses the output item's own sprite and tint, including custom recipe outputs. Sneak-use with an empty hand retrieves unfinished thread. Looms are available in every vanilla wood family and expose item input/output capabilities. Each stroke is a normal empty-hand block interaction, allowing automation tools such as a Create Deployer in use mode to operate the Loom without a hard Create dependency. Datapack and KubeJS recipes can set their own `strokes` value for easier or more demanding materials.
 
 This progression is controlled by `enableTextileProgression` in `config/firstworks-common.toml`. Disabling it restores vanilla sheep drops, shearing, string-to-wool, and bed recipes after a datapack reload.
+
+## Primitive masonry
+
+Place one clay ball into the single-cavity Wooden Brick Mold, press it twice with an empty hand, and collect the unfired brick. Each press visibly spreads the material farther across the cavity until it becomes a fully compressed, clay-textured surface tinted from the recipe output. Fire unfired bricks over a campfire, then mix sand and water into Wet Mortar in a sealed Barrel to bind structural Brick Blocks. The Mold has no menu: hoppers can load material and remove completed output, and an empty-handed Create Deployer can automate each press.
+
+Brick-molding recipes are data-driven, appear in JEI, and can be added through KubeJS. The `enableMasonryProgression` option controls whether this chain replaces vanilla brick smelting and block crafting.
 
 ## Datapacks and KubeJS
 
@@ -77,6 +85,11 @@ ServerEvents.recipes(event => {
     'minecraft:string',
     'minecraft:cobweb'
   ).inputCount(1).time(40).id('example:spin_cobweb')
+
+  event.recipes.firstworks.brick_molding(
+    'firstworks:unfired_clay_brick',
+    'minecraft:clay_ball'
+  ).inputCount(1).presses(2).id('example:mold_clay_brick')
 })
 
 FirstworksEvents.barrelProcessStarting(event => {

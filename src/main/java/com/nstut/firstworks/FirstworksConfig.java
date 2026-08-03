@@ -22,6 +22,12 @@ public final class FirstworksConfig {
                     "Changing this option requires a datapack reload or game restart.")
             .define("enableTextileProgression", true);
 
+    public static final ModConfigSpec.BooleanValue ENABLE_MASONRY_PROGRESSION = BUILDER
+            .comment("Require configurable-press unfired brick molding, brick firing, barrel mortar, and mortar-bound brick blocks for masonry.",
+                    "Disable this to retain vanilla brick progression while keeping Firstworks masonry items available.",
+                    "Changing this option requires a datapack reload or game restart.")
+            .define("enableMasonryProgression", true);
+
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     private FirstworksConfig() {}

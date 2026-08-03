@@ -34,12 +34,17 @@ public final class ClientEvents {
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModBlockEntities.BARREL.get(), BarrelBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.LOOM.get(), LoomBlockEntityRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.BRICK_MOLD.get(), BrickMoldBlockEntityRenderer::new);
     }
 
     @SubscribeEvent
     public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
         event.register((stack, tintIndex) -> tintIndex == 1 ? 0xFF6B3F22 : 0xFFFFFFFF,
                 ModItems.TANNIN_SOLUTION_BUCKET.get());
+        event.register((stack, tintIndex) -> tintIndex == 1 ? 0xFF3F76E4 : 0xFFFFFFFF,
+                ModItems.WATER_CLAY_BUCKET.get());
+        event.register((stack, tintIndex) -> tintIndex == 1 ? 0xFF6B3F22 : 0xFFFFFFFF,
+                ModItems.TANNIN_CLAY_BUCKET.get());
         event.register((stack, tintIndex) -> tintIndex == 0
                         ? ColoredFleeceItem.color(stack).getTextureDiffuseColor()
                         : 0xFFFFFFFF,

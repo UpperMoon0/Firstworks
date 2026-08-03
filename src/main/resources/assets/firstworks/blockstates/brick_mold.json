@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "firstworks:block/brick_mold" },
+    "facing=east": { "model": "firstworks:block/brick_mold", "y": 90 },
+    "facing=south": { "model": "firstworks:block/brick_mold", "y": 180 },
+    "facing=west": { "model": "firstworks:block/brick_mold", "y": 270 }
+  }
+}

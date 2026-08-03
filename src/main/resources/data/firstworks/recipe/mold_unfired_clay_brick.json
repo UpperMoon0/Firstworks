@@ -1,0 +1,7 @@
+{
+  "type": "firstworks:brick_molding",
+  "ingredient": { "item": "minecraft:clay_ball" },
+  "input_count": 1,
+  "presses": 2,
+  "result": { "id": "firstworks:unfired_clay_brick", "count": 1 }
+}

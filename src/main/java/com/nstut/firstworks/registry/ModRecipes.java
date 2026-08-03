@@ -2,6 +2,7 @@ package com.nstut.firstworks.registry;
 
 import com.nstut.firstworks.Firstworks;
 import com.nstut.firstworks.content.barrel.BarrelRecipe;
+import com.nstut.firstworks.content.brick_mold.BrickMoldingRecipe;
 import com.nstut.firstworks.content.loom.LoomRecipe;
 import com.nstut.firstworks.content.ScrapingRecipe;
 import com.nstut.firstworks.content.SpinningRecipe;
@@ -27,6 +28,10 @@ public final class ModRecipes {
             "loom_weaving", () -> RecipeType.simple(Firstworks.id("loom_weaving")));
     public static final DeferredHolder<RecipeSerializer<?>, LoomRecipe.Serializer> LOOM_WEAVING_SERIALIZER = SERIALIZERS.register(
             "loom_weaving", LoomRecipe.Serializer::new);
+    public static final DeferredHolder<RecipeType<?>, RecipeType<BrickMoldingRecipe>> BRICK_MOLDING_TYPE = TYPES.register(
+            "brick_molding", () -> RecipeType.simple(Firstworks.id("brick_molding")));
+    public static final DeferredHolder<RecipeSerializer<?>, BrickMoldingRecipe.Serializer> BRICK_MOLDING_SERIALIZER = SERIALIZERS.register(
+            "brick_molding", BrickMoldingRecipe.Serializer::new);
     public static final DeferredHolder<RecipeSerializer<?>, ScrapingRecipe.Serializer> SCRAPING_SERIALIZER = SERIALIZERS.register(
             "scraping", ScrapingRecipe.Serializer::new);
     public static final DeferredHolder<RecipeType<?>, RecipeType<SpinningRecipe>> SPINNING_TYPE = TYPES.register(

@@ -160,6 +160,17 @@ public class BarrelBlock extends BaseEntityBlock {
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
 
+        if (stack.is(ModItems.WATER_CLAY_BUCKET.get())) {
+            if (!level.isClientSide && barrel.addWater(1000)) {
+                if (!player.getAbilities().instabuild) {
+                    stack.shrink(1);
+                    player.getInventory().placeItemBackInInventory(new ItemStack(ModItems.CLAY_BUCKET.get()));
+                }
+                level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
+            }
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        }
+
         if (stack.is(ModItems.TANNIN_SOLUTION_BUCKET.get())) {
             if (!level.isClientSide && barrel.addFluid(new FluidStack(ModFluids.TANNIN_SOLUTION.get(), 1_000))) {
                 if (!player.getAbilities().instabuild) {
@@ -171,9 +182,32 @@ public class BarrelBlock extends BaseEntityBlock {
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
 
+        if (stack.is(ModItems.TANNIN_CLAY_BUCKET.get())) {
+            if (!level.isClientSide && barrel.addFluid(new FluidStack(ModFluids.TANNIN_SOLUTION.get(), 1_000))) {
+                if (!player.getAbilities().instabuild) {
+                    stack.shrink(1);
+                    player.getInventory().placeItemBackInInventory(new ItemStack(ModItems.CLAY_BUCKET.get()));
+                }
+                level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
+            }
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        }
+
         if (stack.is(Items.BUCKET)) {
             if (!level.isClientSide) {
                 ItemStack filledBucket = barrel.drainBucket();
+                if (!filledBucket.isEmpty()) {
+                    if (!player.getAbilities().instabuild) stack.shrink(1);
+                    player.getInventory().placeItemBackInInventory(filledBucket);
+                    level.playSound(null, pos, SoundEvents.BUCKET_FILL, SoundSource.BLOCKS, 1.0F, 1.0F);
+                }
+            }
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        }
+
+        if (stack.is(ModItems.CLAY_BUCKET.get())) {
+            if (!level.isClientSide) {
+                ItemStack filledBucket = barrel.drainClayBucket();
                 if (!filledBucket.isEmpty()) {
                     if (!player.getAbilities().instabuild) stack.shrink(1);
                     player.getInventory().placeItemBackInInventory(filledBucket);

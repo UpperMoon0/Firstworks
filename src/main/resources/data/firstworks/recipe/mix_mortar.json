@@ -1,0 +1,10 @@
+{
+  "type": "firstworks:barrel_processing",
+  "ingredient": { "item": "minecraft:sand" },
+  "input_count": 2,
+  "fluid": "minecraft:water",
+  "fluid_amount": 250,
+  "result": { "id": "firstworks:mortar", "count": 4 },
+  "duration": 1200,
+  "sealed": true
+}

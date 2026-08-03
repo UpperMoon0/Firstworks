@@ -2,10 +2,14 @@ package com.nstut.firstworks.registry;
 
 import com.nstut.firstworks.Firstworks;
 import com.nstut.firstworks.content.barrel.BarrelBlock;
+import com.nstut.firstworks.content.brick_mold.BrickMoldBlock;
 import com.nstut.firstworks.content.loom.LoomBlock;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -17,6 +21,20 @@ public final class ModBlocks {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(BuiltInRegistries.BLOCK, Firstworks.MOD_ID);
     public static final Map<String, DeferredHolder<Block, BarrelBlock>> BARRELS = new LinkedHashMap<>();
     public static final Map<String, DeferredHolder<Block, LoomBlock>> LOOMS = new LinkedHashMap<>();
+
+    public static final DeferredHolder<Block, BrickMoldBlock> BRICK_MOLD = BLOCKS.register("brick_mold",
+            () -> new BrickMoldBlock(Block.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion()));
+
+    public static final DeferredHolder<Block, LiquidBlock> TANNIN_SOLUTION = BLOCKS.register("tannin_solution",
+            () -> new LiquidBlock(ModFluids.TANNIN_SOLUTION.get(), Block.Properties.of()
+                    .mapColor(net.minecraft.world.level.material.MapColor.WATER)
+                    .replaceable()
+                    .noCollission()
+                    .strength(100.0F)
+                    .pushReaction(PushReaction.DESTROY)
+                    .noLootTable()
+                    .liquid()
+                    .sound(SoundType.EMPTY)));
 
     public static final DeferredHolder<Block, BarrelBlock> BARREL = barrel("barrel");
     public static final DeferredHolder<Block, BarrelBlock> SPRUCE_BARREL = barrel("spruce_barrel");

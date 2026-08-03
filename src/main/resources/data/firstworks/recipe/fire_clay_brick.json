@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:campfire_cooking",
+  "category": "misc",
+  "cookingtime": 400,
+  "experience": 0.1,
+  "ingredient": { "item": "firstworks:unfired_clay_brick" },
+  "result": { "id": "minecraft:brick" }
+}
