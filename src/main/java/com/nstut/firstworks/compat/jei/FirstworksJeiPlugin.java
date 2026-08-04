@@ -117,6 +117,16 @@ public final class FirstworksJeiPlugin implements IModPlugin {
                 .toList();
     }
 
+    public static List<ItemStack> treeBarkVariants(Item item, int count) {
+        String[] woodTypes = {
+            "oak", "spruce", "birch", "jungle", "acacia", "dark_oak",
+            "mangrove", "cherry", "bamboo", "crimson", "warped"
+        };
+        return Arrays.stream(woodTypes)
+                .map(type -> com.nstut.firstworks.content.TreeBarkItem.create(item, type, count))
+                .toList();
+    }
+
     private static void addWoolDisplays(List<RecipeHolder<CraftingRecipe>> recipes) {
         for (DyeColor color : DyeColor.values()) {
             Ingredient wool = exactFleece(ModItems.CLEAN_WOOL.get(), color);

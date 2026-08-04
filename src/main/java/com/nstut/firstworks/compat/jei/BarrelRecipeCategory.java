@@ -44,10 +44,13 @@ public final class BarrelRecipeCategory implements IRecipeCategory<BarrelRecipe>
     public void setRecipe(IRecipeLayoutBuilder builder, BarrelRecipe recipe, IFocusGroup focuses) {
         boolean washingFleece = recipe.ingredient().test(new net.minecraft.world.item.ItemStack(ModItems.RAW_FLEECE.get()))
                 && recipe.result().is(ModItems.CLEAN_WOOL.get());
+        boolean isTreeBark = recipe.ingredient().test(new net.minecraft.world.item.ItemStack(ModItems.TREE_BARK.get()));
         IRecipeSlotBuilder inputItem = builder.addSlot(RecipeIngredientRole.INPUT, 4, 5)
                 .setStandardSlotBackground();
         if (washingFleece) {
             inputItem.addItemStacks(FirstworksJeiPlugin.fleeceVariants(ModItems.RAW_FLEECE.get(), recipe.inputCount()));
+        } else if (isTreeBark) {
+            inputItem.addItemStacks(FirstworksJeiPlugin.treeBarkVariants(ModItems.TREE_BARK.get(), recipe.inputCount()));
         } else {
             inputItem.addIngredients(recipe.ingredient());
         }

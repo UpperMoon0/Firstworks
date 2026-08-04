@@ -1,3 +1,9 @@
 {
-  "parent": "firstworks:item/clay_bucket_filled"
+  "parent": "neoforge:item/default",
+  "loader": "neoforge:fluid_container",
+  "fluid": "firstworks:tannin_solution",
+  "textures": {
+    "base": "firstworks:item/clay_bucket",
+    "fluid": "firstworks:item/clay_bucket_fluid_mask"
+  }
 }

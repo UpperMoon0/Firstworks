@@ -1,6 +1,7 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "firstworks:item/tree_bark"
+    "layer0": "firstworks:item/tree_bark_mask",
+    "layer1": "firstworks:item/tree_bark_shade"
   }
 }
