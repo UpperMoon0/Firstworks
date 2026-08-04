@@ -49,6 +49,26 @@ public final class ClientEvents {
                         ? ColoredFleeceItem.color(stack).getTextureDiffuseColor()
                         : 0xFFFFFFFF,
                 ModItems.RAW_FLEECE.get(), ModItems.CLEAN_WOOL.get());
+        event.register((stack, tintIndex) -> tintIndex == 0
+                        ? getWoodTypeColor(com.nstut.firstworks.content.TreeBarkItem.woodType(stack))
+                        : 0xFFFFFFFF,
+                ModItems.TREE_BARK.get());
+    }
+
+    private static int getWoodTypeColor(String woodType) {
+        return switch (woodType) {
+            case "spruce" -> 0xFF604329;
+            case "birch" -> 0xFFD7CBB4;
+            case "jungle" -> 0xFF56431A;
+            case "acacia" -> 0xFF6D6456;
+            case "dark_oak" -> 0xFF392815;
+            case "mangrove" -> 0xFF4F2A1E;
+            case "cherry" -> 0xFFD48E8D;
+            case "bamboo" -> 0xFF647434;
+            case "crimson" -> 0xFF6B293C;
+            case "warped" -> 0xFF3A8E89;
+            default -> 0xFF997345; // oak
+        };
     }
 
     private ClientEvents() {}

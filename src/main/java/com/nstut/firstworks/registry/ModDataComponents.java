@@ -18,6 +18,12 @@ public final class ModDataComponents {
                     .networkSynchronized(DyeColor.STREAM_CODEC)
                     .build());
 
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> WOOD_TYPE =
+            COMPONENTS.register("wood_type", () -> DataComponentType.<String>builder()
+                    .persistent(com.mojang.serialization.Codec.STRING)
+                    .networkSynchronized(net.minecraft.network.codec.ByteBufCodecs.STRING_UTF8)
+                    .build());
+
     public static void register(IEventBus bus) {
         COMPONENTS.register(bus);
     }

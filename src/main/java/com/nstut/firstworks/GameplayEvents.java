@@ -21,6 +21,10 @@ import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.common.ItemAbilities;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.Item;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import java.util.Map;
 import net.neoforged.neoforge.registries.datamaps.builtin.NeoForgeDataMaps;
 
 @EventBusSubscriber(modid = Firstworks.MOD_ID)
@@ -73,9 +77,25 @@ public final class GameplayEvents {
     public static void collectBarkWhenStripping(BlockEvent.BlockToolModificationEvent event) {
         if (event.isSimulated() || event.getItemAbility() != ItemAbilities.AXE_STRIP) return;
         if (!(event.getLevel() instanceof ServerLevel level)) return;
-        if (event.getState().getBlock().builtInRegistryHolder().getData(NeoForgeDataMaps.STRIPPABLES) == null) return;
+        Block block = event.getState().getBlock();
+        if (block.builtInRegistryHolder().getData(NeoForgeDataMaps.STRIPPABLES) == null) return;
+
+        String woodType = getWoodTypeForBlock(block);
         int barkCount = 1 + level.getRandom().nextInt(3);
-        Block.popResource(level, event.getPos(), new ItemStack(ModItems.TREE_BARK.get(), barkCount));
+        ItemStack barkStack = com.nstut.firstworks.content.TreeBarkItem.create(ModItems.TREE_BARK.get(), woodType, barkCount);
+        Block.popResource(level, event.getPos(), barkStack);
+    }
+
+    private static String getWoodTypeForBlock(Block block) {
+        String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
+        String[] woodTypes = {
+            "spruce", "birch", "jungle", "acacia", "dark_oak",
+            "mangrove", "cherry", "bamboo", "crimson", "warped"
+        };
+        for (String type : woodTypes) {
+            if (name.contains(type)) return type;
+        }
+        return "oak";
     }
 
     @SubscribeEvent

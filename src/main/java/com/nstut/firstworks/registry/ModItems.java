@@ -69,6 +69,8 @@ public final class ModItems {
         return items;
     }
 
+
+
     private static Map<String, DeferredHolder<Item, Item>> registerLoomItems() {
         Map<String, DeferredHolder<Item, Item>> items = new LinkedHashMap<>();
         ModBlocks.LOOMS.forEach((name, block) -> items.put(name, ITEMS.register(name,

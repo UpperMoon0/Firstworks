@@ -1,6 +1,6 @@
 {
   "type": "firstworks:barrel_processing",
-  "ingredient": { "item": "firstworks:tree_bark" },
+  "ingredient": { "tag": "firstworks:tree_bark" },
   "input_count": 4,
   "fluid": "minecraft:water",
   "fluid_amount": 1000,
