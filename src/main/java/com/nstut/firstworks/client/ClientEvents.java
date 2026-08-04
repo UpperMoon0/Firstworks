@@ -5,15 +5,18 @@ import com.nstut.firstworks.Firstworks;
 import com.nstut.firstworks.content.ColoredFleeceItem;
 import com.nstut.firstworks.content.TreeBarkItem;
 import com.nstut.firstworks.registry.ModBlockEntities;
+import com.nstut.firstworks.registry.ModFluids;
 import com.nstut.firstworks.registry.ModItems;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.material.Fluids;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
 import java.util.HashMap;
@@ -55,10 +58,21 @@ public final class ClientEvents {
                         ? ColoredFleeceItem.color(stack).getTextureDiffuseColor()
                         : 0xFFFFFFFF,
                 ModItems.RAW_FLEECE.get(), ModItems.CLEAN_WOOL.get());
+
         event.register((stack, tintIndex) -> tintIndex == 0
                         ? getWoodTypeColor(TreeBarkItem.woodType(stack))
                         : 0xFFFFFFFF,
                 ModItems.TREE_BARK.get());
+
+        event.register((stack, tintIndex) -> {
+            if (tintIndex != 1) return 0xFFFFFFFF;
+            return IClientFluidTypeExtensions.of(Fluids.WATER).getTintColor();
+        }, ModItems.WATER_CLAY_BUCKET.get());
+
+        event.register((stack, tintIndex) -> {
+            if (tintIndex != 1) return 0xFFFFFFFF;
+            return IClientFluidTypeExtensions.of(ModFluids.TANNIN_SOLUTION.get()).getTintColor();
+        }, ModItems.TANNIN_CLAY_BUCKET.get());
     }
 
     private static int getWoodTypeColor(String woodType) {
