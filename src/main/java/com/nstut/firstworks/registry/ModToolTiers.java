@@ -10,8 +10,8 @@ import net.minecraft.world.level.block.Block;
 import java.util.function.Supplier;
 
 public enum ModToolTiers implements Tier {
-    BONE(BlockTags.INCORRECT_FOR_STONE_TOOL, 160, 3.0F, 0.25F, 8, () -> Ingredient.of(Items.BONE)),
-    FLINT(BlockTags.INCORRECT_FOR_STONE_TOOL, 72, 5.5F, 1.25F, 5, () -> Ingredient.of(Items.FLINT));
+    BONE(BlockTags.INCORRECT_FOR_STONE_TOOL, 250, 4.25F, 1.25F, 10, () -> Ingredient.of(Items.BONE)),
+    FLINT(BlockTags.INCORRECT_FOR_STONE_TOOL, 150, 5.5F, 2.0F, 6, () -> Ingredient.of(Items.FLINT));
 
     private final TagKey<Block> incorrectBlocksForDrops;
     private final int uses;
