@@ -8,7 +8,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
-import net.minecraft.world.level.block.Block;
 
 import java.io.InputStream;
 import java.util.*;
@@ -20,8 +19,8 @@ public final class TreeBarkTextureManager implements ResourceManagerReloadListen
     private static final ResourceLocation MASK_LOC = Firstworks.id("textures/item/tree_bark_mask.png");
     private static final ResourceLocation SHADE_LOC = Firstworks.id("textures/item/tree_bark_shade.png");
 
-    private static final Map<String, ResourceLocation> TEXTURE_LOCATIONS = new HashMap<>();
-    private static final Map<String, List<QuadVertex>> MESH_CACHE = new HashMap<>();
+    private final Map<String, ResourceLocation> TEXTURE_LOCATIONS = new HashMap<>();
+    private final Map<String, List<QuadVertex>> MESH_CACHE = new HashMap<>();
 
     public record QuadVertex(float x, float y, float z, float u, float v, float nx, float ny, float nz) {}
 
@@ -48,7 +47,7 @@ public final class TreeBarkTextureManager implements ResourceManagerReloadListen
             ResourceLocation logTexLoc = getLogTextureLocation(woodType);
             NativeImage logTex = loadNativeImage(resourceManager, logTexLoc);
             if (logTex == null && !"oak".equals(woodType)) {
-                continue; // Skip unsupported wood types if texture isn't present
+                continue;
             }
             if (logTex == null) {
                 logTex = new NativeImage(16, 16, true);
@@ -72,23 +71,25 @@ public final class TreeBarkTextureManager implements ResourceManagerReloadListen
     }
 
     public static ResourceLocation getTextureLocation(String woodType) {
-        return TEXTURE_LOCATIONS.getOrDefault(woodType, TEXTURE_LOCATIONS.getOrDefault("oak", Firstworks.id("dynamic_bark/oak")));
+        return INSTANCE.TEXTURE_LOCATIONS.getOrDefault(woodType, INSTANCE.TEXTURE_LOCATIONS.getOrDefault("oak", Firstworks.id("dynamic_bark/oak")));
     }
 
     public static List<QuadVertex> getMesh(String woodType) {
-        return MESH_CACHE.getOrDefault(woodType, MESH_CACHE.getOrDefault("oak", Collections.emptyList()));
+        return INSTANCE.MESH_CACHE.getOrDefault(woodType, INSTANCE.MESH_CACHE.getOrDefault("oak", Collections.emptyList()));
     }
 
     private static Set<String> discoverWoodTypes() {
-        Set<String> set = new LinkedHashSet<>(List.of(
+        Set<String> set = new LinkedHashSet<>(Arrays.asList(
                 "oak", "spruce", "birch", "jungle", "acacia", "dark_oak",
                 "mangrove", "cherry", "bamboo", "crimson", "warped"
         ));
 
-        for (Block block : BuiltInRegistries.BLOCK) {
-            String path = BuiltInRegistries.BLOCK.getKey(block).getPath();
+        for (ResourceLocation loc : BuiltInRegistries.BLOCK.keySet()) {
+            String path = loc.getPath();
             if (path.endsWith("_log") || path.endsWith("_stem")) {
-                String woodType = path.substring(0, path.lastIndexOf('_'));
+                String woodType = loc.getNamespace().equals("minecraft")
+                        ? path.substring(0, path.lastIndexOf('_'))
+                        : loc.getNamespace() + ":" + path.substring(0, path.lastIndexOf('_'));
                 set.add(woodType);
             }
         }
@@ -144,10 +145,29 @@ public final class TreeBarkTextureManager implements ResourceManagerReloadListen
                 int logG = (logRgb >> 8) & 0xFF;
                 int logB = (logRgb >> 16) & 0xFF;
 
-                int finalA = (logA * maskAlpha) / 255;
+                int shadeRgb = shade.getPixelRGBA(x, y);
+                int shadeA = (shadeRgb >>> 24) & 0xFF;
+                int shadeR = shadeRgb & 0xFF;
+                int shadeG = (shadeRgb >> 8) & 0xFF;
+                int shadeB = (shadeRgb >> 16) & 0xFF;
 
-                // Use log texture's natural vivid colors directly, cut out by mask stencil
-                int finalPixel = (finalA << 24) | (logB << 16) | (logG << 8) | logR;
+                int finalA = (logA * maskAlpha) / 255;
+                int finalR = logR;
+                int finalG = logG;
+                int finalB = logB;
+
+                if (shadeA > 0) {
+                    int shadedR = (logR * shadeR) / 255;
+                    int shadedG = (logG * shadeG) / 255;
+                    int shadedB = (logB * shadeB) / 255;
+
+                    float factor = (shadeA / 255.0f) * 0.45f;
+                    finalR = (int) (logR * (1.0f - factor) + shadedR * factor);
+                    finalG = (int) (logG * (1.0f - factor) + shadedG * factor);
+                    finalB = (int) (logB * (1.0f - factor) + shadedB * factor);
+                }
+
+                int finalPixel = (finalA << 24) | (finalB << 16) | (finalG << 8) | finalR;
                 result.setPixelRGBA(x, y, finalPixel);
             }
         }
@@ -161,23 +181,24 @@ public final class TreeBarkTextureManager implements ResourceManagerReloadListen
         int h = img.getHeight();
         float pw = 1.0f / w;
         float ph = 1.0f / h;
-        float zFront = 0.03125f;
-        float zBack = -0.03125f;
+
+        float zFront = 0.53125f;
+        float zBack = 0.46875f;
 
         // Front Face (Z = zFront, Normal: 0, 0, 1)
         addQuad(vertices,
-                -0.5f, -0.5f, zFront, 0, 1,
-                -0.5f,  0.5f, zFront, 0, 0,
-                 0.5f,  0.5f, zFront, 1, 0,
-                 0.5f, -0.5f, zFront, 1, 1,
+                0, 0, zFront, 0, 1,
+                0, 1, zFront, 0, 0,
+                1, 1, zFront, 1, 0,
+                1, 0, zFront, 1, 1,
                 0, 0, 1);
 
         // Back Face (Z = zBack, Normal: 0, 0, -1)
         addQuad(vertices,
-                 0.5f, -0.5f, zBack, 1, 1,
-                 0.5f,  0.5f, zBack, 1, 0,
-                -0.5f,  0.5f, zBack, 0, 0,
-                -0.5f, -0.5f, zBack, 0, 1,
+                1, 0, zBack, 1, 1,
+                1, 1, zBack, 1, 0,
+                0, 1, zBack, 0, 0,
+                0, 0, zBack, 0, 1,
                 0, 0, -1);
 
         // Side Edges
@@ -186,10 +207,10 @@ public final class TreeBarkTextureManager implements ResourceManagerReloadListen
                 int alpha = (img.getPixelRGBA(x, y) >>> 24) & 0xFF;
                 if (alpha < 10) continue;
 
-                float x1 = x * pw - 0.5f;
-                float x2 = (x + 1) * pw - 0.5f;
-                float y1 = 0.5f - y * ph;
-                float y2 = 0.5f - (y + 1) * ph;
+                float x1 = x * pw;
+                float x2 = (x + 1) * pw;
+                float y1 = 1.0f - y * ph;
+                float y2 = 1.0f - (y + 1) * ph;
 
                 float u = (x + 0.5f) * pw;
                 float v = (y + 0.5f) * ph;

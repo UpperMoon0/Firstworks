@@ -10,7 +10,9 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 import java.util.List;
 
@@ -30,14 +32,20 @@ public final class TreeBarkItemRenderer extends BlockEntityWithoutLevelRenderer 
 
         if (mesh.isEmpty()) return;
 
-        VertexConsumer consumer = bufferSource.getBuffer(RenderType.itemEntityTranslucentCull(textureLoc));
+        boolean isGui = (displayContext == ItemDisplayContext.GUI);
+        VertexConsumer consumer = bufferSource.getBuffer(RenderType.entityCutoutNoCull(textureLoc));
+
         poseStack.pushPose();
-        org.joml.Matrix4f matrix = poseStack.last().pose();
-        org.joml.Matrix3f normalMatrix = poseStack.last().normal();
 
-        int light = (displayContext == ItemDisplayContext.GUI) ? 0xF000F0 : combinedLight;
+        if (!isGui) {
+            poseStack.translate(-0.5f, -0.5f, -0.5f);
+        }
 
-        org.joml.Vector3f norm = new org.joml.Vector3f();
+        Matrix4f matrix = poseStack.last().pose();
+        Matrix3f normalMatrix = poseStack.last().normal();
+        int light = isGui ? 0xF000F0 : combinedLight;
+
+        Vector3f norm = new Vector3f();
         for (TreeBarkTextureManager.QuadVertex v : mesh) {
             norm.set(v.nx(), v.ny(), v.nz()).mul(normalMatrix);
             if (norm.lengthSquared() > 0) norm.normalize();
