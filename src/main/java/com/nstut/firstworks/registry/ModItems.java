@@ -7,10 +7,15 @@ import com.nstut.firstworks.content.ColoredFleeceItem;
 import com.nstut.firstworks.content.ClayBucketItem;
 import com.nstut.firstworks.content.HandSpindleItem;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.FlintAndSteelItem;
+import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.PickaxeItem;
+import net.minecraft.world.item.ShovelItem;
+import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -57,6 +62,31 @@ public final class ModItems {
     public static final DeferredHolder<Item, Item> TANNIN_SOLUTION_BUCKET = ITEMS.register("tannin_solution_bucket",
             () -> new TanninSolutionBucketItem(ModFluids.TANNIN_SOLUTION.get(),
                     new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
+
+    // Bone tools
+    public static final DeferredHolder<Item, Item> BONE_PICKAXE = ITEMS.register("bone_pickaxe",
+            () -> new PickaxeItem(ModToolTiers.BONE, new Item.Properties().attributes(PickaxeItem.createAttributes(ModToolTiers.BONE, 1.0F, -2.8F))));
+    public static final DeferredHolder<Item, Item> BONE_AXE = ITEMS.register("bone_axe",
+            () -> new AxeItem(ModToolTiers.BONE, new Item.Properties().attributes(AxeItem.createAttributes(ModToolTiers.BONE, 7.0F, -3.2F))));
+    public static final DeferredHolder<Item, Item> BONE_SHOVEL = ITEMS.register("bone_shovel",
+            () -> new ShovelItem(ModToolTiers.BONE, new Item.Properties().attributes(ShovelItem.createAttributes(ModToolTiers.BONE, 1.5F, -3.0F))));
+    public static final DeferredHolder<Item, Item> BONE_HOE = ITEMS.register("bone_hoe",
+            () -> new HoeItem(ModToolTiers.BONE, new Item.Properties().attributes(HoeItem.createAttributes(ModToolTiers.BONE, -1.0F, -2.0F))));
+    public static final DeferredHolder<Item, Item> BONE_SWORD = ITEMS.register("bone_sword",
+            () -> new SwordItem(ModToolTiers.BONE, new Item.Properties().attributes(SwordItem.createAttributes(ModToolTiers.BONE, 3, -2.4F))));
+
+    // Flint tools
+    public static final DeferredHolder<Item, Item> FLINT_PICKAXE = ITEMS.register("flint_pickaxe",
+            () -> new PickaxeItem(ModToolTiers.FLINT, new Item.Properties().attributes(PickaxeItem.createAttributes(ModToolTiers.FLINT, 1.0F, -2.8F))));
+    public static final DeferredHolder<Item, Item> FLINT_AXE = ITEMS.register("flint_axe",
+            () -> new AxeItem(ModToolTiers.FLINT, new Item.Properties().attributes(AxeItem.createAttributes(ModToolTiers.FLINT, 7.0F, -3.2F))));
+    public static final DeferredHolder<Item, Item> FLINT_SHOVEL = ITEMS.register("flint_shovel",
+            () -> new ShovelItem(ModToolTiers.FLINT, new Item.Properties().attributes(ShovelItem.createAttributes(ModToolTiers.FLINT, 1.5F, -3.0F))));
+    public static final DeferredHolder<Item, Item> FLINT_HOE = ITEMS.register("flint_hoe",
+            () -> new HoeItem(ModToolTiers.FLINT, new Item.Properties().attributes(HoeItem.createAttributes(ModToolTiers.FLINT, -1.0F, -2.0F))));
+    public static final DeferredHolder<Item, Item> FLINT_SWORD = ITEMS.register("flint_sword",
+            () -> new SwordItem(ModToolTiers.FLINT, new Item.Properties().attributes(SwordItem.createAttributes(ModToolTiers.FLINT, 3, -2.4F))));
+
     public static final Map<String, DeferredHolder<Item, Item>> BARREL_ITEMS = registerBarrelItems();
     public static final DeferredHolder<Item, Item> BARREL = BARREL_ITEMS.get("barrel");
     public static final Map<String, DeferredHolder<Item, Item>> LOOM_ITEMS = registerLoomItems();

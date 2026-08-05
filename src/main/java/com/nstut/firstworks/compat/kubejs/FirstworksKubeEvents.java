@@ -15,4 +15,7 @@ public interface FirstworksKubeEvents {
     EventHandler SPINDLE_SPINNING_STARTING = GROUP.server("spindleSpinningStarting", () -> SpindleSpinningKubeEvent.class)
             .hasResult();
     EventHandler SPINDLE_SPINNING_COMPLETED = GROUP.server("spindleSpinningCompleted", () -> SpindleSpinningKubeEvent.class);
+    EventHandler BRICK_MOLDING_STARTING = GROUP.server("brickMoldingStarting", () -> BrickMoldingKubeEvent.class)
+            .hasResult();
+    EventHandler BRICK_MOLDING_COMPLETED = GROUP.server("brickMoldingCompleted", () -> BrickMoldingKubeEvent.class);
 }

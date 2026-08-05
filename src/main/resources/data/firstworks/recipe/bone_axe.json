@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "BB ",
+    "BST",
+    " S "
+  ],
+  "key": {
+    "B": { "item": "minecraft:bone" },
+    "T": { "tag": "firstworks:primitive_bindings" },
+    "S": { "item": "minecraft:stick" }
+  },
+  "result": { "id": "firstworks:bone_axe" }
+}

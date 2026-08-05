@@ -20,7 +20,7 @@ Fill a Barrel with buckets or bottles, add a material, and seal it to begin a va
 
 ## Fibre, cordage, and stronger tools
 
-Gather Plant Fibre from grass and ferns, twist emergency Crude Cordage, and ret better fibres in a Barrel. Hold a durable Hand Spindle with fibre in your offhand to spin it into Twine, complete with a rotating three-dimensional spindle, working sounds, and particles. Twine can be woven into Cloth or combined into Rope. Gathering by hand has a modest chance to produce fibre, while using a sword guarantees it. Wooden and stone tools need a simple binding, while iron, gold, and diamond tools call for proper Rope.
+Gather Plant Fibre from grass and ferns, twist emergency Crude Cordage, and ret better fibres in a Barrel. Hold a durable Hand Spindle with fibre in your offhand to spin it into Twine, complete with a rotating three-dimensional spindle, working sounds, and particles. Twine can be woven into Cloth or combined into Rope. Gathering by hand has a modest chance to produce fibre, while using a sword guarantees it. Primitive Bone and Flint tools offer early options before metalworking. Wooden, stone, bone, and flint tools need a simple binding, while iron, gold, and diamond tools call for proper Rope.
 
 Flint, Plant Fibre, and either primitive binding also make a single-use Fire Starter. It can ignite or relight the same targets as flint and steel, but is consumed after one successful use.
 

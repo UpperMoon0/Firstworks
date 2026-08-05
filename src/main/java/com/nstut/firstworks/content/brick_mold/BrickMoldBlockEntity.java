@@ -1,5 +1,6 @@
 package com.nstut.firstworks.content.brick_mold;
 
+import com.nstut.firstworks.compat.OptionalIntegrations;
 import com.nstut.firstworks.registry.ModBlockEntities;
 import com.nstut.firstworks.registry.ModRecipes;
 import net.minecraft.core.BlockPos;
@@ -7,6 +8,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -62,13 +64,26 @@ public class BrickMoldBlockEntity extends BlockEntity {
         Optional<RecipeHolder<BrickMoldingRecipe>> holder = findRecipe(input);
         if (holder.isEmpty() || input.getCount() < holder.get().value().inputCount()) return false;
 
-        BrickMoldingRecipe recipe = holder.get().value();
+        RecipeHolder<BrickMoldingRecipe> recipeHolder = holder.get();
+        BrickMoldingRecipe recipe = recipeHolder.value();
+        ItemStack consumedInput = input.copyWithCount(recipe.inputCount());
+
+        if (pressProgress == 0 && level instanceof ServerLevel serverLevel
+                && OptionalIntegrations.fireBrickMoldingStarting(serverLevel, this, recipeHolder.id(), recipe,
+                        consumedInput, recipe.result())) {
+            return false;
+        }
+
         pressProgress++;
         pressAnimationTicks = PRESS_ANIMATION_TICKS;
         if (pressProgress >= Math.max(1, recipe.presses())) {
             input.shrink(recipe.inputCount());
             if (input.isEmpty()) input = ItemStack.EMPTY;
             output = recipe.result().copy();
+            if (level instanceof ServerLevel serverLevel) {
+                OptionalIntegrations.fireBrickMoldingCompleted(serverLevel, this, recipeHolder.id(), recipe,
+                        consumedInput, recipe.result());
+            }
         }
         setChangedAndSync();
         return true;

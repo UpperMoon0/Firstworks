@@ -19,7 +19,7 @@ Opening a working Barrel cancels its current progress without consuming or eject
 
 ## Built-in cordage and leatherworking
 
-Grass and ferns have a 30% chance to provide Plant Fibre when gathered normally; using any sword guarantees the fibre. Hand-twist it into Crude Cordage for wooden and stone tools, then ret fibre in a water-filled Barrel. To spin it, hold the durable Hand Spindle in your main hand, place two Retted Fibre in your offhand, and hold use until they become two Twine. Releasing early cancels without consuming the fibre. Twine can then be woven into Cloth or combined into Rope. Vanilla iron, gold, and diamond tools require Rope by default; netherite upgrades retain the bound diamond tool beneath them.
+Grass and ferns have a 30% chance to provide Plant Fibre when gathered normally; using any sword guarantees the fibre. Hand-twist it into Crude Cordage for primitive tools, then ret fibre in a water-filled Barrel. Craft early Bone and Flint tools (pickaxe, axe, shovel, hoe, sword) as accessible alternatives before metalworking. To spin fibre, hold the durable Hand Spindle in your main hand, place two Retted Fibre in your offhand, and hold use until they become two Twine. Releasing early cancels without consuming the fibre. Twine can then be woven into Cloth or combined into Rope. Wooden, stone, bone, and flint tools require primitive bindings; vanilla iron, gold, and diamond tools require Rope by default; netherite upgrades retain the bound diamond tool beneath them.
 
 Combine flint, Plant Fibre, and Crude Cordage or Rope into a Fire Starter. It has the same ignition targets as flint and steel, including extinguished campfires, but breaks after one successful use.
 
@@ -114,6 +114,14 @@ FirstworksEvents.spindleSpinningStarting(event => {
 
 FirstworksEvents.spindleSpinningCompleted(event => {
   console.info(`${event.player.name.string} spun ${event.result}`)
+})
+
+FirstworksEvents.brickMoldingStarting(event => {
+  // event.cancel() prevents this molding attempt.
+})
+
+FirstworksEvents.brickMoldingCompleted(event => {
+  console.info(`Molded ${event.result} at ${event.pos}`)
 })
 ```
 

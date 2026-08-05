@@ -6,6 +6,8 @@ import com.nstut.firstworks.content.barrel.BarrelBlockEntity;
 import com.nstut.firstworks.content.loom.LoomBlockEntity;
 import com.nstut.firstworks.content.loom.LoomRecipe;
 import com.nstut.firstworks.content.SpinningRecipe;
+import com.nstut.firstworks.content.brick_mold.BrickMoldBlockEntity;
+import com.nstut.firstworks.content.brick_mold.BrickMoldingRecipe;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -51,6 +53,18 @@ public final class OptionalIntegrations {
             ResourceLocation recipeId, SpinningRecipe recipe, ItemStack input, ItemStack result) {
         if (KUBE_JS_LOADED) {
             KubeJSCompat.fireSpindleCompleted(level, player, recipeId, recipe, input, result);
+        }
+    }
+
+    public static boolean fireBrickMoldingStarting(ServerLevel level, BrickMoldBlockEntity mold,
+            ResourceLocation recipeId, BrickMoldingRecipe recipe, ItemStack input, ItemStack result) {
+        return KUBE_JS_LOADED && KubeJSCompat.fireBrickMoldingStarting(level, mold, recipeId, recipe, input, result);
+    }
+
+    public static void fireBrickMoldingCompleted(ServerLevel level, BrickMoldBlockEntity mold,
+            ResourceLocation recipeId, BrickMoldingRecipe recipe, ItemStack input, ItemStack result) {
+        if (KUBE_JS_LOADED) {
+            KubeJSCompat.fireBrickMoldingCompleted(level, mold, recipeId, recipe, input, result);
         }
     }
 
