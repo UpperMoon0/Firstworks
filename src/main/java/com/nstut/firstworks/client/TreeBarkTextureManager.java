@@ -57,7 +57,7 @@ public final class TreeBarkTextureManager implements ResourceManagerReloadListen
             NativeImage barkImage = processBark(logTex, mask, shade);
             logTex.close();
 
-            ResourceLocation dynLoc = Firstworks.id("dynamic_bark/" + woodType);
+            ResourceLocation dynLoc = Firstworks.id("dynamic_bark/" + woodType.replace(':', '/'));
             Minecraft.getInstance().getTextureManager().register(dynLoc, new DynamicTexture(barkImage));
             TEXTURE_LOCATIONS.put(woodType, dynLoc);
 
