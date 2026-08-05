@@ -37,11 +37,15 @@ public final class TreeBarkItemRenderer extends BlockEntityWithoutLevelRenderer 
 
         poseStack.pushPose();
 
-        if (!isGui) {
-            poseStack.translate(-0.5f, -0.5f, -0.5f);
-        }
+        // ItemRenderer shifts item-model coordinates from [0, 1] to the origin
+        // before invoking a custom renderer. This mesh is already centered on
+        // the origin, so undo that shift for every display context.
+        poseStack.translate(0.5f, 0.5f, 0.5f);
 
         Matrix4f matrix = poseStack.last().pose();
+        if (displayContext == ItemDisplayContext.GROUND || displayContext == ItemDisplayContext.GUI) {
+            com.nstut.firstworks.Firstworks.LOGGER.info("[Firstworks Debug] Matrix trans=({}, {}, {})", matrix.m30(), matrix.m31(), matrix.m32());
+        }
         Matrix3f normalMatrix = poseStack.last().normal();
         int light = isGui ? 0xF000F0 : combinedLight;
 

@@ -42,11 +42,13 @@ public final class TreeBarkTextureManager implements ResourceManagerReloadListen
         }
 
         Set<String> woodTypes = discoverWoodTypes();
+        System.out.println("[Firstworks Log] Discovering wood types for Tree Bark... Found " + woodTypes.size() + " types: " + woodTypes);
 
         for (String woodType : woodTypes) {
             ResourceLocation logTexLoc = getLogTextureLocation(woodType);
             NativeImage logTex = loadNativeImage(resourceManager, logTexLoc);
             if (logTex == null && !"oak".equals(woodType)) {
+                System.out.println("[Firstworks Log] Skip unsupported wood type: " + woodType + " (texture missing at " + logTexLoc + ")");
                 continue;
             }
             if (logTex == null) {
@@ -61,13 +63,13 @@ public final class TreeBarkTextureManager implements ResourceManagerReloadListen
             Minecraft.getInstance().getTextureManager().register(dynLoc, new DynamicTexture(barkImage));
             TEXTURE_LOCATIONS.put(woodType, dynLoc);
 
-            List<QuadVertex> mesh = buildMesh(barkImage);
+            List<QuadVertex> mesh = buildMesh(woodType, barkImage);
             MESH_CACHE.put(woodType, mesh);
         }
 
         mask.close();
         shade.close();
-        System.out.println("[Firstworks] Dynamically generated tree bark textures for " + TEXTURE_LOCATIONS.size() + " wood types.");
+        System.out.println("[Firstworks Log] Dynamically generated tree bark textures for " + TEXTURE_LOCATIONS.size() + " wood types.");
     }
 
     public static ResourceLocation getTextureLocation(String woodType) {
@@ -175,87 +177,106 @@ public final class TreeBarkTextureManager implements ResourceManagerReloadListen
         return result;
     }
 
-    private static List<QuadVertex> buildMesh(NativeImage img) {
+    private static List<QuadVertex> buildMesh(String woodType, NativeImage img) {
         List<QuadVertex> vertices = new ArrayList<>();
         int w = img.getWidth();
         int h = img.getHeight();
         float pw = 1.0f / w;
         float ph = 1.0f / h;
 
-        float zFront = 0.53125f;
-        float zBack = 0.46875f;
+        float cx = 0.5f;
+        float cy = 0.5f;
 
-        // Front Face (Z = zFront, Normal: 0, 0, 1)
-        addQuad(vertices,
-                0, 0, zFront, 0, 1,
-                0, 1, zFront, 0, 0,
-                1, 1, zFront, 1, 0,
-                1, 0, zFront, 1, 1,
-                0, 0, 1);
+        float zFront = 0.03125f;
+        float zBack = -0.03125f;
 
-        // Back Face (Z = zBack, Normal: 0, 0, -1)
-        addQuad(vertices,
-                1, 0, zBack, 1, 1,
-                1, 1, zBack, 1, 0,
-                0, 1, zBack, 0, 0,
-                0, 0, zBack, 0, 1,
-                0, 0, -1);
-
-        // Side Edges
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
                 int alpha = (img.getPixelRGBA(x, y) >>> 24) & 0xFF;
                 if (alpha < 10) continue;
 
-                float x1 = x * pw;
-                float x2 = (x + 1) * pw;
-                float y1 = 1.0f - y * ph;
-                float y2 = 1.0f - (y + 1) * ph;
+                float x1 = x * pw - cx;
+                float x2 = (x + 1) * pw - cx;
+                float y1 = 0.5f - y * ph;
+                float y2 = 0.5f - (y + 1) * ph;
 
-                float u = (x + 0.5f) * pw;
-                float v = (y + 0.5f) * ph;
+                float u1 = x * pw;
+                float u2 = (x + 1) * pw;
+                float v1 = y * ph;
+                float v2 = (y + 1) * ph;
+
+                // Front Face (Z = zFront, Normal: 0, 0, 1)
+                addQuad(vertices,
+                        x1, y2, zFront, u1, v2,
+                        x1, y1, zFront, u1, v1,
+                        x2, y1, zFront, u2, v1,
+                        x2, y2, zFront, u2, v2,
+                        0, 0, 1);
+
+                // Back Face (Z = zBack, Normal: 0, 0, -1)
+                addQuad(vertices,
+                        x2, y2, zBack, u2, v2,
+                        x2, y1, zBack, u2, v1,
+                        x1, y1, zBack, u1, v1,
+                        x1, y2, zBack, u1, v2,
+                        0, 0, -1);
+
+                float edgeU = (x + 0.5f) * pw;
+                float edgeV = (y + 0.5f) * ph;
 
                 // Top edge
                 if (y == 0 || ((img.getPixelRGBA(x, y - 1) >>> 24) & 0xFF) < 10) {
                     addQuad(vertices,
-                            x1, y1, zBack, u, v,
-                            x1, y1, zFront, u, v,
-                            x2, y1, zFront, u, v,
-                            x2, y1, zBack, u, v,
+                            x1, y1, zBack, edgeU, edgeV,
+                            x1, y1, zFront, edgeU, edgeV,
+                            x2, y1, zFront, edgeU, edgeV,
+                            x2, y1, zBack, edgeU, edgeV,
                             0, 1, 0);
                 }
 
                 // Bottom edge
                 if (y == h - 1 || ((img.getPixelRGBA(x, y + 1) >>> 24) & 0xFF) < 10) {
                     addQuad(vertices,
-                            x2, y2, zBack, u, v,
-                            x2, y2, zFront, u, v,
-                            x1, y2, zFront, u, v,
-                            x1, y2, zBack, u, v,
+                            x2, y2, zBack, edgeU, edgeV,
+                            x2, y2, zFront, edgeU, edgeV,
+                            x1, y2, zFront, edgeU, edgeV,
+                            x1, y2, zBack, edgeU, edgeV,
                             0, -1, 0);
                 }
 
                 // Left edge
                 if (x == 0 || ((img.getPixelRGBA(x - 1, y) >>> 24) & 0xFF) < 10) {
                     addQuad(vertices,
-                            x1, y2, zBack, u, v,
-                            x1, y2, zFront, u, v,
-                            x1, y1, zFront, u, v,
-                            x1, y1, zBack, u, v,
+                            x1, y2, zBack, edgeU, edgeV,
+                            x1, y2, zFront, edgeU, edgeV,
+                            x1, y1, zFront, edgeU, edgeV,
+                            x1, y1, zBack, edgeU, edgeV,
                             -1, 0, 0);
                 }
 
                 // Right edge
                 if (x == w - 1 || ((img.getPixelRGBA(x + 1, y) >>> 24) & 0xFF) < 10) {
                     addQuad(vertices,
-                            x2, y1, zBack, u, v,
-                            x2, y1, zFront, u, v,
-                            x2, y2, zFront, u, v,
-                            x2, y2, zBack, u, v,
+                            x2, y1, zBack, edgeU, edgeV,
+                            x2, y1, zFront, edgeU, edgeV,
+                            x2, y2, zFront, edgeU, edgeV,
+                            x2, y2, zBack, edgeU, edgeV,
                             1, 0, 0);
                 }
             }
         }
+
+        float minVx = Float.MAX_VALUE, maxVx = -Float.MAX_VALUE;
+        float minVy = Float.MAX_VALUE, maxVy = -Float.MAX_VALUE;
+        for (QuadVertex v : vertices) {
+            if (v.x() < minVx) minVx = v.x();
+            if (v.x() > maxVx) maxVx = v.x();
+            if (v.y() < minVy) minVy = v.y();
+            if (v.y() > maxVy) maxVy = v.y();
+        }
+
+        Firstworks.LOGGER.info("[Firstworks Log] Wood={} | Mesh X range=[{} .. {}], Y range=[{} .. {}]",
+                woodType, minVx, maxVx, minVy, maxVy);
 
         return vertices;
     }
