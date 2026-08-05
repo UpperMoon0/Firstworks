@@ -43,9 +43,6 @@ public final class TreeBarkItemRenderer extends BlockEntityWithoutLevelRenderer 
         poseStack.translate(0.5f, 0.5f, 0.5f);
 
         Matrix4f matrix = poseStack.last().pose();
-        if (displayContext == ItemDisplayContext.GROUND || displayContext == ItemDisplayContext.GUI) {
-            com.nstut.firstworks.Firstworks.LOGGER.info("[Firstworks Debug] Matrix trans=({}, {}, {})", matrix.m30(), matrix.m31(), matrix.m32());
-        }
         Matrix3f normalMatrix = poseStack.last().normal();
         int light = isGui ? 0xF000F0 : combinedLight;
 

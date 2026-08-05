@@ -42,13 +42,11 @@ public final class TreeBarkTextureManager implements ResourceManagerReloadListen
         }
 
         Set<String> woodTypes = discoverWoodTypes();
-        System.out.println("[Firstworks Log] Discovering wood types for Tree Bark... Found " + woodTypes.size() + " types: " + woodTypes);
 
         for (String woodType : woodTypes) {
             ResourceLocation logTexLoc = getLogTextureLocation(woodType);
             NativeImage logTex = loadNativeImage(resourceManager, logTexLoc);
             if (logTex == null && !"oak".equals(woodType)) {
-                System.out.println("[Firstworks Log] Skip unsupported wood type: " + woodType + " (texture missing at " + logTexLoc + ")");
                 continue;
             }
             if (logTex == null) {
@@ -69,7 +67,7 @@ public final class TreeBarkTextureManager implements ResourceManagerReloadListen
 
         mask.close();
         shade.close();
-        System.out.println("[Firstworks Log] Dynamically generated tree bark textures for " + TEXTURE_LOCATIONS.size() + " wood types.");
+        Firstworks.LOGGER.info("Dynamically generated tree bark textures for {} wood types.", TEXTURE_LOCATIONS.size());
     }
 
     public static ResourceLocation getTextureLocation(String woodType) {
@@ -265,18 +263,6 @@ public final class TreeBarkTextureManager implements ResourceManagerReloadListen
                 }
             }
         }
-
-        float minVx = Float.MAX_VALUE, maxVx = -Float.MAX_VALUE;
-        float minVy = Float.MAX_VALUE, maxVy = -Float.MAX_VALUE;
-        for (QuadVertex v : vertices) {
-            if (v.x() < minVx) minVx = v.x();
-            if (v.x() > maxVx) maxVx = v.x();
-            if (v.y() < minVy) minVy = v.y();
-            if (v.y() > maxVy) maxVy = v.y();
-        }
-
-        Firstworks.LOGGER.info("[Firstworks Log] Wood={} | Mesh X range=[{} .. {}], Y range=[{} .. {}]",
-                woodType, minVx, maxVx, minVy, maxVy);
 
         return vertices;
     }
