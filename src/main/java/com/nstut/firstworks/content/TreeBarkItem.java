@@ -20,19 +20,38 @@ public final class TreeBarkItem extends Item {
 
     public static ItemStack create(Item item, String woodType, int count) {
         ItemStack stack = new ItemStack(item, count);
-        if (!"oak".equals(woodType)) {
-            stack.set(ModDataComponents.WOOD_TYPE.get(), woodType);
-        }
+        stack.set(ModDataComponents.WOOD_TYPE.get(), woodType);
         return stack;
     }
 
     @Override
     public Component getName(ItemStack stack) {
         String type = woodType(stack);
-        if ("oak".equals(type)) return super.getName(stack);
-        String translationKey = "wood_type.firstworks." + type;
-        Component typeName = Component.translatable(translationKey);
+        Component typeName = Component.translatableWithFallback("wood_type.firstworks." + type, formatWoodTypeName(type));
         return Component.translatable("item.firstworks.tree_bark_named", typeName);
+    }
+
+    public static String formatWoodTypeName(String woodType) {
+        if (woodType == null || woodType.isEmpty()) return "Oak";
+        String path = woodType.contains(":") ? woodType.split(":", 2)[1] : woodType;
+        String[] words = path.split("_");
+        StringBuilder sb = new StringBuilder();
+        for (String word : words) {
+            if (word.isEmpty()) continue;
+            if (!sb.isEmpty()) sb.append(" ");
+            sb.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1).toLowerCase());
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public void initializeClient(java.util.function.Consumer<net.neoforged.neoforge.client.extensions.common.IClientItemExtensions> consumer) {
+        consumer.accept(new net.neoforged.neoforge.client.extensions.common.IClientItemExtensions() {
+            @Override
+            public net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                return com.nstut.firstworks.client.TreeBarkItemRenderer.INSTANCE;
+            }
+        });
     }
 
     @Override

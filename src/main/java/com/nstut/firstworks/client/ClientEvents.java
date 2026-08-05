@@ -15,18 +15,18 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @EventBusSubscriber(modid = Firstworks.MOD_ID, value = Dist.CLIENT)
 public final class ClientEvents {
 
-    private static final int DEFAULT_BARK_COLOR = 0xFF997345;
-    private static final Map<String, Integer> WOOD_COLOR_CACHE = new HashMap<>();
+    @SubscribeEvent
+    public static void registerClientReloadListeners(RegisterClientReloadListenersEvent event) {
+        event.registerReloadListener(TreeBarkTextureManager.INSTANCE);
+    }
 
     @SubscribeEvent
     public static void clientSetup(FMLClientSetupEvent event) {
@@ -59,11 +59,6 @@ public final class ClientEvents {
                         : 0xFFFFFFFF,
                 ModItems.RAW_FLEECE.get(), ModItems.CLEAN_WOOL.get());
 
-        event.register((stack, tintIndex) -> tintIndex == 0
-                        ? getWoodTypeColor(TreeBarkItem.woodType(stack))
-                        : 0xFFFFFFFF,
-                ModItems.TREE_BARK.get());
-
         event.register((stack, tintIndex) -> {
             if (tintIndex != 1) return 0xFFFFFFFF;
             return IClientFluidTypeExtensions.of(Fluids.WATER).getTintColor();
@@ -72,63 +67,7 @@ public final class ClientEvents {
         event.register((stack, tintIndex) -> {
             if (tintIndex != 1) return 0xFFFFFFFF;
             return IClientFluidTypeExtensions.of(ModFluids.TANNIN_SOLUTION.get()).getTintColor();
-        }, ModItems.TANNIN_CLAY_BUCKET.get());
-    }
-
-    private static int getWoodTypeColor(String woodType) {
-        if (woodType == null || woodType.isEmpty()) return DEFAULT_BARK_COLOR;
-        return WOOD_COLOR_CACHE.computeIfAbsent(woodType, ClientEvents::sampleWoodTextureColor);
-    }
-
-    private static int sampleWoodTextureColor(String woodType) {
-        try {
-            String namespace = "minecraft";
-            String textureName = woodType + "_log";
-            if (woodType.contains(":")) {
-                String[] parts = woodType.split(":", 2);
-                namespace = parts[0];
-                textureName = parts[1] + "_log";
-            } else if ("bamboo".equals(woodType)) {
-                textureName = "bamboo_block";
-            } else if ("crimson".equals(woodType)) {
-                textureName = "crimson_stem";
-            } else if ("warped".equals(woodType)) {
-                textureName = "warped_stem";
-            }
-
-            ResourceLocation loc = ResourceLocation.tryBuild(namespace, "textures/block/" + textureName + ".png");
-            if (loc == null) return DEFAULT_BARK_COLOR;
-
-            var resource = Minecraft.getInstance().getResourceManager().getResource(loc);
-            if (resource.isEmpty()) return DEFAULT_BARK_COLOR;
-
-            try (var is = resource.get().open();
-                 var image = NativeImage.read(is)) {
-                int width = image.getWidth();
-                int height = image.getHeight();
-                long rSum = 0, gSum = 0, bSum = 0, count = 0;
-                for (int y = 0; y < height; y++) {
-                    for (int x = 0; x < width; x++) {
-                        int pixel = image.getPixelRGBA(x, y);
-                        int a = (pixel >>> 24) & 0xFF;
-                        if (a > 10) {
-                            rSum += pixel & 0xFF;
-                            gSum += (pixel >> 8) & 0xFF;
-                            bSum += (pixel >> 16) & 0xFF;
-                            count++;
-                        }
-                    }
-                }
-                if (count > 0) {
-                    int avgR = (int) (rSum / count);
-                    int avgG = (int) (gSum / count);
-                    int avgB = (int) (bSum / count);
-                    return 0xFF000000 | (avgR << 16) | (avgG << 8) | avgB;
-                }
-            }
-        } catch (Exception ignored) {}
-
-        return DEFAULT_BARK_COLOR;
+        }, ModItems.TANNIN_CLAY_BUCKET.get(), ModItems.TANNIN_SOLUTION_BUCKET.get());
     }
 
     private ClientEvents() {}
