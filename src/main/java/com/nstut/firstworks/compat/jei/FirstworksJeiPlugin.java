@@ -2,7 +2,9 @@ package com.nstut.firstworks.compat.jei;
 
 import com.nstut.firstworks.content.brick_mold.BrickMoldingRecipe;
 import com.nstut.firstworks.Firstworks;
+import com.nstut.firstworks.content.barrel.BarrelBlock;
 import com.nstut.firstworks.content.barrel.BarrelRecipe;
+import com.nstut.firstworks.content.loom.LoomBlock;
 import com.nstut.firstworks.content.loom.LoomRecipe;
 import com.nstut.firstworks.content.ColoredFleeceItem;
 import com.nstut.firstworks.content.TextileColors;
@@ -18,6 +20,7 @@ import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.ItemTags;
@@ -103,10 +106,12 @@ public final class FirstworksJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
-        ModBlocks.BARRELS.values().forEach(barrel ->
-                registration.addRecipeCatalyst(barrel.get(), BARREL_PROCESSING));
-        ModBlocks.LOOMS.values().forEach(loom ->
-                registration.addRecipeCatalyst(loom.get(), LOOM_WEAVING));
+        BuiltInRegistries.BLOCK.stream()
+                .filter(BarrelBlock.class::isInstance)
+                .forEach(barrel -> registration.addRecipeCatalyst(barrel, BARREL_PROCESSING));
+        BuiltInRegistries.BLOCK.stream()
+                .filter(LoomBlock.class::isInstance)
+                .forEach(loom -> registration.addRecipeCatalyst(loom, LOOM_WEAVING));
         registration.addRecipeCatalyst(ModItems.HAND_SPINDLE.get(), SPINDLE_SPINNING);
         registration.addRecipeCatalyst(ModBlocks.BRICK_MOLD.get(), BRICK_MOLDING);
     }

@@ -2,8 +2,10 @@ package com.nstut.firstworks.registry;
 
 import com.nstut.firstworks.Firstworks;
 import com.nstut.firstworks.content.barrel.BarrelBlockEntity;
+import com.nstut.firstworks.content.barrel.BarrelBlock;
 import com.nstut.firstworks.content.brick_mold.BrickMoldBlockEntity;
 import com.nstut.firstworks.content.loom.LoomBlockEntity;
+import com.nstut.firstworks.content.loom.LoomBlock;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -17,10 +19,10 @@ public final class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> TYPES = DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, Firstworks.MOD_ID);
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BarrelBlockEntity>> BARREL = TYPES.register(
             "barrel", () -> BlockEntityType.Builder.of(BarrelBlockEntity::new,
-                    ModBlocks.BARRELS.values().stream().map(DeferredHolder::get).toArray(Block[]::new)).build(null));
+                    BuiltInRegistries.BLOCK.stream().filter(BarrelBlock.class::isInstance).toArray(Block[]::new)).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LoomBlockEntity>> LOOM = TYPES.register(
             "loom", () -> BlockEntityType.Builder.of(LoomBlockEntity::new,
-                    ModBlocks.LOOMS.values().stream().map(DeferredHolder::get).toArray(Block[]::new)).build(null));
+                    BuiltInRegistries.BLOCK.stream().filter(LoomBlock.class::isInstance).toArray(Block[]::new)).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BrickMoldBlockEntity>> BRICK_MOLD = TYPES.register(
             "brick_mold", () -> BlockEntityType.Builder.of(BrickMoldBlockEntity::new, ModBlocks.BRICK_MOLD.get()).build(null));
 

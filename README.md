@@ -59,6 +59,28 @@ Barrel processes use the `firstworks:barrel_processing` recipe type. Loom recipe
 
 KubeJS is optional. When installed, Firstworks registers typed helpers for both processing systems and cancellable start/completion events.
 
+### Registering wood variants
+
+Put a wood registration in a KubeJS startup script to create a matched, fully functional loom and barrel pair:
+
+```js
+StartupEvents.registry('block', event => {
+  Firstworks.registerWoodType(event, 'kubejs:redwood', {
+    planks: 'examplemod:redwood_planks',
+    slab: 'examplemod:redwood_slab',
+    log: 'examplemod:redwood_log',
+    strippedLog: 'examplemod:stripped_redwood_log',
+    displayName: 'Redwood'
+  })
+})
+```
+
+This registers `kubejs:redwood_loom` and `kubejs:redwood_barrel`, including their block items, names, blockstates, models, loot tables, axe-mineable tags, and shaped recipes. They use Firstworks' native block entities, automation capabilities, rendering, processing, Jade integration, and JEI catalysts.
+
+Texture locations are inferred from the supplied block IDs. Woods with non-standard paths can override `plankTexture`, `logTexture`, `logTopTexture`, and `strippedLogTexture` with model texture IDs such as `examplemod:block/redwood_log_end`. Set `recipes: false` if the pack supplies its own recipes. Startup registry changes require a game restart.
+
+### Recipes and process events
+
 ```js
 ServerEvents.recipes(event => {
   event.recipes.firstworks.barrel_processing(
