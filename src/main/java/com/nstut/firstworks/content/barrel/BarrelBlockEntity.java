@@ -130,7 +130,7 @@ public class BarrelBlockEntity extends BlockEntity {
     }
 
     private Process currentProcess() {
-        if (ingredient.isEmpty() || level == null || inputTank.isEmpty() || processCancelled) return null;
+        if (ingredient.isEmpty() || level == null || inputTank.isEmpty() || processCancelled || !output.isEmpty()) return null;
         var fluidId = BuiltInRegistries.FLUID.getKey(inputTank.getFluid().getFluid());
         for (RecipeHolder<BarrelRecipe> holder : level.getRecipeManager().getAllRecipesFor(ModRecipes.BARREL_PROCESSING_TYPE.get())) {
             BarrelRecipe recipe = holder.value();
@@ -325,11 +325,13 @@ public class BarrelBlockEntity extends BlockEntity {
     }
 
     private void onInputChanged() {
+        progress = 0;
         processCancelled = false;
         setChangedAndSync();
     }
 
     private void onOutputChanged() {
+        progress = 0;
         setChangedAndSync();
     }
 

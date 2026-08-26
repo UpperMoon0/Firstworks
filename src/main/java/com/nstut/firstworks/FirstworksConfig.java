@@ -29,10 +29,10 @@ public final class FirstworksConfig {
             .define("enableMasonryProgression", true);
 
     public static final ModConfigSpec.BooleanValue RAIN_FILLS_BARRELS = BUILDER
-            .comment("Allow rain to naturally fill open Barrels that contain no fluid or only water.",
+            .comment("Allow rain to naturally fill open Barrels whose input store holds no fluid or only water.",
                     "Disabled by default to avoid changing existing-world behaviour.",
-                    "Sealed Barrels and Barrels holding a non-water fluid are never filled by rain.",
-                    "Cover or enclose a Barrel to keep it dry.")
+                    "Rain does not fill Barrels whose input store already contains a non-water fluid.",
+                    "Existing output fluid is never modified. Cover or enclose a Barrel to keep it dry.")
             .define("rainFillsBarrels", false);
 
     public static final ModConfigSpec.IntValue RAIN_FILL_AMOUNT = BUILDER

@@ -31,3 +31,13 @@
 - The `Firstworks` KubeJS global is unchanged: it is registered as a class binding (same mechanism KubeJS uses
   for `ID`/`Math`/`PlatformWrapper`), which is correct on 0.0.7+. The earlier "Firstworks is not defined" report
   was against 0.0.6, which predated the binding entirely.
+- Review fixes on the dual-tank refactor:
+  - Fluid mutations (input or output) now reset `progress`, so adding/removing fluid near completion can no longer
+    inherit an almost-finished timer and instant-finish extra batches (consistent with how ingredient changes already
+    reset progress).
+  - Jade now always shows the stored input/output fluid breakdown and total/capacity, in every barrel state
+    (open, waiting, processing, cancelled).
+  - `currentProcess()` no longer reports a running recipe when item output is already present, matching `tick()`'s
+    "collect output before the next cycle" rule, so Jade no longer shows a process stuck at zero.
+  - `rainFillsBarrels` config wording corrected to describe the input-store check; existing output fluid is never
+    modified by rain.

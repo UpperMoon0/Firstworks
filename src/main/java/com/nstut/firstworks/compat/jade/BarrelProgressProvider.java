@@ -77,15 +77,11 @@ public enum BarrelProgressProvider implements IBlockComponentProvider, IServerDa
         CompoundTag data = accessor.getServerData();
         if (data.getBoolean(CANCELLED)) {
             tooltip.add(Component.translatable("jade.firstworks.barrel.cancelled"));
-            return;
-        }
-        if (!data.getBoolean(ACTIVE)) {
+        } else if (!data.getBoolean(ACTIVE)) {
             tooltip.add(Component.translatable(data.getBoolean(SEALED)
                     ? "jade.firstworks.barrel.waiting"
                     : "jade.firstworks.barrel.open"));
-            return;
-        }
-
+        } else {
         int progress = data.getInt(PROGRESS);
         int duration = Math.max(1, data.getInt(DURATION));
         float fraction = Mth.clamp((float) progress / duration, 0.0F, 1.0F);
@@ -119,6 +115,7 @@ public enum BarrelProgressProvider implements IBlockComponentProvider, IServerDa
                         .textColor(0xFFFFFFFF),
                 BoxStyle.getTransparent(),
                 false).size(new Vec2(140, 12)));
+        }
         appendStoredFluids(tooltip, data);
     }
 
