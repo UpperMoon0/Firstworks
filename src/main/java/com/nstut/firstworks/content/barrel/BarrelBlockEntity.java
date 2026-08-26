@@ -149,11 +149,13 @@ public class BarrelBlockEntity extends BlockEntity {
         if (!tank.isEmpty() && !tank.getFluid().is(Fluids.WATER)) return;
         if (progress > 0) return;
         rainAccumulator += FirstworksConfig.RAIN_FILL_AMOUNT.get();
+        setChanged();
         int units = rainAccumulator / RAIN_FILL_QUANTUM;
         if (units <= 0) return;
         int space = CAPACITY - tank.getFluidAmount();
         if (space < RAIN_FILL_QUANTUM) {
             rainAccumulator = 0;
+            setChanged();
             return;
         }
         int commit = Math.min(units, space / RAIN_FILL_QUANTUM) * RAIN_FILL_QUANTUM;

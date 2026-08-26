@@ -14,7 +14,7 @@ Firstworks has no dependency on Create or the Inventors modpack.
 - See the stored item and fluid without opening a menu.
 - Collect completed output before toggling the lid again.
 - Toggle the lid with a rising redstone pulse for simple early automation.
-- Open Barrels placed where rain can reach will slowly collect rainwater (disable with `rainFillsBarrels` in `config/firstworks-common.toml`). Sealed Barrels and Barrels already holding a non-water fluid are never filled, and rain commits water in 250 mB steps so it never leaves a residue that would break the fluid-exact recipes.
+- Open Barrels can optionally collect rainwater when `rainFillsBarrels` is enabled in `config/firstworks-common.toml` (disabled by default). Sealed Barrels and Barrels already holding a non-water fluid are never filled, and rain commits water in 250 mB steps so it never leaves a residue that would break the fluid-exact recipes. Collection is driven by Minecraft's precipitation ticks, so its effective rate scales with the `randomTickSpeed` game rule and is intentionally gradual.
 
 Opening a working Barrel cancels its current progress without consuming or ejecting the contents. Standard NeoForge item and fluid capabilities are also exposed for modded automation: items enter from above, finished items leave below, and side access can inspect both item slots. Sealing the lid locks all automated item and fluid insertion and extraction until the Barrel is opened again.
 
