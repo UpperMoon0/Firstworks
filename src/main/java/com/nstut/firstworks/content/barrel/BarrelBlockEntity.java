@@ -1,5 +1,6 @@
 package com.nstut.firstworks.content.barrel;
 
+import com.nstut.firstworks.FirstworksConfig;
 import com.nstut.firstworks.compat.OptionalIntegrations;
 import com.nstut.firstworks.content.ColoredFleeceItem;
 import com.nstut.firstworks.registry.ModBlockEntities;
@@ -32,7 +33,10 @@ import org.jetbrains.annotations.Nullable;
 
 public class BarrelBlockEntity extends BlockEntity {
     public static final int CAPACITY = 4_000;
+    public static final int RAIN_FILL_PER_TICK = 8;
     private final FluidTank tank;
+    private boolean rainFilling = false;
+    private int rainSyncTimer = 0;
     private final IFluidHandler automationFluidHandler;
     private ItemStack ingredient = ItemStack.EMPTY;
     private ItemStack output = ItemStack.EMPTY;
@@ -47,6 +51,10 @@ public class BarrelBlockEntity extends BlockEntity {
         tank = new FluidTank(CAPACITY, fluid -> true) {
             @Override
             protected void onContentsChanged() {
+                if (rainFilling) {
+                    setChanged();
+                    return;
+                }
                 processCancelled = false;
                 setChangedAndSync();
             }
@@ -72,6 +80,9 @@ public class BarrelBlockEntity extends BlockEntity {
 
     public static void tick(Level level, BlockPos pos, BlockState state, BarrelBlockEntity barrel) {
         if (level.isClientSide) return;
+        if (!barrel.isSealed()) {
+            barrel.tryRainFill(level);
+        }
         Process process = barrel.currentProcess();
         if (process == null || !barrel.output.isEmpty()) {
             barrel.progress = 0;
@@ -137,6 +148,24 @@ public class BarrelBlockEntity extends BlockEntity {
         if (level instanceof ServerLevel serverLevel) {
             OptionalIntegrations.fireBarrelProcessCompleted(serverLevel, this, process.recipeId(), process.recipe(),
                     process.input(), process.inputFluid(), process.result(), process.outputFluidStack());
+        }
+    }
+
+    private void tryRainFill(Level level) {
+        if (!FirstworksConfig.RAIN_FILLS_BARRELS.get()) return;
+        if (!(level instanceof ServerLevel serverLevel)) return;
+        if (!serverLevel.isRainingAt(worldPosition)) return;
+        if (!tank.isEmpty() && !tank.getFluid().is(Fluids.WATER)) return;
+        int space = CAPACITY - tank.getFluidAmount();
+        if (space <= 0) return;
+        int amount = Math.min(RAIN_FILL_PER_TICK, space);
+        rainFilling = true;
+        tank.fill(new FluidStack(Fluids.WATER, amount), IFluidHandler.FluidAction.EXECUTE);
+        rainFilling = false;
+        setChanged();
+        if (++rainSyncTimer >= 10) {
+            rainSyncTimer = 0;
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
     }
 

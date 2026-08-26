@@ -28,6 +28,12 @@ public final class FirstworksConfig {
                     "Changing this option requires a datapack reload or game restart.")
             .define("enableMasonryProgression", true);
 
+    public static final ModConfigSpec.BooleanValue RAIN_FILLS_BARRELS = BUILDER
+            .comment("Allow rain to naturally fill open Barrels that contain no fluid or only water.",
+                    "Sealed Barrels and Barrels holding a non-water fluid are never filled by rain.",
+                    "Cover or enclose a Barrel to keep it dry.")
+            .define("rainFillsBarrels", true);
+
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     private FirstworksConfig() {}
