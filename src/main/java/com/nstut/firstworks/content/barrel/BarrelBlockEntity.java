@@ -33,7 +33,6 @@ import org.jetbrains.annotations.Nullable;
 
 public class BarrelBlockEntity extends BlockEntity {
     public static final int CAPACITY = 4_000;
-    public static final int RAIN_FILL_QUANTUM = 250;
     private final FluidTank tank;
     private int rainAccumulator = 0;
     private final IFluidHandler automationFluidHandler;
@@ -148,17 +147,20 @@ public class BarrelBlockEntity extends BlockEntity {
         if (isSealed()) return;
         if (!tank.isEmpty() && !tank.getFluid().is(Fluids.WATER)) return;
         if (progress > 0) return;
-        rainAccumulator += FirstworksConfig.RAIN_FILL_AMOUNT.get();
-        setChanged();
-        int units = rainAccumulator / RAIN_FILL_QUANTUM;
-        if (units <= 0) return;
+        int quantum = FirstworksConfig.RAIN_FILL_QUANTUM.get();
         int space = CAPACITY - tank.getFluidAmount();
-        if (space < RAIN_FILL_QUANTUM) {
-            rainAccumulator = 0;
-            setChanged();
+        if (space < quantum) {
+            if (rainAccumulator != 0) {
+                rainAccumulator = 0;
+                setChanged();
+            }
             return;
         }
-        int commit = Math.min(units, space / RAIN_FILL_QUANTUM) * RAIN_FILL_QUANTUM;
+        rainAccumulator += FirstworksConfig.RAIN_FILL_AMOUNT.get();
+        setChanged();
+        int units = rainAccumulator / quantum;
+        if (units <= 0) return;
+        int commit = Math.min(units, space / quantum) * quantum;
         tank.fill(new FluidStack(Fluids.WATER, commit), IFluidHandler.FluidAction.EXECUTE);
         rainAccumulator -= commit;
     }
