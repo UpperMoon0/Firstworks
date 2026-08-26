@@ -14,7 +14,6 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.client.textures.FluidSpriteCache;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -32,12 +31,15 @@ public final class BarrelBlockEntityRenderer implements BlockEntityRenderer<Barr
             MultiBufferSource buffers, int packedLight, int packedOverlay) {
         if (barrel.getBlockState().getValue(BarrelBlock.SEALED)) return;
 
-        FluidStack fluid = barrel.getTank().getFluid();
+        FluidStack inputFluid = barrel.getInputTank().getFluid();
+        FluidStack outputFluid = barrel.getOutputTank().getFluid();
+        int total = inputFluid.getAmount() + outputFluid.getAmount();
         float surface = 2.05F / 16.0F;
-        if (!fluid.isEmpty() && fluid.getFluid() != Fluids.EMPTY) {
-            surface = Mth.lerp((float) fluid.getAmount() / BarrelBlockEntity.CAPACITY,
+        if (total > 0) {
+            FluidStack visible = !outputFluid.isEmpty() ? outputFluid : inputFluid;
+            surface = Mth.lerp((float) total / BarrelBlockEntity.CAPACITY,
                     2.05F / 16.0F, 13.6F / 16.0F);
-            renderFluidSurface(barrel, fluid, surface, poseStack, buffers, packedLight);
+            renderFluidSurface(barrel, visible, surface, poseStack, buffers, packedLight);
         }
 
         ItemStack input = barrel.getIngredient();

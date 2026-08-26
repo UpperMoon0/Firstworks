@@ -152,7 +152,7 @@ public class BarrelBlock extends BaseEntityBlock {
 
         PotionContents potion = stack.get(DataComponents.POTION_CONTENTS);
         if (stack.is(Items.WATER_BUCKET)) {
-            if (!level.isClientSide && barrel.addWater(1000)) {
+            if (!level.isClientSide && barrel.addInputWater(1000)) {
                 if (!player.getAbilities().instabuild) {
                     stack.shrink(1);
                     player.getInventory().placeItemBackInInventory(new ItemStack(Items.BUCKET));
@@ -163,7 +163,7 @@ public class BarrelBlock extends BaseEntityBlock {
         }
 
         if (stack.is(ModItems.WATER_CLAY_BUCKET.get())) {
-            if (!level.isClientSide && barrel.addWater(1000)) {
+            if (!level.isClientSide && barrel.addInputWater(1000)) {
                 if (!player.getAbilities().instabuild) {
                     stack.shrink(1);
                     player.getInventory().placeItemBackInInventory(new ItemStack(ModItems.CLAY_BUCKET.get()));
@@ -174,7 +174,7 @@ public class BarrelBlock extends BaseEntityBlock {
         }
 
         if (stack.is(ModItems.TANNIN_SOLUTION_BUCKET.get())) {
-            if (!level.isClientSide && barrel.addFluid(new FluidStack(ModFluids.TANNIN_SOLUTION.get(), 1_000))) {
+            if (!level.isClientSide && barrel.addInputFluid(new FluidStack(ModFluids.TANNIN_SOLUTION.get(), 1_000))) {
                 if (!player.getAbilities().instabuild) {
                     stack.shrink(1);
                     player.getInventory().placeItemBackInInventory(new ItemStack(Items.BUCKET));
@@ -185,7 +185,7 @@ public class BarrelBlock extends BaseEntityBlock {
         }
 
         if (stack.is(ModItems.TANNIN_CLAY_BUCKET.get())) {
-            if (!level.isClientSide && barrel.addFluid(new FluidStack(ModFluids.TANNIN_SOLUTION.get(), 1_000))) {
+            if (!level.isClientSide && barrel.addInputFluid(new FluidStack(ModFluids.TANNIN_SOLUTION.get(), 1_000))) {
                 if (!player.getAbilities().instabuild) {
                     stack.shrink(1);
                     player.getInventory().placeItemBackInInventory(new ItemStack(ModItems.CLAY_BUCKET.get()));
@@ -220,7 +220,7 @@ public class BarrelBlock extends BaseEntityBlock {
         }
 
         if (stack.is(Items.POTION) && potion != null && potion.is(Potions.WATER) && !potion.hasEffects()) {
-            if (!level.isClientSide && barrel.addWater(250)) {
+            if (!level.isClientSide && barrel.addInputWater(250)) {
                 if (!player.getAbilities().instabuild) {
                     stack.shrink(1);
                     player.getInventory().placeItemBackInInventory(new ItemStack(Items.GLASS_BOTTLE));
@@ -244,6 +244,9 @@ public class BarrelBlock extends BaseEntityBlock {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (!(level.getBlockEntity(pos) instanceof BarrelBlockEntity barrel)) {
             return InteractionResult.PASS;
+        }
+        if (!level.isClientSide && player.isShiftKeyDown() && barrel.retrieveInput(player)) {
+            return InteractionResult.SUCCESS;
         }
         if (!level.isClientSide && barrel.takeOutput(player)) {
             return InteractionResult.SUCCESS;

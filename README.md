@@ -9,12 +9,12 @@ Firstworks has no dependency on Create or the Inventors modpack.
 ## Primitive barrel processing
 
 - Craft a Barrel from matching planks and slabs. Every vanilla wood family has a variant.
-- Add ingredients and fluid directly to the open Barrel.
+- Add ingredients and fluid directly to the open Barrel. Fluid you add (buckets, bottles, pipes, or rain) always goes to the shared **input** store; the **output** store only holds finished recipe fluids.
 - Close or open the lid with an empty hand. Valid sealed recipes progress over time.
-- See the stored item and fluid without opening a menu.
+- See the stored item and fluid, including separate input and output fluid levels, without opening a menu.
 - Collect completed output before toggling the lid again.
 - Toggle the lid with a rising redstone pulse for simple early automation.
-- Open Barrels can optionally collect rainwater when `rainFillsBarrels` is enabled in `config/firstworks-common.toml` (disabled by default). Sealed Barrels and Barrels already holding a non-water fluid are never filled. Rain water is committed in configurable `rainFillQuantum` mB steps (default 250), so it never leaves a residue that would break Firstworks' built-in fluid-exact recipes; set `rainFillQuantum` to a divisor of your pack's custom recipe fluid amounts for the same guarantee. Collection is driven by Minecraft's precipitation ticks, so its effective rate scales with the `randomTickSpeed` game rule and is intentionally gradual.
+- Open Barrels can optionally collect rainwater when `rainFillsBarrels` is enabled in `config/firstworks-common.toml` (disabled by default). Rain only fills the input side and never contaminates a non-water input or the output side. Because the Barrel now keeps separate input and output fluid stores that share one 4000 mB capacity, rain can leave any remainder (e.g. 317 mB) without breaking the exact fluid amounts Firstworks' recipes require; open a recipe from partial water by topping it up or starting from ingredients that only consume what they need. Collection is driven by Minecraft's precipitation ticks, so its effective rate scales with the `randomTickSpeed` game rule and is intentionally gradual.
 
 Opening a working Barrel cancels its current progress without consuming or ejecting the contents. Standard NeoForge item and fluid capabilities are also exposed for modded automation: items enter from above, finished items leave below, and side access can inspect both item slots. Sealing the lid locks all automated item and fluid insertion and extraction until the Barrel is opened again.
 
@@ -150,7 +150,7 @@ FirstworksEvents.brickMoldingCompleted(event => {
 
 ## Optional integrations
 
-- **Jade** shows live Barrel processing and Loom loading, stroke progress, cancellation, and completed output.
+- **Jade** shows live Barrel processing and Loom loading, stroke progress, cancellation, and both the stored input and output fluid levels (the top layer is whichever fluid is in the output store).
 - **JEI** provides dedicated Barrel Processing, Hand Spinning, and Loom Weaving categories with their tools and wood variants registered as catalysts.
 
 ## Credits

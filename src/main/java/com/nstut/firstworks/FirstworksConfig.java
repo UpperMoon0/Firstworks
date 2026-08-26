@@ -36,18 +36,9 @@ public final class FirstworksConfig {
             .define("rainFillsBarrels", false);
 
     public static final ModConfigSpec.IntValue RAIN_FILL_AMOUNT = BUILDER
-            .comment("Water (in millibuckets) gathered from rain per precipitation event before being committed.",
-                    "Water is always committed in rainFillQuantum mB steps so it never leaves a residue that breaks fluid-exact recipes.",
+            .comment("Water (in millibuckets) gathered from rain per precipitation event.",
                     "Only used when rainFillsBarrels is enabled.")
             .defineInRange("rainFillAmount", 100, 1, 4000);
-
-    public static final ModConfigSpec.IntValue RAIN_FILL_QUANTUM = BUILDER
-            .comment("Granularity (in millibuckets) at which rain water is committed to a Barrel.",
-                    "Rain collects into an internal accumulator and is only added to the tank in multiples of this value.",
-                    "Output-fluid recipes require an exact fluid amount, so they are only startable from rain water when their",
-                    "fluid_amount is compatible with this quantum (within the 4000 mB capacity); item-output recipes are unaffected.",
-                    "Set this to a divisor of your pack's custom recipe fluid amounts to avoid rain leaving an unusable residue.")
-            .defineInRange("rainFillQuantum", 250, 1, 4000);
 
     public static final ModConfigSpec SPEC = BUILDER.build();
 

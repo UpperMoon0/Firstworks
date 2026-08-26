@@ -1,20 +1,31 @@
 # Changelog
 
 ## 0.0.8
-- Added optional rain collection for open Barrels (`rainFillsBarrels`, default `false`; rate via `rainFillAmount`,
-  granularity via `rainFillQuantum` default 250).
-  Rain only fills when the lid is open and the Barrel holds no fluid or only water, and never contaminates a
-  non-water fluid. Water is collected into an internal accumulator and committed in `rainFillQuantum` mB steps, so it
-  never leaves a residue that would silently break Firstworks' built-in fluid-exact recipes (e.g. tannin brewing).
-  The quantum is configurable so packs can match their own recipe `fluid_amount` values; output-fluid recipes require
-  an exact amount, so they are only startable from rain water when their `fluid_amount` is compatible with
-  `rainFillQuantum` (within the 4000 mB capacity), while item-output recipes are unaffected. Filling is driven by
-  `Block#handlePrecipitation` rather than a per-tick check, so it only runs during actual precipitation and naturally
-  respects roof coverage and rain/snow distinction.
-  - The `rainAccumulator` (pending, not-yet-committed rain) is marked dirty on every change, so partial progress
-    survives chunk unload / restart. A full Barrel does not churn dirty state once the accumulator is empty.
-  - Rate note: precipitation events scale with the `randomTickSpeed` game rule, so effective fill speed scales with
-    that gamerule too. This matches vanilla cauldron behaviour; lower `rainFillAmount` if it feels too fast.
+- Refactored Barrel fluid storage into separate **input** and **output** tanks that share one 4000 mB capacity
+  (`inputFluid + outputFluid <= 4000`). Recipes now consume only what they require: leftovers of input items or input
+  fluid remain in the input store instead of forcing an all-or-nothing match, and recipe fluid outputs are written only
+  to the output store and never mixed with or overwrite the input fluid. This removes the previous exact-fluid-amount
+  brittleness for both built-in and custom (datapack / KubeJS) recipes.
+  - External fluid insertion (buckets, bottles, pipes, rain) always targets the input store; the output store can never
+    be externally filled. Bucket / clay-bucket removal is output-first and strict: when the output store holds fluid,
+    only that fluid can be bucketed out, and a non-bucketable output never secretly drains the input. An empty output
+    store drains input, so manually added water stays fully recoverable.
+  - Fluid automation exposes two tanks: tank 0 = input (fill + drain), tank 1 = output (drain only). Targeted
+    (`drain(FluidStack)`) automation drains the matching tank (output preferred), generic (`drain(int)`) drains
+    output-first. Sealed Barrels reject all automated fluid insertion and extraction.
+  - The renderer now shows the combined fluid level (input + output) using the output fluid's texture as the top layer;
+    Jade shows the separate input/output fluid amounts plus the total against capacity.
+  - Shift + empty-hand on an open Barrel retrieves the input ingredient stack, mirroring how extra input fluid can be
+    bucketed back out, so both resource classes are reversible.
+  - Legacy worlds that stored a single `Tank` tag migrate it into the input store (the output store starts empty), so no
+    stored fluid is lost. Loaded fluid totals above 4000 mB are clamped by spilling input first.
+- Added optional rain collection for open Barrels (`rainFillsBarrels`, default `false`; rate via `rainFillAmount`).
+  Rain fills only the input store, only when the lid is open and the input holds no fluid or only water, and never
+  contaminates a non-water input or the output store. Rain no longer uses the (now removed) accumulator / quantum
+  workaround: any leftover amount is valid because input and output are distinct stores. Rain is also blocked while a
+  process is running or while a KubeJS cancellation is pending, so environmental water never silently clears a scripted
+  cancellation. Filling is driven by `Block#handlePrecipitation`, so it only runs during actual precipitation and
+  respects roof coverage and rain/snow distinction; effective rate still scales with the `randomTickSpeed` game rule.
 - Persisted the KubeJS barrel process cancellation flag so a cancelled process survives chunk unload / restart
   (previously only `progress` was saved).
 - The `Firstworks` KubeJS global is unchanged: it is registered as a class binding (same mechanism KubeJS uses

@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.material.Fluids;
+import net.neoforged.neoforge.fluids.FluidStack;
 import net.minecraft.world.phys.Vec2;
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.IBlockComponentProvider;
@@ -29,6 +30,12 @@ public enum BarrelProgressProvider implements IBlockComponentProvider, IServerDa
     private static final String SEALED = "FirstworksSealed";
     private static final String OUTPUT_ITEM = "FirstworksOutputItem";
     private static final String OUTPUT_FLUID = "FirstworksOutputFluid";
+    private static final String STORED_INPUT_FLUID = "FirstworksStoredInputFluid";
+    private static final String STORED_INPUT_AMOUNT = "FirstworksStoredInputAmount";
+    private static final String STORED_OUTPUT_FLUID = "FirstworksStoredOutputFluid";
+    private static final String STORED_OUTPUT_AMOUNT = "FirstworksStoredOutputAmount";
+    private static final String TOTAL_FLUID = "FirstworksTotalFluid";
+    private static final String CAPACITY = "FirstworksCapacity";
 
     @Override
     public void appendServerData(CompoundTag data, BlockAccessor accessor) {
@@ -51,6 +58,18 @@ public enum BarrelProgressProvider implements IBlockComponentProvider, IServerDa
                 }
             }
         });
+        FluidStack input = barrel.getInputTank().getFluid();
+        if (!input.isEmpty()) {
+            data.putString(STORED_INPUT_FLUID, input.getFluid().getFluidType().getDescriptionId());
+            data.putInt(STORED_INPUT_AMOUNT, input.getAmount());
+        }
+        FluidStack storedOutput = barrel.getOutputTank().getFluid();
+        if (!storedOutput.isEmpty()) {
+            data.putString(STORED_OUTPUT_FLUID, storedOutput.getFluid().getFluidType().getDescriptionId());
+            data.putInt(STORED_OUTPUT_AMOUNT, storedOutput.getAmount());
+        }
+        data.putInt(TOTAL_FLUID, barrel.getTotalFluidAmount());
+        data.putInt(CAPACITY, com.nstut.firstworks.content.barrel.BarrelBlockEntity.CAPACITY);
     }
 
     @Override
@@ -100,6 +119,28 @@ public enum BarrelProgressProvider implements IBlockComponentProvider, IServerDa
                         .textColor(0xFFFFFFFF),
                 BoxStyle.getTransparent(),
                 false).size(new Vec2(140, 12)));
+        appendStoredFluids(tooltip, data);
+    }
+
+    private void appendStoredFluids(ITooltip tooltip, CompoundTag data) {
+        if (data.contains(STORED_INPUT_FLUID)) {
+            tooltip.add(Component.translatable("jade.firstworks.barrel.input_fluid",
+                    Component.translatable(data.getString(STORED_INPUT_FLUID)), data.getInt(STORED_INPUT_AMOUNT))
+                    .withStyle(ChatFormatting.WHITE));
+        } else {
+            tooltip.add(Component.translatable("jade.firstworks.barrel.input_fluid",
+                    Component.translatable("jade.firstworks.barrel.empty"), 0).withStyle(ChatFormatting.WHITE));
+        }
+        if (data.contains(STORED_OUTPUT_FLUID)) {
+            tooltip.add(Component.translatable("jade.firstworks.barrel.output_fluid",
+                    Component.translatable(data.getString(STORED_OUTPUT_FLUID)), data.getInt(STORED_OUTPUT_AMOUNT))
+                    .withStyle(ChatFormatting.WHITE));
+        } else {
+            tooltip.add(Component.translatable("jade.firstworks.barrel.output_fluid",
+                    Component.translatable("jade.firstworks.barrel.empty"), 0).withStyle(ChatFormatting.WHITE));
+        }
+        tooltip.add(Component.translatable("jade.firstworks.barrel.fluid_capacity",
+                data.getInt(TOTAL_FLUID), data.getInt(CAPACITY)).withStyle(ChatFormatting.WHITE));
     }
 
     @Override
