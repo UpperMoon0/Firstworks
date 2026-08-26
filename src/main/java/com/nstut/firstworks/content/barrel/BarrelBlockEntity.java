@@ -33,10 +33,9 @@ import org.jetbrains.annotations.Nullable;
 
 public class BarrelBlockEntity extends BlockEntity {
     public static final int CAPACITY = 4_000;
-    public static final int RAIN_FILL_PER_TICK = 8;
+    public static final int RAIN_FILL_QUANTUM = 250;
     private final FluidTank tank;
-    private boolean rainFilling = false;
-    private int rainSyncTimer = 0;
+    private int rainAccumulator = 0;
     private final IFluidHandler automationFluidHandler;
     private ItemStack ingredient = ItemStack.EMPTY;
     private ItemStack output = ItemStack.EMPTY;
@@ -51,10 +50,6 @@ public class BarrelBlockEntity extends BlockEntity {
         tank = new FluidTank(CAPACITY, fluid -> true) {
             @Override
             protected void onContentsChanged() {
-                if (rainFilling) {
-                    setChanged();
-                    return;
-                }
                 processCancelled = false;
                 setChangedAndSync();
             }
@@ -80,9 +75,6 @@ public class BarrelBlockEntity extends BlockEntity {
 
     public static void tick(Level level, BlockPos pos, BlockState state, BarrelBlockEntity barrel) {
         if (level.isClientSide) return;
-        if (!barrel.isSealed()) {
-            barrel.tryRainFill(level);
-        }
         Process process = barrel.currentProcess();
         if (process == null || !barrel.output.isEmpty()) {
             barrel.progress = 0;
@@ -151,22 +143,22 @@ public class BarrelBlockEntity extends BlockEntity {
         }
     }
 
-    private void tryRainFill(Level level) {
+    public void addRainWater() {
         if (!FirstworksConfig.RAIN_FILLS_BARRELS.get()) return;
-        if (!(level instanceof ServerLevel serverLevel)) return;
-        if (!serverLevel.isRainingAt(worldPosition)) return;
+        if (isSealed()) return;
         if (!tank.isEmpty() && !tank.getFluid().is(Fluids.WATER)) return;
+        if (progress > 0) return;
+        rainAccumulator += FirstworksConfig.RAIN_FILL_AMOUNT.get();
+        int units = rainAccumulator / RAIN_FILL_QUANTUM;
+        if (units <= 0) return;
         int space = CAPACITY - tank.getFluidAmount();
-        if (space <= 0) return;
-        int amount = Math.min(RAIN_FILL_PER_TICK, space);
-        rainFilling = true;
-        tank.fill(new FluidStack(Fluids.WATER, amount), IFluidHandler.FluidAction.EXECUTE);
-        rainFilling = false;
-        setChanged();
-        if (++rainSyncTimer >= 10) {
-            rainSyncTimer = 0;
-            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        if (space < RAIN_FILL_QUANTUM) {
+            rainAccumulator = 0;
+            return;
         }
+        int commit = Math.min(units, space / RAIN_FILL_QUANTUM) * RAIN_FILL_QUANTUM;
+        tank.fill(new FluidStack(Fluids.WATER, commit), IFluidHandler.FluidAction.EXECUTE);
+        rainAccumulator -= commit;
     }
 
     public boolean addWater(int amount) {
@@ -305,6 +297,8 @@ public class BarrelBlockEntity extends BlockEntity {
         tag.put("Ingredient", ingredient.saveOptional(registries));
         tag.put("Output", output.saveOptional(registries));
         tag.putInt("Progress", progress);
+        tag.putBoolean("ProcessCancelled", processCancelled);
+        tag.putInt("RainAccumulator", rainAccumulator);
     }
 
     @Override
@@ -314,6 +308,8 @@ public class BarrelBlockEntity extends BlockEntity {
         ingredient = ItemStack.parseOptional(registries, tag.getCompound("Ingredient"));
         output = ItemStack.parseOptional(registries, tag.getCompound("Output"));
         progress = tag.getInt("Progress");
+        processCancelled = tag.getBoolean("ProcessCancelled");
+        rainAccumulator = tag.getInt("RainAccumulator");
     }
 
     @Override

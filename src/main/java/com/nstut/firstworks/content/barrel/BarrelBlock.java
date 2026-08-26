@@ -3,6 +3,7 @@ package com.nstut.firstworks.content.barrel;
 import com.mojang.serialization.MapCodec;
 import com.nstut.firstworks.registry.ModBlockEntities;
 import com.nstut.firstworks.registry.ModFluids;
+import com.nstut.firstworks.FirstworksConfig;
 import com.nstut.firstworks.registry.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
@@ -29,6 +30,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.biome.Biome.Precipitation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -263,5 +265,16 @@ public class BarrelBlock extends BaseEntityBlock {
             Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, barrel.getOutput());
         }
         super.onRemove(state, level, pos, newState, moving);
+    }
+
+    @Override
+    public void handlePrecipitation(BlockState state, Level level, BlockPos pos, Precipitation rainfall) {
+        super.handlePrecipitation(state, level, pos, rainfall);
+        if (!FirstworksConfig.RAIN_FILLS_BARRELS.get()) return;
+        if (state.getValue(SEALED)) return;
+        if (rainfall != Precipitation.RAIN) return;
+        if (level.getBlockEntity(pos) instanceof BarrelBlockEntity barrel) {
+            barrel.addRainWater();
+        }
     }
 }

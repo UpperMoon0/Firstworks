@@ -24,7 +24,7 @@ public final class FirstworksKubeJSPlugin implements KubeJSPlugin {
     @Override
     public void registerBindings(BindingRegistry bindings) {
         if (bindings.type().isStartup()) {
-            bindings.add("Firstworks", FirstworksKubeJS.INSTANCE);
+            bindings.add("Firstworks", FirstworksWoodTypeBinding.class);
         }
     }
 }

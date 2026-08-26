@@ -30,9 +30,16 @@ public final class FirstworksConfig {
 
     public static final ModConfigSpec.BooleanValue RAIN_FILLS_BARRELS = BUILDER
             .comment("Allow rain to naturally fill open Barrels that contain no fluid or only water.",
+                    "Disabled by default to avoid changing existing-world behaviour.",
                     "Sealed Barrels and Barrels holding a non-water fluid are never filled by rain.",
                     "Cover or enclose a Barrel to keep it dry.")
-            .define("rainFillsBarrels", true);
+            .define("rainFillsBarrels", false);
+
+    public static final ModConfigSpec.IntValue RAIN_FILL_AMOUNT = BUILDER
+            .comment("Water (in millibuckets) gathered from rain per precipitation event before being committed.",
+                    "Water is always committed in 250 mB steps so it never leaves a residue that breaks fluid-exact recipes.",
+                    "Only used when rainFillsBarrels is enabled.")
+            .defineInRange("rainFillAmount", 100, 1, 4000);
 
     public static final ModConfigSpec SPEC = BUILDER.build();
 
