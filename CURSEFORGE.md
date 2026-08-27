@@ -6,12 +6,13 @@ Cordage, weaving, and leatherworking form the first complete production chains, 
 
 ## The Barrel
 
-- Holds materials and fluids for processing
-- Processes recipes over time while open or sealed, as the recipe requires
-- Displays stored items and fluids directly in the world
-- Opens and seals by hand without a GUI
+- Holds materials and fluids with distinct **input** and **output** stores sharing 4000 mB capacity
+- Processes recipes over time while open or sealed, as the recipe requires (consuming only needed fluid)
+- Displays stored items and fluids directly in the world with separate input/output level rendering
+- Opens and seals by hand without a GUI (shift + empty hand retrieves input items)
 - Responds to rising redstone pulses for simple automation
-- Supports item and fluid transfer through standard NeoForge capabilities
+- Supports sided item and fluid transfer through standard NeoForge capabilities (top input, bottom output, side combined)
+- Optionally collects rainwater when enabled in config
 - Locks automated item and fluid transfer while sealed
 - Comes in every vanilla wood family
 - Accepts custom recipes from datapacks and KubeJS
@@ -22,13 +23,13 @@ Fill a Barrel with buckets or bottles, add a material, and seal it to begin a va
 
 Gather Plant Fibre from grass and ferns, twist emergency Crude Cordage, and ret better fibres in a Barrel. Hold a durable Hand Spindle with fibre in your offhand to spin it into Twine, complete with a rotating three-dimensional spindle, working sounds, and particles. Twine can be woven into Cloth or combined into Rope. Gathering by hand has a modest chance to produce fibre, while using a sword guarantees it. Primitive Bone and Flint tools offer early options before metalworking. Wooden, stone, bone, and flint tools need a simple binding, while iron, gold, and diamond tools call for proper Rope.
 
-Flint, Plant Fibre, and either primitive binding also make a single-use Fire Starter. It can ignite or relight the same targets as flint and steel, but is consumed after one successful use.
+Bind a vanilla torch, stick, and Crude Cordage or Rope into a **Standing Torch**—a rustic, 1.6-block tall floor-supported torch stand (light level 14) with flame and smoke particles. Flint, Plant Fibre, and either primitive binding also make a single-use **Fire Starter** that ignites or relights campfires before breaking after one use.
 
 An early Clay Bucket bridges the gap before iron: shape it from clay, fire it on a campfire, then use it to collect and place water or Tannin Solution for Barrel work. Tannin Solution behaves like brown-tinted water when placed, while the clay vessel deliberately refuses lava and unrelated fluids.
 
 ## Hide tanning
 
-Animals drop **Raw Hide** instead of ready-made leather. Producing leather now demonstrates the full primitive workflow:
+Animals drop **Raw Hide** instead of ready-made leather, and crafting 4 Rabbit Hides yields Raw Hide instead of finished leather. Producing leather demonstrates the full primitive workflow:
 
 1. Soak Raw Hide in water.
 2. Scrape the softened hide with a sword.
@@ -57,7 +58,7 @@ Turn Twine or String into Cloth on a functional wooden Loom. Load thread directl
 
 ## Primitive masonry
 
-Load one clay ball into a single-cavity Wooden Brick Mold and press twice with an empty hand. The material visibly spreads farther across the cavity after each press, ending as a fully packed clay-textured surface tinted from the recipe output. Collect the unfired brick and fire it over a campfire, then mix sand and water into Wet Mortar in a sealed Barrel to bind structural blocks. The Mold supports hopper loading, output extraction, empty-handed Create Deployers, and custom press counts through datapacks or KubeJS.
+Load one clay ball into a single-cavity Wooden Brick Mold (featuring an integrated molding board base for reliable center interaction) and press twice with an empty hand. The material visibly spreads farther across the cavity after each press, ending as a fully packed clay-textured surface tinted from the recipe output. Collect the unfired brick and fire it over a campfire, then mix sand and water into Wet Mortar in a sealed Barrel to bind structural blocks. The Mold supports hopper loading, output extraction, empty-handed Create Deployers, and custom press counts through datapacks or KubeJS.
 
 ## Made for survival and modpacks
 

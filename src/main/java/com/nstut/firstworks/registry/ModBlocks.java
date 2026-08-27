@@ -1,6 +1,7 @@
 package com.nstut.firstworks.registry;
 
 import com.nstut.firstworks.Firstworks;
+import com.nstut.firstworks.content.StandingTorchBlock;
 import com.nstut.firstworks.content.barrel.BarrelBlock;
 import com.nstut.firstworks.content.brick_mold.BrickMoldBlock;
 import com.nstut.firstworks.content.loom.LoomBlock;
@@ -21,6 +22,13 @@ public final class ModBlocks {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(BuiltInRegistries.BLOCK, Firstworks.MOD_ID);
     public static final Map<String, DeferredHolder<Block, BarrelBlock>> BARRELS = new LinkedHashMap<>();
     public static final Map<String, DeferredHolder<Block, LoomBlock>> LOOMS = new LinkedHashMap<>();
+
+    public static final DeferredHolder<Block, StandingTorchBlock> STANDING_TORCH = BLOCKS.register("standing_torch",
+            () -> new StandingTorchBlock(Block.Properties.of()
+                    .instabreak()
+                    .lightLevel(state -> 14)
+                    .sound(SoundType.WOOD)
+                    .pushReaction(PushReaction.DESTROY)));
 
     public static final DeferredHolder<Block, BrickMoldBlock> BRICK_MOLD = BLOCKS.register("brick_mold",
             () -> new BrickMoldBlock(Block.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion()));

@@ -6,7 +6,7 @@ public final class FirstworksConfig {
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
     public static final ModConfigSpec.BooleanValue REPLACE_ANIMAL_LEATHER = BUILDER
-            .comment("Replace leather dropped directly by vanilla animals with Firstworks raw hide.",
+            .comment("Replace leather dropped directly by vanilla animals with Firstworks raw hide, and replace the 4-rabbit-hide leather recipe with raw hide.",
                     "Disable this when a modpack manages hide acquisition through KubeJS or loot tables.")
             .define("replaceAnimalLeatherDrops", true);
 
@@ -27,6 +27,18 @@ public final class FirstworksConfig {
                     "Disable this to retain vanilla brick progression while keeping Firstworks masonry items available.",
                     "Changing this option requires a datapack reload or game restart.")
             .define("enableMasonryProgression", true);
+
+    public static final ModConfigSpec.BooleanValue RAIN_FILLS_BARRELS = BUILDER
+            .comment("Allow rain to naturally fill open Barrels whose input store holds no fluid or only water.",
+                    "Disabled by default to avoid changing existing-world behaviour.",
+                    "Rain does not fill Barrels whose input store already contains a non-water fluid.",
+                    "Existing output fluid is never modified. Cover or enclose a Barrel to keep it dry.")
+            .define("rainFillsBarrels", false);
+
+    public static final ModConfigSpec.IntValue RAIN_FILL_AMOUNT = BUILDER
+            .comment("Water (in millibuckets) gathered from rain per precipitation event.",
+                    "Only used when rainFillsBarrels is enabled.")
+            .defineInRange("rainFillAmount", 100, 1, 4000);
 
     public static final ModConfigSpec SPEC = BUILDER.build();
 

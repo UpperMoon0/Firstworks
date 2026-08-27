@@ -9,19 +9,20 @@ Firstworks has no dependency on Create or the Inventors modpack.
 ## Primitive barrel processing
 
 - Craft a Barrel from matching planks and slabs. Every vanilla wood family has a variant.
-- Add ingredients and fluid directly to the open Barrel.
+- Add ingredients and fluid directly to the open Barrel. Fluid you add (buckets, bottles, pipes, or rain) always goes to the shared **input** store; the **output** store only holds finished recipe fluids.
 - Close or open the lid with an empty hand. Valid sealed recipes progress over time.
-- See the stored item and fluid without opening a menu.
+- See the stored item and fluid, including separate input and output fluid levels, without opening a menu.
 - Collect completed output before toggling the lid again.
 - Toggle the lid with a rising redstone pulse for simple early automation.
+- Open Barrels can optionally collect rainwater when `rainFillsBarrels` is enabled in `config/firstworks-common.toml` (disabled by default). Rain only fills the input side and never contaminates a non-water input or the output side. Because the Barrel now keeps separate input and output fluid stores that share one 4000 mB capacity, rain can leave any remainder (e.g. 317 mB) without breaking the exact fluid amounts Firstworks' recipes require; open a recipe from partial water by topping it up or starting from ingredients that only consume what they need. Collection is driven by Minecraft's precipitation ticks, so its effective rate scales with the `randomTickSpeed` game rule and is intentionally gradual.
 
-Opening a working Barrel cancels its current progress without consuming or ejecting the contents. Standard NeoForge item and fluid capabilities are also exposed for modded automation: items enter from above, finished items leave below, and side access can inspect both item slots. Sealing the lid locks all automated item and fluid insertion and extraction until the Barrel is opened again.
+Opening a working Barrel cancels its current progress without consuming or ejecting the contents. Standard NeoForge item and fluid capabilities are exposed for modded automation with clean sided routing: items enter from above and finished items leave below; fluid fills the input store from above and drains finished output fluid from below; side access allows combined item insertion/extraction and fluid input filling with output-first drainage. Sealing the lid locks all automated item and fluid insertion and extraction until the Barrel is opened again.
 
 ## Built-in cordage and leatherworking
 
 Grass and ferns have a 30% chance to provide Plant Fibre when gathered normally; using any sword guarantees the fibre. Hand-twist it into Crude Cordage for primitive tools, then ret fibre in a water-filled Barrel. Craft early Bone and Flint tools (pickaxe, axe, shovel, hoe, sword) as accessible alternatives before metalworking. To spin fibre, hold the durable Hand Spindle in your main hand, place two Retted Fibre in your offhand, and hold use until they become two Twine. Releasing early cancels without consuming the fibre. Twine can then be woven into Cloth or combined into Rope. Wooden, stone, bone, and flint tools require primitive bindings; vanilla iron, gold, and diamond tools require Rope by default; netherite upgrades retain the bound diamond tool beneath them.
 
-Combine flint, Plant Fibre, and Crude Cordage or Rope into a Fire Starter. It has the same ignition targets as flint and steel, including extinguished campfires, but breaks after one successful use.
+Bind a vanilla torch, stick, and Crude Cordage or Rope into a **Standing Torch**—a rustic, floor-supported torch stand (light level 14) with flame and smoke particles and solid collision. Combine flint, Plant Fibre, and Crude Cordage or Rope into a single-use **Fire Starter** that ignites or relights campfires and fire targets before breaking after one use.
 
 Before metalworking, shape three clay balls into an Unfired Clay Bucket and fire it on a campfire. The finished vessel can collect and place water or Tannin Solution and move either fluid into and out of Barrels, but it rejects lava and unrelated fluids. Tannin Solution flows, forms sources, hydrates farmland, extinguishes fire, and otherwise behaves like tinted water in the world. Filled variants reuse one tintable fluid overlay rather than requiring a separate fluid sprite.
 
@@ -29,7 +30,7 @@ The vanilla tool binding changes are controlled by `bindVanillaToolRecipes` in `
 
 Firstworks uses the Barrel to turn leather into a physical early-game production chain:
 
-1. Animals that normally drop leather drop Raw Hide instead.
+1. Animals that normally drop leather drop Raw Hide instead, and crafting 4 Rabbit Hides yields Raw Hide instead of finished leather.
 2. Soak Raw Hides in water.
 3. Scrape each Soaked Hide with any sword, consuming one durability.
 4. Strip logs with an axe to collect one to three Tree Bark.
@@ -49,7 +50,7 @@ This progression is controlled by `enableTextileProgression` in `config/firstwor
 
 ## Primitive masonry
 
-Place one clay ball into the single-cavity Wooden Brick Mold, press it twice with an empty hand, and collect the unfired brick. Each press visibly spreads the material farther across the cavity until it becomes a fully compressed, clay-textured surface tinted from the recipe output. Fire unfired bricks over a campfire, then mix sand and water into Wet Mortar in a sealed Barrel to bind structural Brick Blocks. The Mold has no menu: hoppers can load material and remove completed output, and an empty-handed Create Deployer can automate each press.
+Place one clay ball into the single-cavity Wooden Brick Mold (equipped with an integrated wooden molding board base for reliable center interaction), press it twice with an empty hand, and collect the unfired brick. Each press visibly spreads the material farther across the cavity until it becomes a fully compressed, clay-textured surface tinted from the recipe output. Fire unfired bricks over a campfire, then mix sand and water into Wet Mortar in a sealed Barrel to bind structural Brick Blocks. The Mold has no menu: hoppers can load material and remove completed output, and an empty-handed Create Deployer can automate each press.
 
 Brick-molding recipes are data-driven, appear in JEI, and can be added through KubeJS. The `enableMasonryProgression` option controls whether this chain replaces vanilla brick smelting and block crafting.
 
@@ -149,7 +150,7 @@ FirstworksEvents.brickMoldingCompleted(event => {
 
 ## Optional integrations
 
-- **Jade** shows live Barrel processing and Loom loading, stroke progress, cancellation, and completed output.
+- **Jade** shows live Barrel processing and Loom loading, stroke progress, cancellation, and both the stored input and output fluid levels (the top layer is whichever fluid is in the output store).
 - **JEI** provides dedicated Barrel Processing, Hand Spinning, and Loom Weaving categories with their tools and wood variants registered as catalysts.
 
 ## Credits

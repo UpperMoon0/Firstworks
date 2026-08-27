@@ -3,6 +3,7 @@ package com.nstut.firstworks.content.barrel;
 import com.mojang.serialization.MapCodec;
 import com.nstut.firstworks.registry.ModBlockEntities;
 import com.nstut.firstworks.registry.ModFluids;
+import com.nstut.firstworks.FirstworksConfig;
 import com.nstut.firstworks.registry.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
@@ -29,6 +30,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.biome.Biome.Precipitation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -150,7 +152,7 @@ public class BarrelBlock extends BaseEntityBlock {
 
         PotionContents potion = stack.get(DataComponents.POTION_CONTENTS);
         if (stack.is(Items.WATER_BUCKET)) {
-            if (!level.isClientSide && barrel.addWater(1000)) {
+            if (!level.isClientSide && barrel.addInputWater(1000)) {
                 if (!player.getAbilities().instabuild) {
                     stack.shrink(1);
                     player.getInventory().placeItemBackInInventory(new ItemStack(Items.BUCKET));
@@ -161,7 +163,7 @@ public class BarrelBlock extends BaseEntityBlock {
         }
 
         if (stack.is(ModItems.WATER_CLAY_BUCKET.get())) {
-            if (!level.isClientSide && barrel.addWater(1000)) {
+            if (!level.isClientSide && barrel.addInputWater(1000)) {
                 if (!player.getAbilities().instabuild) {
                     stack.shrink(1);
                     player.getInventory().placeItemBackInInventory(new ItemStack(ModItems.CLAY_BUCKET.get()));
@@ -172,7 +174,7 @@ public class BarrelBlock extends BaseEntityBlock {
         }
 
         if (stack.is(ModItems.TANNIN_SOLUTION_BUCKET.get())) {
-            if (!level.isClientSide && barrel.addFluid(new FluidStack(ModFluids.TANNIN_SOLUTION.get(), 1_000))) {
+            if (!level.isClientSide && barrel.addInputFluid(new FluidStack(ModFluids.TANNIN_SOLUTION.get(), 1_000))) {
                 if (!player.getAbilities().instabuild) {
                     stack.shrink(1);
                     player.getInventory().placeItemBackInInventory(new ItemStack(Items.BUCKET));
@@ -183,7 +185,7 @@ public class BarrelBlock extends BaseEntityBlock {
         }
 
         if (stack.is(ModItems.TANNIN_CLAY_BUCKET.get())) {
-            if (!level.isClientSide && barrel.addFluid(new FluidStack(ModFluids.TANNIN_SOLUTION.get(), 1_000))) {
+            if (!level.isClientSide && barrel.addInputFluid(new FluidStack(ModFluids.TANNIN_SOLUTION.get(), 1_000))) {
                 if (!player.getAbilities().instabuild) {
                     stack.shrink(1);
                     player.getInventory().placeItemBackInInventory(new ItemStack(ModItems.CLAY_BUCKET.get()));
@@ -218,7 +220,7 @@ public class BarrelBlock extends BaseEntityBlock {
         }
 
         if (stack.is(Items.POTION) && potion != null && potion.is(Potions.WATER) && !potion.hasEffects()) {
-            if (!level.isClientSide && barrel.addWater(250)) {
+            if (!level.isClientSide && barrel.addInputWater(250)) {
                 if (!player.getAbilities().instabuild) {
                     stack.shrink(1);
                     player.getInventory().placeItemBackInInventory(new ItemStack(Items.GLASS_BOTTLE));
@@ -243,6 +245,9 @@ public class BarrelBlock extends BaseEntityBlock {
         if (!(level.getBlockEntity(pos) instanceof BarrelBlockEntity barrel)) {
             return InteractionResult.PASS;
         }
+        if (!level.isClientSide && player.isShiftKeyDown() && barrel.retrieveInput(player)) {
+            return InteractionResult.SUCCESS;
+        }
         if (!level.isClientSide && barrel.takeOutput(player)) {
             return InteractionResult.SUCCESS;
         }
@@ -263,5 +268,16 @@ public class BarrelBlock extends BaseEntityBlock {
             Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, barrel.getOutput());
         }
         super.onRemove(state, level, pos, newState, moving);
+    }
+
+    @Override
+    public void handlePrecipitation(BlockState state, Level level, BlockPos pos, Precipitation rainfall) {
+        super.handlePrecipitation(state, level, pos, rainfall);
+        if (!FirstworksConfig.RAIN_FILLS_BARRELS.get()) return;
+        if (state.getValue(SEALED)) return;
+        if (rainfall != Precipitation.RAIN) return;
+        if (level.getBlockEntity(pos) instanceof BarrelBlockEntity barrel) {
+            barrel.addRainWater();
+        }
     }
 }

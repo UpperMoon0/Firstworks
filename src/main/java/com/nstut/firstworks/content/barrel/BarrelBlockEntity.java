@@ -1,5 +1,6 @@
 package com.nstut.firstworks.content.barrel;
 
+import com.nstut.firstworks.FirstworksConfig;
 import com.nstut.firstworks.compat.OptionalIntegrations;
 import com.nstut.firstworks.content.ColoredFleeceItem;
 import com.nstut.firstworks.registry.ModBlockEntities;
@@ -8,22 +9,23 @@ import com.nstut.firstworks.registry.ModFluids;
 import com.nstut.firstworks.registry.ModItems;
 import com.nstut.firstworks.registry.ModRecipes;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
@@ -32,8 +34,12 @@ import org.jetbrains.annotations.Nullable;
 
 public class BarrelBlockEntity extends BlockEntity {
     public static final int CAPACITY = 4_000;
-    private final FluidTank tank;
-    private final IFluidHandler automationFluidHandler;
+
+    private final FluidTank inputTank;
+    private final FluidTank outputTank;
+    private final IFluidHandler inputFluidHandler;
+    private final IFluidHandler outputFluidHandler;
+    private final IFluidHandler combinedFluidHandler;
     private ItemStack ingredient = ItemStack.EMPTY;
     private ItemStack output = ItemStack.EMPTY;
     private int progress;
@@ -44,28 +50,114 @@ public class BarrelBlockEntity extends BlockEntity {
 
     public BarrelBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.BARREL.get(), pos, state);
-        tank = new FluidTank(CAPACITY, fluid -> true) {
+        inputTank = new FluidTank(CAPACITY) {
+            @Override
+            public int fill(FluidStack resource, FluidAction action) {
+                if (resource.isEmpty()) return 0;
+                if (!isEmpty() && !getFluid().is(resource.getFluid())) return 0;
+                int space = getAvailableFluidSpace();
+                if (space <= 0) return 0;
+                return super.fill(resource.copyWithAmount(Math.min(resource.getAmount(), space)), action);
+            }
+
             @Override
             protected void onContentsChanged() {
-                processCancelled = false;
-                setChangedAndSync();
+                onInputChanged();
             }
         };
-        automationFluidHandler = new IFluidHandler() {
-            @Override public int getTanks() { return tank.getTanks(); }
-            @Override public FluidStack getFluidInTank(int tankIndex) { return tank.getFluidInTank(tankIndex); }
-            @Override public int getTankCapacity(int tankIndex) { return tank.getTankCapacity(tankIndex); }
+        outputTank = new FluidTank(CAPACITY) {
+            @Override
+            public int fill(FluidStack resource, FluidAction action) {
+                if (resource.isEmpty()) return 0;
+                int space = getAvailableFluidSpace();
+                if (space <= 0) return 0;
+                return super.fill(resource.copyWithAmount(Math.min(resource.getAmount(), space)), action);
+            }
+
+            @Override
+            protected void onContentsChanged() {
+                onOutputChanged();
+            }
+        };
+        inputFluidHandler = new IFluidHandler() {
+            @Override public int getTanks() { return 1; }
+            @Override public FluidStack getFluidInTank(int tankIndex) {
+                return tankIndex == 0 ? inputTank.getFluid() : FluidStack.EMPTY;
+            }
+            @Override public int getTankCapacity(int tankIndex) {
+                return tankIndex == 0 ? CAPACITY : 0;
+            }
             @Override public boolean isFluidValid(int tankIndex, FluidStack stack) {
-                return !isSealed() && tank.isFluidValid(tankIndex, stack);
+                return tankIndex == 0 && inputTank.isFluidValid(stack);
             }
             @Override public int fill(FluidStack resource, FluidAction action) {
-                return isSealed() ? 0 : tank.fill(resource, action);
+                return isSealed() ? 0 : inputTank.fill(resource, action);
             }
             @Override public FluidStack drain(FluidStack resource, FluidAction action) {
-                return isSealed() ? FluidStack.EMPTY : tank.drain(resource, action);
+                if (isSealed() || resource.isEmpty() || inputTank.isEmpty() || !inputTank.getFluid().is(resource.getFluid()))
+                    return FluidStack.EMPTY;
+                return inputTank.drain(resource, action);
             }
             @Override public FluidStack drain(int maxDrain, FluidAction action) {
-                return isSealed() ? FluidStack.EMPTY : tank.drain(maxDrain, action);
+                return isSealed() ? FluidStack.EMPTY : inputTank.drain(maxDrain, action);
+            }
+        };
+        outputFluidHandler = new IFluidHandler() {
+            @Override public int getTanks() { return 1; }
+            @Override public FluidStack getFluidInTank(int tankIndex) {
+                return tankIndex == 0 ? outputTank.getFluid() : FluidStack.EMPTY;
+            }
+            @Override public int getTankCapacity(int tankIndex) {
+                return tankIndex == 0 ? CAPACITY : 0;
+            }
+            @Override public boolean isFluidValid(int tankIndex, FluidStack stack) {
+                return false;
+            }
+            @Override public int fill(FluidStack resource, FluidAction action) {
+                return 0;
+            }
+            @Override public FluidStack drain(FluidStack resource, FluidAction action) {
+                if (isSealed() || resource.isEmpty() || outputTank.isEmpty() || !outputTank.getFluid().is(resource.getFluid()))
+                    return FluidStack.EMPTY;
+                return outputTank.drain(resource, action);
+            }
+            @Override public FluidStack drain(int maxDrain, FluidAction action) {
+                return isSealed() ? FluidStack.EMPTY : outputTank.drain(maxDrain, action);
+            }
+        };
+        combinedFluidHandler = new IFluidHandler() {
+            @Override public int getTanks() { return 2; }
+            @Override public FluidStack getFluidInTank(int tankIndex) {
+                return switch (tankIndex) {
+                    case 0 -> inputTank.getFluid();
+                    case 1 -> outputTank.getFluid();
+                    default -> FluidStack.EMPTY;
+                };
+            }
+            @Override public int getTankCapacity(int tankIndex) {
+                return switch (tankIndex) {
+                    case 0, 1 -> CAPACITY;
+                    default -> 0;
+                };
+            }
+            @Override public boolean isFluidValid(int tankIndex, FluidStack stack) {
+                return tankIndex == 0 && inputTank.isFluidValid(stack);
+            }
+            @Override public int fill(FluidStack resource, FluidAction action) {
+                return isSealed() ? 0 : inputTank.fill(resource, action);
+            }
+            @Override public FluidStack drain(FluidStack resource, FluidAction action) {
+                if (isSealed() || resource.isEmpty()) return FluidStack.EMPTY;
+                if (!outputTank.isEmpty() && outputTank.getFluid().is(resource.getFluid()))
+                    return outputTank.drain(resource, action);
+                if (!inputTank.isEmpty() && inputTank.getFluid().is(resource.getFluid()))
+                    return inputTank.drain(resource, action);
+                return FluidStack.EMPTY;
+            }
+            @Override public FluidStack drain(int maxDrain, FluidAction action) {
+                if (isSealed()) return FluidStack.EMPTY;
+                FluidTank source = !outputTank.isEmpty() ? outputTank : inputTank;
+                return source.drain(maxDrain, action);
             }
         };
     }
@@ -93,40 +185,65 @@ public class BarrelBlockEntity extends BlockEntity {
     }
 
     private Process currentProcess() {
-        if (ingredient.isEmpty() || level == null || tank.isEmpty() || processCancelled) return null;
-        var fluidId = BuiltInRegistries.FLUID.getKey(tank.getFluid().getFluid());
+        if (ingredient.isEmpty() || level == null || inputTank.isEmpty() || processCancelled || !output.isEmpty()) return null;
+        var fluidId = BuiltInRegistries.FLUID.getKey(inputTank.getFluid().getFluid());
         for (RecipeHolder<BarrelRecipe> holder : level.getRecipeManager().getAllRecipesFor(ModRecipes.BARREL_PROCESSING_TYPE.get())) {
             BarrelRecipe recipe = holder.value();
             if (!recipe.matches(new SingleRecipeInput(ingredient), level) || !recipe.fluid().equals(fluidId)) continue;
             if (recipe.sealed() != getBlockState().getValue(BarrelBlock.SEALED)) continue;
-            int batches = Math.min(ingredient.getCount() / recipe.inputCount(), tank.getFluidAmount() / recipe.fluidAmount());
+            int batches = Math.min(ingredient.getCount() / recipe.inputCount(), inputTank.getFluidAmount() / recipe.fluidAmount());
             if (batches <= 0) continue;
-            if (!recipe.outputFluid().equals(BarrelRecipe.NO_FLUID)
-                    && tank.getFluidAmount() != recipe.fluidAmount() * batches) continue;
-            ItemStack result = recipe.result().isEmpty() ? ItemStack.EMPTY : recipe.result().copyWithCount(recipe.result().getCount() * batches);
+
+            ItemStack perBatch = recipe.result().isEmpty() ? ItemStack.EMPTY : recipe.result().copy();
+            if (!perBatch.isEmpty()) {
+                if (!output.isEmpty() && (!ItemStack.isSameItemSameComponents(output, perBatch)
+                        || output.getCount() + perBatch.getCount() * batches > output.getMaxStackSize())) continue;
+                int itemSpace = output.isEmpty() ? perBatch.getMaxStackSize() : output.getMaxStackSize() - output.getCount();
+                batches = Math.min(batches, itemSpace / perBatch.getCount());
+                if (batches <= 0) continue;
+            }
+
+            Fluid outType = Fluids.EMPTY;
+            int outputFluidAmount = recipe.outputFluidAmount();
+            if (outputFluidAmount > 0) {
+                ResourceLocation outFluid = recipe.outputFluid();
+                if (outFluid.equals(BarrelRecipe.NO_FLUID)) continue;
+                outType = BuiltInRegistries.FLUID.getOptional(outFluid).orElse(Fluids.EMPTY);
+                if (outType == Fluids.EMPTY) continue;
+                if (!outputTank.isEmpty() && !outputTank.getFluid().is(outType)) continue;
+                int fluidOutputBatches = (CAPACITY - outputTank.getFluidAmount()) / outputFluidAmount;
+                batches = Math.min(batches, fluidOutputBatches);
+                if (batches <= 0) continue;
+                int net = outputFluidAmount - recipe.fluidAmount();
+                if (net > 0) {
+                    int sharedBatches = (CAPACITY - getTotalFluidAmount()) / net;
+                    batches = Math.min(batches, sharedBatches);
+                    if (batches <= 0) continue;
+                }
+            }
+
+            ItemStack result = perBatch.isEmpty() ? ItemStack.EMPTY : perBatch.copyWithCount(perBatch.getCount() * batches);
             if (ingredient.is(ModItems.RAW_FLEECE.get()) && result.is(ModItems.CLEAN_WOOL.get())) {
                 DyeColor color = ColoredFleeceItem.color(ingredient);
                 if (color != DyeColor.WHITE) result.set(ModDataComponents.FLEECE_COLOR.get(), color);
             }
-            if (!output.isEmpty() && (!ItemStack.isSameItemSameComponents(output, result)
-                    || output.getCount() + result.getCount() > output.getMaxStackSize())) continue;
-            Fluid outputFluid = BuiltInRegistries.FLUID.getOptional(recipe.outputFluid()).orElse(Fluids.EMPTY);
-            FluidStack outputFluidStack = outputFluid == Fluids.EMPTY || recipe.outputFluidAmount() <= 0
+            FluidStack outputFluidStack = outType == Fluids.EMPTY || outputFluidAmount <= 0
                     ? FluidStack.EMPTY
-                    : new FluidStack(outputFluid, recipe.outputFluidAmount() * batches);
+                    : new FluidStack(outType, outputFluidAmount * batches);
             return new Process(holder.id(), recipe, recipe.inputCount() * batches, recipe.fluidAmount() * batches,
-                    ingredient.copyWithCount(recipe.inputCount() * batches), tank.getFluid().copyWithAmount(recipe.fluidAmount() * batches),
+                    ingredient.copyWithCount(recipe.inputCount() * batches),
+                    inputTank.getFluid().copyWithAmount(recipe.fluidAmount() * batches),
                     result, outputFluidStack, recipe.duration());
         }
         return null;
     }
 
     private void complete(Process process) {
-        tank.drain(process.fluidAmount(), IFluidHandler.FluidAction.EXECUTE);
+        inputTank.drain(process.fluidAmount(), IFluidHandler.FluidAction.EXECUTE);
         ingredient.shrink(process.inputCount());
         if (ingredient.isEmpty()) ingredient = ItemStack.EMPTY;
         if (!process.outputFluidStack().isEmpty()) {
-            tank.fill(process.outputFluidStack().copy(), IFluidHandler.FluidAction.EXECUTE);
+            outputTank.fill(process.outputFluidStack().copy(), IFluidHandler.FluidAction.EXECUTE);
         }
         if (!process.result().isEmpty()) {
             if (output.isEmpty()) output = process.result().copy();
@@ -140,35 +257,49 @@ public class BarrelBlockEntity extends BlockEntity {
         }
     }
 
-    public boolean addWater(int amount) {
-        return addFluid(new FluidStack(Fluids.WATER, amount));
+    public void addRainWater() {
+        if (!FirstworksConfig.RAIN_FILLS_BARRELS.get()) return;
+        if (isSealed()) return;
+        if (progress > 0 || processCancelled) return;
+        if (!inputTank.isEmpty() && !inputTank.getFluid().is(Fluids.WATER)) return;
+        int amount = Math.min(FirstworksConfig.RAIN_FILL_AMOUNT.get(), getAvailableFluidSpace());
+        if (amount <= 0) return;
+        inputTank.fill(new FluidStack(Fluids.WATER, amount), IFluidHandler.FluidAction.EXECUTE);
     }
 
-    public boolean addFluid(FluidStack fluid) {
-        if (fluid.isEmpty() || tank.fill(fluid, IFluidHandler.FluidAction.SIMULATE) != fluid.getAmount()) return false;
-        tank.fill(fluid.copy(), IFluidHandler.FluidAction.EXECUTE);
-        return true;
+    public boolean addInputWater(int amount) {
+        return addInputFluid(new FluidStack(Fluids.WATER, amount));
+    }
+
+    public boolean addInputFluid(FluidStack fluid) {
+        if (fluid.isEmpty()) return false;
+        if (!inputTank.isEmpty() && !inputTank.getFluid().is(fluid.getFluid())) return false;
+        int space = getAvailableFluidSpace();
+        if (space < fluid.getAmount()) return false;
+        return inputTank.fill(fluid.copy(), IFluidHandler.FluidAction.EXECUTE) == fluid.getAmount();
     }
 
     public ItemStack drainBucket() {
-        if (tank.getFluidAmount() < 1_000) return ItemStack.EMPTY;
-        var bucket = tank.getFluid().getFluid().getBucket();
+        FluidTank source = !outputTank.isEmpty() ? outputTank : inputTank;
+        if (source.getFluidAmount() < 1_000) return ItemStack.EMPTY;
+        var bucket = source.getFluid().getFluid().getBucket();
         if (bucket == net.minecraft.world.item.Items.AIR) return ItemStack.EMPTY;
-        tank.drain(1_000, IFluidHandler.FluidAction.EXECUTE);
+        source.drain(1_000, IFluidHandler.FluidAction.EXECUTE);
         return new ItemStack(bucket);
     }
 
     public ItemStack drainClayBucket() {
-        if (tank.getFluidAmount() < 1_000) return ItemStack.EMPTY;
+        FluidTank source = !outputTank.isEmpty() ? outputTank : inputTank;
+        if (source.getFluidAmount() < 1_000) return ItemStack.EMPTY;
         ItemStack filled;
-        if (tank.getFluid().is(Fluids.WATER)) {
+        if (source.getFluid().is(Fluids.WATER)) {
             filled = new ItemStack(ModItems.WATER_CLAY_BUCKET.get());
-        } else if (tank.getFluid().is(ModFluids.TANNIN_SOLUTION.get())) {
+        } else if (source.getFluid().is(ModFluids.TANNIN_SOLUTION.get())) {
             filled = new ItemStack(ModItems.TANNIN_CLAY_BUCKET.get());
         } else {
             return ItemStack.EMPTY;
         }
-        tank.drain(1_000, IFluidHandler.FluidAction.EXECUTE);
+        source.drain(1_000, IFluidHandler.FluidAction.EXECUTE);
         return filled;
     }
 
@@ -178,6 +309,16 @@ public class BarrelBlockEntity extends BlockEntity {
         if (ingredient.isEmpty()) ingredient = held.copyWithCount(1);
         else ingredient.grow(1);
         if (!creative) held.shrink(1);
+        progress = 0;
+        processCancelled = false;
+        setChangedAndSync();
+        return true;
+    }
+
+    public boolean retrieveInput(Player player) {
+        if (isSealed() || ingredient.isEmpty()) return false;
+        player.getInventory().placeItemBackInInventory(ingredient.copy());
+        ingredient = ItemStack.EMPTY;
         progress = 0;
         processCancelled = false;
         setChangedAndSync();
@@ -238,6 +379,17 @@ public class BarrelBlockEntity extends BlockEntity {
         setChangedAndSync();
     }
 
+    private void onInputChanged() {
+        progress = 0;
+        processCancelled = false;
+        setChangedAndSync();
+    }
+
+    private void onOutputChanged() {
+        progress = 0;
+        setChangedAndSync();
+    }
+
     private void setChangedAndSync() {
         setChanged();
         if (level != null && !level.isClientSide) {
@@ -245,8 +397,14 @@ public class BarrelBlockEntity extends BlockEntity {
         }
     }
 
-    public FluidTank getTank() { return tank; }
-    public IFluidHandler getAutomationFluidHandler() { return automationFluidHandler; }
+    public FluidTank getInputTank() { return inputTank; }
+    public FluidTank getOutputTank() { return outputTank; }
+    public IFluidHandler getFluidHandler(@Nullable Direction side) {
+        if (side == Direction.UP) return inputFluidHandler;
+        if (side == Direction.DOWN) return outputFluidHandler;
+        return combinedFluidHandler;
+    }
+    public IFluidHandler getAutomationFluidHandler() { return combinedFluidHandler; }
     public IItemHandler getItemHandler(@Nullable Direction side) {
         if (side == Direction.UP) return inputHandler;
         if (side == Direction.DOWN) return outputHandler;
@@ -256,6 +414,9 @@ public class BarrelBlockEntity extends BlockEntity {
     public ItemStack getOutput() { return output; }
     public int getProgress() { return progress; }
     public boolean isProcessCancelled() { return processCancelled; }
+    public int getTotalFluidAmount() { return inputTank.getFluidAmount() + outputTank.getFluidAmount(); }
+    public int getAvailableFluidSpace() { return CAPACITY - getTotalFluidAmount(); }
+    public boolean hasOutputFluid() { return !outputTank.isEmpty(); }
     private boolean isSealed() { return getBlockState().getValue(BarrelBlock.SEALED); }
     public java.util.Optional<RecipeHolder<BarrelRecipe>> getActiveRecipe() {
         Process process = currentProcess();
@@ -272,19 +433,31 @@ public class BarrelBlockEntity extends BlockEntity {
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
-        tag.put("Tank", tank.writeToNBT(registries, new CompoundTag()));
+        tag.put("InputTank", inputTank.writeToNBT(registries, new CompoundTag()));
+        tag.put("OutputTank", outputTank.writeToNBT(registries, new CompoundTag()));
         tag.put("Ingredient", ingredient.saveOptional(registries));
         tag.put("Output", output.saveOptional(registries));
         tag.putInt("Progress", progress);
+        tag.putBoolean("ProcessCancelled", processCancelled);
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        if (tag.contains("Tank")) tank.readFromNBT(registries, tag.getCompound("Tank"));
+        if (tag.contains("InputTank")) {
+            inputTank.readFromNBT(registries, tag.getCompound("InputTank"));
+            outputTank.readFromNBT(registries, tag.getCompound("OutputTank"));
+        } else if (tag.contains("Tank")) {
+            inputTank.readFromNBT(registries, tag.getCompound("Tank"));
+            outputTank.setFluid(FluidStack.EMPTY);
+        }
         ingredient = ItemStack.parseOptional(registries, tag.getCompound("Ingredient"));
         output = ItemStack.parseOptional(registries, tag.getCompound("Output"));
         progress = tag.getInt("Progress");
+        processCancelled = tag.getBoolean("ProcessCancelled");
+        if (getTotalFluidAmount() > CAPACITY) {
+            inputTank.drain(getTotalFluidAmount() - CAPACITY, IFluidHandler.FluidAction.EXECUTE);
+        }
     }
 
     @Override

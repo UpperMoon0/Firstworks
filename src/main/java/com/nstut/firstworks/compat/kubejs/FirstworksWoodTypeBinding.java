@@ -38,6 +38,9 @@ public final class FirstworksWoodTypeBinding {
         String displayName = optionalString(properties, "displayName", titleCase(materialId.wrapped().getPath()));
         boolean recipes = optionalBoolean(properties, "recipes", true);
 
+        com.nstut.firstworks.registry.WoodTypeRegistry.register(log, materialId.wrapped().toString(), logTexture, displayName);
+        com.nstut.firstworks.registry.WoodTypeRegistry.register(strippedLog, materialId.wrapped().toString(), logTexture, displayName);
+
         ResourceLocation loomId = materialId.wrapped().withPath(path -> path + "_loom");
         ResourceLocation barrelId = materialId.wrapped().withPath(path -> path + "_barrel");
 
