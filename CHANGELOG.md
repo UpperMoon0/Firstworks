@@ -41,3 +41,10 @@
     "collect output before the next cycle" rule, so Jade no longer shows a process stuck at zero.
   - `rainFillsBarrels` config wording corrected to describe the input-store check; existing output fluid is never
     modified by rain.
+- Tree Bark is now genuinely mod-compatible. `Firstworks.registerWoodType()` registers its `log` (and `strippedLog`)
+  as the authoritative source for bark: stripping that log yields `WOOD_TYPE` equal to the registration's wood type
+  (e.g. `kubejs:chestnut`) and the bark texture is generated from the explicitly registered `logTexture` (a custom
+  `logTexture` is now honored). For logs not explicitly registered, the wood type is still inferred conventionally
+  from the registry name (`namespace:type` for modded `*_log`/`*_stem`, `oak` fallback), so discovered modded woods
+  produce correctly named, textured bark instead of always dropping Oak. A central `WoodTypeRegistry` is shared between
+  the server-side bark drop and the client-side texture generator.

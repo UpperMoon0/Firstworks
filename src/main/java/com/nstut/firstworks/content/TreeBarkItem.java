@@ -27,7 +27,10 @@ public final class TreeBarkItem extends Item {
     @Override
     public Component getName(ItemStack stack) {
         String type = woodType(stack);
-        Component typeName = Component.translatableWithFallback("wood_type.firstworks." + type, formatWoodTypeName(type));
+        String displayName = com.nstut.firstworks.registry.WoodTypeRegistry.getDisplayName(type);
+        Component typeName = displayName != null
+                ? Component.literal(displayName)
+                : Component.translatableWithFallback("wood_type.firstworks." + type, formatWoodTypeName(type));
         return Component.translatable("item.firstworks.tree_bark_named", typeName);
     }
 

@@ -87,15 +87,8 @@ public final class GameplayEvents {
     }
 
     private static String getWoodTypeForBlock(Block block) {
-        String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
-        String[] woodTypes = {
-            "spruce", "birch", "jungle", "acacia", "dark_oak",
-            "mangrove", "cherry", "bamboo", "crimson", "warped"
-        };
-        for (String type : woodTypes) {
-            if (name.contains(type)) return type;
-        }
-        return "oak";
+        return com.nstut.firstworks.registry.WoodTypeRegistry.resolveWoodType(
+                BuiltInRegistries.BLOCK.getKey(block));
     }
 
     @SubscribeEvent

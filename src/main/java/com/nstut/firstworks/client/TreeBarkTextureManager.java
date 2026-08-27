@@ -79,7 +79,9 @@ public final class TreeBarkTextureManager implements ResourceManagerReloadListen
     }
 
     private static Set<String> discoverWoodTypes() {
-        Set<String> set = new LinkedHashSet<>(Arrays.asList(
+        Set<String> set = new LinkedHashSet<>();
+        set.addAll(com.nstut.firstworks.registry.WoodTypeRegistry.explicitWoodTypes());
+        set.addAll(Arrays.asList(
                 "oak", "spruce", "birch", "jungle", "acacia", "dark_oak",
                 "mangrove", "cherry", "bamboo", "crimson", "warped"
         ));
@@ -97,6 +99,10 @@ public final class TreeBarkTextureManager implements ResourceManagerReloadListen
     }
 
     private static ResourceLocation getLogTextureLocation(String woodType) {
+        ResourceLocation explicit = com.nstut.firstworks.registry.WoodTypeRegistry.getLogTexture(woodType);
+        if (explicit != null) {
+            return explicit.withPath(path -> path.startsWith("textures/") ? path : "textures/" + path);
+        }
         if ("bamboo".equals(woodType)) {
             return ResourceLocation.withDefaultNamespace("textures/block/bamboo_block.png");
         } else if ("crimson".equals(woodType)) {
