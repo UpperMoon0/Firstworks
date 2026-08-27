@@ -6,7 +6,7 @@ public final class FirstworksConfig {
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
     public static final ModConfigSpec.BooleanValue REPLACE_ANIMAL_LEATHER = BUILDER
-            .comment("Replace leather dropped directly by vanilla animals with Firstworks raw hide.",
+            .comment("Replace leather dropped directly by vanilla animals with Firstworks raw hide, and replace the 4-rabbit-hide leather recipe with raw hide.",
                     "Disable this when a modpack manages hide acquisition through KubeJS or loot tables.")
             .define("replaceAnimalLeatherDrops", true);
 

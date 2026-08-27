@@ -23,6 +23,7 @@
   "block.firstworks.bamboo_loom": "Bamboo Loom",
   "block.firstworks.crimson_loom": "Crimson Loom",
   "block.firstworks.warped_loom": "Warped Loom",
+  "block.firstworks.standing_torch": "Standing Torch",
   "item.firstworks.tree_bark": "Tree Bark",
   "item.firstworks.tree_bark_named": "%s Tree Bark",
   "tooltip.firstworks.tree_bark.obtain": "Strip an unstripped log with an axe to collect bark",

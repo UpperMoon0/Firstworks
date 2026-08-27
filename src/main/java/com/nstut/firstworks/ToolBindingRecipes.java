@@ -30,10 +30,11 @@ public final class ToolBindingRecipes {
         boolean bindTools = FirstworksConfig.BIND_VANILLA_TOOL_RECIPES.getAsBoolean();
         boolean textiles = FirstworksConfig.ENABLE_TEXTILE_PROGRESSION.getAsBoolean();
         boolean masonry = FirstworksConfig.ENABLE_MASONRY_PROGRESSION.getAsBoolean();
-        rewrite(event.getPlayerList().getServer().getRecipeManager(), bindTools, textiles, masonry);
+        boolean replaceLeather = FirstworksConfig.REPLACE_ANIMAL_LEATHER.getAsBoolean();
+        rewrite(event.getPlayerList().getServer().getRecipeManager(), bindTools, textiles, masonry, replaceLeather);
     }
 
-    private static void rewrite(RecipeManager manager, boolean bindTools, boolean textiles, boolean masonry) {
+    private static void rewrite(RecipeManager manager, boolean bindTools, boolean textiles, boolean masonry, boolean replaceLeather) {
         Ingredient primitiveBinding = Ingredient.of(ModItems.CRUDE_CORDAGE.get(), ModItems.ROPE.get());
         Ingredient rope = Ingredient.of(ModItems.ROPE.get());
         Map<ResourceLocation, Recipe<?>> replacements = new HashMap<>();
@@ -49,6 +50,10 @@ public final class ToolBindingRecipes {
                     Items.GOLDEN_PICKAXE, Items.GOLDEN_AXE, Items.GOLDEN_SHOVEL, Items.GOLDEN_HOE, Items.GOLDEN_SWORD);
             addTier(replacements, "diamond", Ingredient.of(Items.DIAMOND), rope,
                     Items.DIAMOND_PICKAXE, Items.DIAMOND_AXE, Items.DIAMOND_SHOVEL, Items.DIAMOND_HOE, Items.DIAMOND_SWORD);
+        }
+
+        if (!replaceLeather) {
+            replacements.put(vanilla("leather"), shapedSimple(Items.LEATHER, Ingredient.of(Items.RABBIT_HIDE), "##", "##"));
         }
 
         List<RecipeHolder<?>> rewritten = new ArrayList<>(manager.getRecipes().size());
@@ -126,6 +131,12 @@ public final class ToolBindingRecipes {
                 'S', Ingredient.of(Items.STICK),
                 'B', binding);
         return new ShapedRecipe("", CraftingBookCategory.EQUIPMENT,
+                ShapedRecipePattern.of(keys, pattern), new ItemStack(result));
+    }
+
+    private static ShapedRecipe shapedSimple(Item result, Ingredient material, String... pattern) {
+        Map<Character, Ingredient> keys = Map.of('#', material);
+        return new ShapedRecipe("", CraftingBookCategory.MISC,
                 ShapedRecipePattern.of(keys, pattern), new ItemStack(result));
     }
 

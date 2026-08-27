@@ -42,6 +42,8 @@ public final class ModItems {
     public static final DeferredHolder<Item, Item> MORTAR = simple("mortar");
     public static final DeferredHolder<Item, Item> BRICK_MOLD = ITEMS.register("brick_mold",
             () -> new BlockItem(ModBlocks.BRICK_MOLD.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> STANDING_TORCH = ITEMS.register("standing_torch",
+            () -> new BlockItem(ModBlocks.STANDING_TORCH.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> CLAY_BUCKET = ITEMS.register("clay_bucket",
             () -> new ClayBucketItem(Fluids.EMPTY, new Item.Properties().stacksTo(1)));
     public static final DeferredHolder<Item, Item> WATER_CLAY_BUCKET = ITEMS.register("water_clay_bucket",

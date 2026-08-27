@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "T",
+    "#",
+    "B"
+  ],
+  "key": {
+    "T": {
+      "item": "minecraft:torch"
+    },
+    "#": {
+      "item": "minecraft:stick"
+    },
+    "B": {
+      "tag": "firstworks:primitive_bindings"
+    }
+  },
+  "result": {
+    "count": 1,
+    "id": "firstworks:standing_torch"
+  }
+}
