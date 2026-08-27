@@ -42,6 +42,7 @@ public class BrickMoldBlock extends BaseEntityBlock {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     private static final VoxelShape NORTH_SHAPE = Shapes.or(
+            box(2, 0, 4, 14, 1, 12),
             box(2, 0, 4, 14, 4, 5),
             box(2, 0, 11, 14, 4, 12),
             box(2, 0, 5, 3, 4, 11),

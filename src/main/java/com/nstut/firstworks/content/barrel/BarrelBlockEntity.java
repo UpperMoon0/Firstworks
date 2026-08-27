@@ -37,7 +37,9 @@ public class BarrelBlockEntity extends BlockEntity {
 
     private final FluidTank inputTank;
     private final FluidTank outputTank;
-    private final IFluidHandler automationFluidHandler;
+    private final IFluidHandler inputFluidHandler;
+    private final IFluidHandler outputFluidHandler;
+    private final IFluidHandler combinedFluidHandler;
     private ItemStack ingredient = ItemStack.EMPTY;
     private ItemStack output = ItemStack.EMPTY;
     private int progress;
@@ -77,7 +79,53 @@ public class BarrelBlockEntity extends BlockEntity {
                 onOutputChanged();
             }
         };
-        automationFluidHandler = new IFluidHandler() {
+        inputFluidHandler = new IFluidHandler() {
+            @Override public int getTanks() { return 1; }
+            @Override public FluidStack getFluidInTank(int tankIndex) {
+                return tankIndex == 0 ? inputTank.getFluid() : FluidStack.EMPTY;
+            }
+            @Override public int getTankCapacity(int tankIndex) {
+                return tankIndex == 0 ? CAPACITY : 0;
+            }
+            @Override public boolean isFluidValid(int tankIndex, FluidStack stack) {
+                return tankIndex == 0 && inputTank.isFluidValid(stack);
+            }
+            @Override public int fill(FluidStack resource, FluidAction action) {
+                return isSealed() ? 0 : inputTank.fill(resource, action);
+            }
+            @Override public FluidStack drain(FluidStack resource, FluidAction action) {
+                if (isSealed() || resource.isEmpty() || inputTank.isEmpty() || !inputTank.getFluid().is(resource.getFluid()))
+                    return FluidStack.EMPTY;
+                return inputTank.drain(resource, action);
+            }
+            @Override public FluidStack drain(int maxDrain, FluidAction action) {
+                return isSealed() ? FluidStack.EMPTY : inputTank.drain(maxDrain, action);
+            }
+        };
+        outputFluidHandler = new IFluidHandler() {
+            @Override public int getTanks() { return 1; }
+            @Override public FluidStack getFluidInTank(int tankIndex) {
+                return tankIndex == 0 ? outputTank.getFluid() : FluidStack.EMPTY;
+            }
+            @Override public int getTankCapacity(int tankIndex) {
+                return tankIndex == 0 ? CAPACITY : 0;
+            }
+            @Override public boolean isFluidValid(int tankIndex, FluidStack stack) {
+                return false;
+            }
+            @Override public int fill(FluidStack resource, FluidAction action) {
+                return 0;
+            }
+            @Override public FluidStack drain(FluidStack resource, FluidAction action) {
+                if (isSealed() || resource.isEmpty() || outputTank.isEmpty() || !outputTank.getFluid().is(resource.getFluid()))
+                    return FluidStack.EMPTY;
+                return outputTank.drain(resource, action);
+            }
+            @Override public FluidStack drain(int maxDrain, FluidAction action) {
+                return isSealed() ? FluidStack.EMPTY : outputTank.drain(maxDrain, action);
+            }
+        };
+        combinedFluidHandler = new IFluidHandler() {
             @Override public int getTanks() { return 2; }
             @Override public FluidStack getFluidInTank(int tankIndex) {
                 return switch (tankIndex) {
@@ -351,7 +399,12 @@ public class BarrelBlockEntity extends BlockEntity {
 
     public FluidTank getInputTank() { return inputTank; }
     public FluidTank getOutputTank() { return outputTank; }
-    public IFluidHandler getAutomationFluidHandler() { return automationFluidHandler; }
+    public IFluidHandler getFluidHandler(@Nullable Direction side) {
+        if (side == Direction.UP) return inputFluidHandler;
+        if (side == Direction.DOWN) return outputFluidHandler;
+        return combinedFluidHandler;
+    }
+    public IFluidHandler getAutomationFluidHandler() { return combinedFluidHandler; }
     public IItemHandler getItemHandler(@Nullable Direction side) {
         if (side == Direction.UP) return inputHandler;
         if (side == Direction.DOWN) return outputHandler;

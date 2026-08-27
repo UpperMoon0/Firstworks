@@ -52,8 +52,8 @@ public final class ToolBindingRecipes {
                     Items.DIAMOND_PICKAXE, Items.DIAMOND_AXE, Items.DIAMOND_SHOVEL, Items.DIAMOND_HOE, Items.DIAMOND_SWORD);
         }
 
-        if (!replaceLeather) {
-            replacements.put(vanilla("leather"), shapedSimple(Items.LEATHER, Ingredient.of(Items.RABBIT_HIDE), "##", "##"));
+        if (replaceLeather) {
+            replacements.put(vanilla("leather"), shapedSimple(ModItems.RAW_HIDE.get(), Ingredient.of(Items.RABBIT_HIDE), "##", "##"));
         }
 
         List<RecipeHolder<?>> rewritten = new ArrayList<>(manager.getRecipes().size());

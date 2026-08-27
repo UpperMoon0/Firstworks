@@ -57,5 +57,10 @@
     `mymod:textures/block/blue_stem.png` instead of a guessed `_log.png`; explicit registration still takes precedence.
   - Barrel automation `IFluidHandler.isFluidValid()` now reports static validity (`tankIndex == 0 && inputTank.isFluidValid(stack)`);
     sealing/current-fluid checks moved to `fill()`/`drain()`, fixing the capability contract.
-- Added **Standing Torch**: a primitive standing torch block with flame and smoke particles, light level 14, floor survival checks, full custom model/textures, shaped crafting recipe (Torch + Stick + Primitive Binding), and `#minecraft:mineable/axe` integration.
-- Replaced the vanilla $2 \times 2$ 4-rabbit-hide $\rightarrow$ Leather crafting recipe with `firstworks:raw_hide`, integrating with `replaceAnimalLeatherDrops` in configuration so vanilla leather crafting can be restored if the option is disabled.
+- Added **Standing Torch**: a primitive standing torch block with flame and smoke particles, light level 14, floor survival checks, full custom model/textures, 16 px solid collision with full 26 px outline selection, shaped crafting recipe (Torch + Stick + Primitive Binding), and `#minecraft:mineable/axe` integration.
+- Added 1 px wooden molding board base to the **Brick Mold** model and voxel shape, providing a reliable center click target and grounded appearance.
+- Upgraded **Barrel fluid automation** to be fully side-aware, mirroring the item automation contract:
+  - Top face: input tank only (fill + drain input).
+  - Bottom face: output tank only (drain output only, filling blocked).
+  - Sides / null: combined handler (fill input, drain output-first then input).
+- Improved rabbit-hide $\rightarrow$ raw-hide recipe replacement to be fully dynamic via runtime recipe manager rewriting without shipping a static JSON file. When `replaceAnimalLeatherDrops` is true, the vanilla recipe is redirected to Raw Hide; when false, any vanilla, datapack, or KubeJS recipe remains completely untouched.

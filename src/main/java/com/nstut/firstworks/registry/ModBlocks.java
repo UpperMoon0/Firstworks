@@ -25,7 +25,6 @@ public final class ModBlocks {
 
     public static final DeferredHolder<Block, StandingTorchBlock> STANDING_TORCH = BLOCKS.register("standing_torch",
             () -> new StandingTorchBlock(Block.Properties.of()
-                    .noCollission()
                     .instabreak()
                     .lightLevel(state -> 14)
                     .sound(SoundType.WOOD)

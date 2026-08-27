@@ -15,7 +15,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class StandingTorchBlock extends Block {
-    protected static final VoxelShape SHAPE = Block.box(6.0, 0.0, 6.0, 10.0, 26.0, 10.0);
+    protected static final VoxelShape OUTLINE = Block.box(6.0, 0.0, 6.0, 10.0, 26.0, 10.0);
+    protected static final VoxelShape COLLISION = Block.box(6.0, 0.0, 6.0, 10.0, 16.0, 10.0);
 
     public StandingTorchBlock(Properties properties) {
         super(properties);
@@ -23,7 +24,12 @@ public class StandingTorchBlock extends Block {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPE;
+        return OUTLINE;
+    }
+
+    @Override
+    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return COLLISION;
     }
 
     @Override
