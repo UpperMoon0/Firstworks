@@ -57,3 +57,5 @@
     `mymod:textures/block/blue_stem.png` instead of a guessed `_log.png`; explicit registration still takes precedence.
   - Barrel automation `IFluidHandler.isFluidValid()` now reports static validity (`tankIndex == 0 && inputTank.isFluidValid(stack)`);
     sealing/current-fluid checks moved to `fill()`/`drain()`, fixing the capability contract.
+- Added **Standing Torch**: a primitive standing torch block with flame and smoke particles, light level 14, floor survival checks, full custom model/textures, shaped crafting recipe (Torch + Stick + Primitive Binding), and `#minecraft:mineable/axe` integration.
+- Replaced the vanilla $2 \times 2$ 4-rabbit-hide $\rightarrow$ Leather crafting recipe with `firstworks:raw_hide`, integrating with `replaceAnimalLeatherDrops` in configuration so vanilla leather crafting can be restored if the option is disabled.
