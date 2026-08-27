@@ -84,9 +84,7 @@ public class BarrelBlockEntity extends BlockEntity {
             }
             @Override public int getTankCapacity(int tankIndex) { return CAPACITY; }
             @Override public boolean isFluidValid(int tankIndex, FluidStack stack) {
-                if (isSealed()) return false;
-                if (tankIndex == 1) return false;
-                return inputTank.isEmpty() || inputTank.getFluid().is(stack.getFluid());
+                return tankIndex == 0 && inputTank.isFluidValid(stack);
             }
             @Override public int fill(FluidStack resource, FluidAction action) {
                 return isSealed() ? 0 : inputTank.fill(resource, action);

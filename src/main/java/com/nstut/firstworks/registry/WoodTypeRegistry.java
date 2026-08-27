@@ -58,9 +58,14 @@ public final class WoodTypeRegistry {
     /** Conventional inference for logs not explicitly registered through {@code registerWoodType}. */
     public static String inferWoodType(ResourceLocation key) {
         String path = key.getPath();
-        if (path.endsWith("_log") || path.endsWith("_stem")) {
-            String base = path.substring(0, path.lastIndexOf('_'));
-            return key.getNamespace().equals("minecraft") ? base : key.getNamespace() + ":" + base;
+        for (String suffix : new String[]{ "_log", "_wood", "_stem", "_hyphae" }) {
+            if (path.endsWith(suffix)) {
+                String base = path.substring(0, path.length() - suffix.length());
+                return key.getNamespace().equals("minecraft") ? base : key.getNamespace() + ":" + base;
+            }
+        }
+        if (key.getNamespace().equals("minecraft") && path.equals("bamboo_block")) {
+            return "bamboo";
         }
         return "oak";
     }

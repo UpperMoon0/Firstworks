@@ -41,10 +41,11 @@ public final class TreeBarkTextureManager implements ResourceManagerReloadListen
             return;
         }
 
-        Set<String> woodTypes = discoverWoodTypes();
+        Map<String, ResourceLocation> woodTypes = discoverWoodTypes();
 
-        for (String woodType : woodTypes) {
-            ResourceLocation logTexLoc = getLogTextureLocation(woodType);
+        for (Map.Entry<String, ResourceLocation> entry : woodTypes.entrySet()) {
+            String woodType = entry.getKey();
+            ResourceLocation logTexLoc = getLogTextureLocation(woodType, entry.getValue());
             NativeImage logTex = loadNativeImage(resourceManager, logTexLoc);
             if (logTex == null && !"oak".equals(woodType)) {
                 continue;
@@ -78,42 +79,64 @@ public final class TreeBarkTextureManager implements ResourceManagerReloadListen
         return INSTANCE.MESH_CACHE.getOrDefault(woodType, INSTANCE.MESH_CACHE.getOrDefault("oak", Collections.emptyList()));
     }
 
-    private static Set<String> discoverWoodTypes() {
-        Set<String> set = new LinkedHashSet<>();
-        set.addAll(com.nstut.firstworks.registry.WoodTypeRegistry.explicitWoodTypes());
-        set.addAll(Arrays.asList(
-                "oak", "spruce", "birch", "jungle", "acacia", "dark_oak",
-                "mangrove", "cherry", "bamboo", "crimson", "warped"
-        ));
+    /**
+     * Map of wood type to the source block whose texture should be used as the fallback when the
+     * wood type is not explicitly registered with a custom {@code logTexture}. Preserving the actual
+     * source block means a modded {@code *_stem} resolves to {@code .../blue_stem.png} rather than a
+     * guessed {@code .../blue_log.png}.
+     */
+    private static Map<String, ResourceLocation> discoverWoodTypes() {
+        Map<String, ResourceLocation> map = new LinkedHashMap<>();
+        for (String wt : com.nstut.firstworks.registry.WoodTypeRegistry.explicitWoodTypes()) {
+            map.putIfAbsent(wt, null);
+        }
+        map.put("oak", ResourceLocation.fromNamespaceAndPath("minecraft", "oak_log"));
+        map.put("spruce", ResourceLocation.fromNamespaceAndPath("minecraft", "spruce_log"));
+        map.put("birch", ResourceLocation.fromNamespaceAndPath("minecraft", "birch_log"));
+        map.put("jungle", ResourceLocation.fromNamespaceAndPath("minecraft", "jungle_log"));
+        map.put("acacia", ResourceLocation.fromNamespaceAndPath("minecraft", "acacia_log"));
+        map.put("dark_oak", ResourceLocation.fromNamespaceAndPath("minecraft", "dark_oak_log"));
+        map.put("mangrove", ResourceLocation.fromNamespaceAndPath("minecraft", "mangrove_log"));
+        map.put("cherry", ResourceLocation.fromNamespaceAndPath("minecraft", "cherry_log"));
+        map.put("bamboo", ResourceLocation.fromNamespaceAndPath("minecraft", "bamboo_block"));
+        map.put("crimson", ResourceLocation.fromNamespaceAndPath("minecraft", "crimson_stem"));
+        map.put("warped", ResourceLocation.fromNamespaceAndPath("minecraft", "warped_stem"));
 
         for (ResourceLocation loc : BuiltInRegistries.BLOCK.keySet()) {
             String path = loc.getPath();
             if (path.endsWith("_log") || path.endsWith("_stem")) {
+                String base = path.substring(0, path.lastIndexOf('_'));
                 String woodType = loc.getNamespace().equals("minecraft")
-                        ? path.substring(0, path.lastIndexOf('_'))
-                        : loc.getNamespace() + ":" + path.substring(0, path.lastIndexOf('_'));
-                set.add(woodType);
+                        ? base
+                        : loc.getNamespace() + ":" + base;
+                map.putIfAbsent(woodType, loc);
             }
         }
-        return set;
+        return map;
     }
 
-    private static ResourceLocation getLogTextureLocation(String woodType) {
+    private static ResourceLocation getLogTextureLocation(String woodType, ResourceLocation sourceBlock) {
         ResourceLocation explicit = com.nstut.firstworks.registry.WoodTypeRegistry.getLogTexture(woodType);
         if (explicit != null) {
-            return explicit.withPath(path -> path.startsWith("textures/") ? path : "textures/" + path);
+            return textureFile(explicit);
         }
-        if ("bamboo".equals(woodType)) {
-            return ResourceLocation.withDefaultNamespace("textures/block/bamboo_block.png");
-        } else if ("crimson".equals(woodType)) {
-            return ResourceLocation.withDefaultNamespace("textures/block/crimson_stem.png");
-        } else if ("warped".equals(woodType)) {
-            return ResourceLocation.withDefaultNamespace("textures/block/warped_stem.png");
-        } else if (woodType.contains(":")) {
-            String[] parts = woodType.split(":", 2);
-            return ResourceLocation.fromNamespaceAndPath(parts[0], "textures/block/" + parts[1] + "_log.png");
+        if (sourceBlock != null) {
+            ResourceLocation blockTexture = ResourceLocation.fromNamespaceAndPath(sourceBlock.getNamespace(), "block/" + sourceBlock.getPath());
+            return textureFile(blockTexture);
         }
-        return ResourceLocation.withDefaultNamespace("textures/block/" + woodType + "_log.png");
+        return textureFile(ResourceLocation.fromNamespaceAndPath("minecraft", "block/" + woodType + "_log"));
+    }
+
+    /** Normalize a registered block/model-style texture id into the actual {@code .png} resource path. */
+    private static ResourceLocation textureFile(ResourceLocation texture) {
+        String path = texture.getPath();
+        if (!path.startsWith("textures/")) {
+            path = "textures/" + path;
+        }
+        if (!path.endsWith(".png")) {
+            path += ".png";
+        }
+        return ResourceLocation.fromNamespaceAndPath(texture.getNamespace(), path);
     }
 
     private static NativeImage loadNativeImage(ResourceManager rm, ResourceLocation loc) {

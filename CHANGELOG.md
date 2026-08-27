@@ -48,3 +48,12 @@
   from the registry name (`namespace:type` for modded `*_log`/`*_stem`, `oak` fallback), so discovered modded woods
   produce correctly named, textured bark instead of always dropping Oak. A central `WoodTypeRegistry` is shared between
   the server-side bark drop and the client-side texture generator.
+- Bark fixes following re-review:
+  - Explicit `logTexture` now loads: the registered block/model id (`windswept:block/chestnut_log`) is normalized to the
+    real resource path `windswept:textures/block/chestnut_log.png` (adds `textures/` prefix and `.png`).
+  - Conventional inference now also covers `_wood`, `_hyphae`, and `bamboo_block`, so stripping vanilla wood/hyphae/bamboo
+    blocks yields the correct bark instead of always Oak.
+  - Automatic discovery preserves the actual source block (`mymod:blue_stem`), so the fallback texture resolves to
+    `mymod:textures/block/blue_stem.png` instead of a guessed `_log.png`; explicit registration still takes precedence.
+  - Barrel automation `IFluidHandler.isFluidValid()` now reports static validity (`tankIndex == 0 && inputTank.isFluidValid(stack)`);
+    sealing/current-fluid checks moved to `fill()`/`drain()`, fixing the capability contract.
