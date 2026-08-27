@@ -103,6 +103,7 @@ public final class TreeBarkTextureManager implements ResourceManagerReloadListen
         map.put("warped", ResourceLocation.fromNamespaceAndPath("minecraft", "warped_stem"));
 
         for (ResourceLocation loc : BuiltInRegistries.BLOCK.keySet()) {
+            if (com.nstut.firstworks.registry.WoodTypeRegistry.isRegisteredLog(loc)) continue;
             String path = loc.getPath();
             if (path.endsWith("_log") || path.endsWith("_stem")) {
                 String base = path.substring(0, path.lastIndexOf('_'));

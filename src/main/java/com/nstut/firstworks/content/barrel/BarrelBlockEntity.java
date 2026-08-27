@@ -80,9 +80,18 @@ public class BarrelBlockEntity extends BlockEntity {
         automationFluidHandler = new IFluidHandler() {
             @Override public int getTanks() { return 2; }
             @Override public FluidStack getFluidInTank(int tankIndex) {
-                return tankIndex == 1 ? outputTank.getFluid() : inputTank.getFluid();
+                return switch (tankIndex) {
+                    case 0 -> inputTank.getFluid();
+                    case 1 -> outputTank.getFluid();
+                    default -> FluidStack.EMPTY;
+                };
             }
-            @Override public int getTankCapacity(int tankIndex) { return CAPACITY; }
+            @Override public int getTankCapacity(int tankIndex) {
+                return switch (tankIndex) {
+                    case 0, 1 -> CAPACITY;
+                    default -> 0;
+                };
+            }
             @Override public boolean isFluidValid(int tankIndex, FluidStack stack) {
                 return tankIndex == 0 && inputTank.isFluidValid(stack);
             }

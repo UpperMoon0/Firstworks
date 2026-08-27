@@ -30,6 +30,10 @@ public final class WoodTypeRegistry {
         return BY_LOG.get(logId);
     }
 
+    public static boolean isRegisteredLog(ResourceLocation logId) {
+        return BY_LOG.containsKey(logId);
+    }
+
     public static Entry getByWoodType(String woodType) {
         return BY_WOOD_TYPE.get(woodType);
     }
