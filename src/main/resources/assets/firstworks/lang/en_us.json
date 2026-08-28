@@ -112,6 +112,7 @@
   "jei.firstworks.strokes": "Hand strokes: %s",
   "jei.firstworks.tree_bark.obtain": "Strip wood to obtain Tree Bark.",
   "jei.firstworks.plant_fibre.obtain": "Grass and ferns have a 30% chance to yield Plant Fibre when broken normally. Using a primitive knife guarantees the fibre.",
-  "jei.firstworks.raw_fleece.use": "A primitive knife harvests 1 fleece renewably at high durability cost; shears harvest 3–5. Hunting yields 2–3. Fleece retains the sheep's color.",
+  "jei.firstworks.raw_fleece.use": "A primitive knife harvests 1 fleece renewably at high durability cost; shears harvest 3–5. Hunting yields 1–2. Fleece retains the sheep's color.",
+  "jei.firstworks.charcoal_mound.use": "Build 4–64 connected logs, surround them with #firstworks:charcoal_sealants, ignite an exposed opening, then seal it. Wait for carbonization and open the finished mound to reveal charcoal.",
   "jei.firstworks.duration": "Time: %s s"
 }

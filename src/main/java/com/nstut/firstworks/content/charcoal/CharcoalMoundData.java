@@ -72,6 +72,14 @@ public final class CharcoalMoundData extends SavedData {
         return IgnitionResult.success(Component.translatable("message.firstworks.charcoal.seal_opening"));
     }
 
+    public static boolean canIgnite(ServerLevel level, BlockPos ignitionLog, Direction exposedFace) {
+        Set<BlockPos> logs = discoverLogs(level, ignitionLog);
+        if (logs.size() < MIN_LOGS || logs.size() > MAX_LOGS) return false;
+        BlockPos opening = ignitionLog.relative(exposedFace);
+        if (logs.contains(opening) || level.getBlockState(opening).is(ModTags.CHARCOAL_SEALANTS)) return false;
+        return isShellValid(level, logs, opening, true);
+    }
+
     public void tick(ServerLevel level) {
         if (level.getGameTime() % 20L != 0L || charges.isEmpty()) return;
         Iterator<Charge> iterator = charges.iterator();
@@ -81,7 +89,13 @@ public final class CharcoalMoundData extends SavedData {
             if (!charge.isLoaded(level)) continue;
 
             if (charge.phase == Phase.WAITING_FOR_SEAL) {
-                if (!charge.logsIntact(level)
+                if (level.getBlockState(charge.opening).is(ModTags.CHARCOAL_SEALANTS)) {
+                    charge.phase = Phase.CARBONIZING;
+                    charge.deadline = level.getGameTime() + CARBONIZATION_TICKS;
+                    level.playSound(null, charge.opening, SoundEvents.FIRE_EXTINGUISH,
+                            SoundSource.BLOCKS, 0.55F, 0.65F);
+                    changed = true;
+                } else if (!charge.logsIntact(level)
                         || !isShellValid(level, charge.logs, charge.opening, true)
                         || level.getGameTime() >= charge.deadline) {
                     iterator.remove();
@@ -89,13 +103,6 @@ public final class CharcoalMoundData extends SavedData {
                     continue;
                 }
                 smoke(level, charge.opening, 2);
-                if (level.getBlockState(charge.opening).is(ModTags.CHARCOAL_SEALANTS)) {
-                    charge.phase = Phase.CARBONIZING;
-                    charge.deadline = level.getGameTime() + CARBONIZATION_TICKS;
-                    level.playSound(null, charge.opening, SoundEvents.FIRE_EXTINGUISH,
-                            SoundSource.BLOCKS, 0.55F, 0.65F);
-                    changed = true;
-                }
                 continue;
             }
 

@@ -4,7 +4,7 @@
   "pattern": [" S", "B "],
   "key": {
     "S": { "item": "minecraft:stick" },
-    "B": { "tag": "c:stones" }
+    "B": { "tag": "c:cobblestones" }
   },
   "result": { "id": "firstworks:mortar_and_pestle" }
 }

@@ -77,6 +77,8 @@ public final class FirstworksJeiPlugin implements IModPlugin {
                 Component.translatable("jei.firstworks.plant_fibre.obtain"));
         registration.addIngredientInfo(ModItems.RAW_FLEECE.get(),
                 Component.translatable("jei.firstworks.raw_fleece.use"));
+        registration.addIngredientInfo(net.minecraft.world.item.Items.CHARCOAL,
+                Component.translatable("jei.firstworks.charcoal_mound.use"));
         if (Minecraft.getInstance().level == null) return;
         var recipes = Minecraft.getInstance().level.getRecipeManager()
                 .getAllRecipesFor(ModRecipes.BARREL_PROCESSING_TYPE.get())
@@ -122,7 +124,7 @@ public final class FirstworksJeiPlugin implements IModPlugin {
                 .forEach(loom -> registration.addRecipeCatalyst(loom, LOOM_WEAVING));
         registration.addRecipeCatalyst(ModItems.HAND_SPINDLE.get(), SPINDLE_SPINNING);
         registration.addRecipeCatalyst(ModBlocks.BRICK_MOLD.get(), BRICK_MOLDING);
-        registration.addRecipeCatalyst(ModItems.MORTAR_AND_PESTLE.get(), MORTAR_GRINDING);
+        registration.addRecipeCatalyst(ModBlocks.MORTAR_AND_PESTLE.get(), MORTAR_GRINDING);
     }
 
     static List<ItemStack> fleeceVariants(Item item, int count) {

@@ -39,9 +39,13 @@ public final class GameplayEvents {
         if (!tool.is(ModItems.FIRE_STARTER.get()) && !tool.is(Items.FLINT_AND_STEEL)) return;
         if (!event.getLevel().getBlockState(event.getPos()).is(ModTags.CHARCOAL_WOODS)) return;
 
+        // Only claim the interaction when this log is a viable mound probe.
+        // Ordinary trees must retain vanilla flint-and-steel/fire-starter behavior.
+        if (!(event.getLevel() instanceof ServerLevel level) || event.getFace() == null
+                || !CharcoalMoundData.canIgnite(level, event.getPos(), event.getFace())) return;
+
         event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide));
         event.setCanceled(true);
-        if (!(event.getLevel() instanceof ServerLevel level) || event.getFace() == null) return;
 
         CharcoalMoundData.IgnitionResult result = CharcoalMoundData.get(level)
                 .ignite(level, event.getPos(), event.getFace());
