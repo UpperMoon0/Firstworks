@@ -53,6 +53,22 @@ public final class FirstworksConfig {
                     "Only used when rainFillsBarrels is enabled.")
             .defineInRange("rainFillAmount", 100, 1, 4000);
 
+    public static final ModConfigSpec.IntValue CHARCOAL_CARBONIZE_DURATION = BUILDER
+            .comment("Ticks required for an earthen charcoal mound to carbonize (default: 6000 ticks / 5 minutes).")
+            .defineInRange("charcoalCarbonizeDuration", 6000, 20, 72000);
+
+    public static final ModConfigSpec.IntValue CHARCOAL_MAX_LOGS = BUILDER
+            .comment("Maximum number of connected logs permitted in a single charcoal mound.")
+            .defineInRange("charcoalMaxLogs", 64, 4, 256);
+
+    public static final ModConfigSpec.DoubleValue CHARCOAL_NORMAL_YIELD = BUILDER
+            .comment("Charcoal yield multiplier when the mound carbonizes without being breached.")
+            .defineInRange("charcoalNormalYield", 0.75D, 0.05D, 1.0D);
+
+    public static final ModConfigSpec.DoubleValue CHARCOAL_BREACHED_YIELD = BUILDER
+            .comment("Charcoal yield multiplier if the mound is opened before carbonization completes.")
+            .defineInRange("charcoalBreachedYield", 0.25D, 0.0D, 1.0D);
+
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     private FirstworksConfig() {}

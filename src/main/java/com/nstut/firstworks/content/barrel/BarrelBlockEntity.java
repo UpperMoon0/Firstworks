@@ -184,12 +184,32 @@ public class BarrelBlockEntity extends BlockEntity {
         }
     }
 
+    private Process cachedProcess = null;
+    private boolean processDirty = true;
+
+    public void invalidateProcess() {
+        processDirty = true;
+        cachedProcess = null;
+    }
+
     private Process currentProcess() {
+        if (ingredient.isEmpty() || level == null || inputTank.isEmpty() || processCancelled || !output.isEmpty()) {
+            cachedProcess = null;
+            processDirty = false;
+            return null;
+        }
+        if (processDirty) {
+            cachedProcess = computeProcess();
+            processDirty = false;
+        }
+        return cachedProcess;
+    }
+
+    private Process computeProcess() {
         if (ingredient.isEmpty() || level == null || inputTank.isEmpty() || processCancelled || !output.isEmpty()) return null;
-        var fluidId = BuiltInRegistries.FLUID.getKey(inputTank.getFluid().getFluid());
         for (RecipeHolder<BarrelRecipe> holder : level.getRecipeManager().getAllRecipesFor(ModRecipes.BARREL_PROCESSING_TYPE.get())) {
             BarrelRecipe recipe = holder.value();
-            if (!recipe.matches(new SingleRecipeInput(ingredient), level) || !recipe.fluid().equals(fluidId)) continue;
+            if (!recipe.matches(new SingleRecipeInput(ingredient), level) || !recipe.matchesFluid(inputTank.getFluid())) continue;
             if (recipe.sealed() != getBlockState().getValue(BarrelBlock.SEALED)) continue;
             int batches = Math.min(ingredient.getCount() / recipe.inputCount(), inputTank.getFluidAmount() / recipe.fluidAmount());
             if (batches <= 0) continue;
@@ -391,6 +411,7 @@ public class BarrelBlockEntity extends BlockEntity {
     }
 
     private void setChangedAndSync() {
+        invalidateProcess();
         setChanged();
         if (level != null && !level.isClientSide) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);

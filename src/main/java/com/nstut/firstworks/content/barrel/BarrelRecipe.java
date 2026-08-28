@@ -22,6 +22,16 @@ public record BarrelRecipe(Ingredient ingredient, int inputCount, ResourceLocati
 
     public static final ResourceLocation NO_FLUID = ResourceLocation.withDefaultNamespace("empty");
 
+    public boolean matchesFluid(net.neoforged.neoforge.fluids.FluidStack stack) {
+        if (stack.isEmpty()) return false;
+        net.minecraft.world.level.material.Fluid f = stack.getFluid();
+        ResourceLocation id = net.minecraft.core.registries.BuiltInRegistries.FLUID.getKey(f);
+        if (id.equals(this.fluid)) return true;
+        net.minecraft.tags.TagKey<net.minecraft.world.level.material.Fluid> tag = net.minecraft.tags.TagKey.create(
+                net.minecraft.core.registries.Registries.FLUID, this.fluid);
+        return f.is(tag);
+    }
+
     @Override
     public boolean matches(SingleRecipeInput input, Level level) {
         return ingredient.test(input.item()) && input.item().getCount() >= inputCount;

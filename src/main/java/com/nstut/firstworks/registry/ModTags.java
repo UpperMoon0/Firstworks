@@ -29,6 +29,16 @@ public final class ModTags {
             Registries.ENTITY_TYPE, Firstworks.id("leather_drops_as_raw_hide"));
     public static final TagKey<EntityType<?>> NO_RAW_HIDE_DROPS = TagKey.create(
             Registries.ENTITY_TYPE, Firstworks.id("no_raw_hide_drops"));
+    public static final TagKey<Block> BARRELS_BLOCK = TagKey.create(
+            Registries.BLOCK, Firstworks.id("barrels"));
+    public static final TagKey<Item> BARRELS_ITEM = TagKey.create(
+            Registries.ITEM, Firstworks.id("barrels"));
+    public static final TagKey<Block> LOOMS_BLOCK = TagKey.create(
+            Registries.BLOCK, Firstworks.id("looms"));
+    public static final TagKey<Item> LOOMS_ITEM = TagKey.create(
+            Registries.ITEM, Firstworks.id("looms"));
+    public static final TagKey<Item> RAW_HIDES = TagKey.create(
+            Registries.ITEM, Firstworks.id("raw_hides"));
 
     private ModTags() {}
 }

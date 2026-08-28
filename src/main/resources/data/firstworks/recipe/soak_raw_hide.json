@@ -1,6 +1,6 @@
 {
   "type": "firstworks:barrel_processing",
-  "ingredient": { "item": "firstworks:raw_hide" },
+  "ingredient": { "tag": "firstworks:raw_hides" },
   "fluid": "minecraft:water",
   "fluid_amount": 250,
   "result": { "id": "firstworks:soaked_hide" },

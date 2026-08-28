@@ -31,12 +31,8 @@ import java.util.Set;
  */
 public final class CharcoalMoundData extends SavedData {
     public static final int MIN_LOGS = 4;
-    public static final int MAX_LOGS = 64;
     public static final int SEAL_WINDOW_TICKS = 1_200;
-    public static final int CARBONIZATION_TICKS = 6_000;
     private static final String DATA_NAME = "firstworks_charcoal_mounds";
-    private static final float NORMAL_YIELD = 0.75F;
-    private static final float BREACHED_YIELD = 0.25F;
 
     private final List<Charge> charges = new ArrayList<>();
 
@@ -47,11 +43,12 @@ public final class CharcoalMoundData extends SavedData {
 
     public IgnitionResult ignite(ServerLevel level, BlockPos ignitionLog, Direction exposedFace) {
         Set<BlockPos> logs = discoverLogs(level, ignitionLog);
+        int maxLogs = com.nstut.firstworks.FirstworksConfig.CHARCOAL_MAX_LOGS.get();
         if (logs.size() < MIN_LOGS) {
             return IgnitionResult.failure(Component.translatable("message.firstworks.charcoal.too_small", MIN_LOGS));
         }
-        if (logs.size() > MAX_LOGS) {
-            return IgnitionResult.failure(Component.translatable("message.firstworks.charcoal.too_large", MAX_LOGS));
+        if (logs.size() > maxLogs) {
+            return IgnitionResult.failure(Component.translatable("message.firstworks.charcoal.too_large", maxLogs));
         }
         if (charges.stream().anyMatch(charge -> charge.overlaps(logs))) {
             return IgnitionResult.failure(Component.translatable("message.firstworks.charcoal.already_lit"));
@@ -74,7 +71,8 @@ public final class CharcoalMoundData extends SavedData {
 
     public static boolean canIgnite(ServerLevel level, BlockPos ignitionLog, Direction exposedFace) {
         Set<BlockPos> logs = discoverLogs(level, ignitionLog);
-        if (logs.size() < MIN_LOGS || logs.size() > MAX_LOGS) return false;
+        int maxLogs = com.nstut.firstworks.FirstworksConfig.CHARCOAL_MAX_LOGS.get();
+        if (logs.size() < MIN_LOGS || logs.size() > maxLogs) return false;
         BlockPos opening = ignitionLog.relative(exposedFace);
         if (logs.contains(opening) || level.getBlockState(opening).is(ModTags.CHARCOAL_SEALANTS)) return false;
         return isShellValid(level, logs, opening, true);
@@ -84,6 +82,9 @@ public final class CharcoalMoundData extends SavedData {
         if (level.getGameTime() % 20L != 0L || charges.isEmpty()) return;
         Iterator<Charge> iterator = charges.iterator();
         boolean changed = false;
+        float normalYield = com.nstut.firstworks.FirstworksConfig.CHARCOAL_NORMAL_YIELD.get().floatValue();
+        float breachedYield = com.nstut.firstworks.FirstworksConfig.CHARCOAL_BREACHED_YIELD.get().floatValue();
+        int carbonizationTicks = com.nstut.firstworks.FirstworksConfig.CHARCOAL_CARBONIZE_DURATION.get();
         while (iterator.hasNext()) {
             Charge charge = iterator.next();
             if (!charge.isLoaded(level)) continue;
@@ -91,7 +92,7 @@ public final class CharcoalMoundData extends SavedData {
             if (charge.phase == Phase.WAITING_FOR_SEAL) {
                 if (level.getBlockState(charge.opening).is(ModTags.CHARCOAL_SEALANTS)) {
                     charge.phase = Phase.CARBONIZING;
-                    charge.deadline = level.getGameTime() + CARBONIZATION_TICKS;
+                    charge.deadline = level.getGameTime() + carbonizationTicks;
                     level.playSound(null, charge.opening, SoundEvents.FIRE_EXTINGUISH,
                             SoundSource.BLOCKS, 0.55F, 0.65F);
                     changed = true;
@@ -117,7 +118,7 @@ public final class CharcoalMoundData extends SavedData {
 
             if (charge.phase == Phase.CARBONIZING) {
                 if (!charge.logsIntact(level) || !isShellValid(level, charge.logs, charge.opening, false)) {
-                    finish(level, charge, BREACHED_YIELD, findBreach(level, charge));
+                    finish(level, charge, breachedYield, findBreach(level, charge));
                     iterator.remove();
                     changed = true;
                     continue;
@@ -128,7 +129,7 @@ public final class CharcoalMoundData extends SavedData {
 
             // READY mounds reveal their charcoal only when the shell/opening is breached.
             if (!charge.logsIntact(level) || !isShellValid(level, charge.logs, charge.opening, false)) {
-                finish(level, charge, NORMAL_YIELD, findBreach(level, charge));
+                finish(level, charge, normalYield, findBreach(level, charge));
                 iterator.remove();
                 changed = true;
             }
@@ -140,7 +141,8 @@ public final class CharcoalMoundData extends SavedData {
         Set<BlockPos> found = new HashSet<>();
         ArrayDeque<BlockPos> queue = new ArrayDeque<>();
         queue.add(start.immutable());
-        while (!queue.isEmpty() && found.size() <= MAX_LOGS) {
+        int limit = com.nstut.firstworks.FirstworksConfig.CHARCOAL_MAX_LOGS.get();
+        while (!queue.isEmpty() && found.size() <= limit) {
             BlockPos pos = queue.removeFirst();
             if (found.contains(pos) || !level.hasChunkAt(pos)
                     || !level.getBlockState(pos).is(ModTags.CHARCOAL_WOODS)) continue;
@@ -230,7 +232,8 @@ public final class CharcoalMoundData extends SavedData {
             CompoundTag entry = list.getCompound(i);
             Set<BlockPos> logs = new HashSet<>();
             for (long packed : entry.getLongArray("Logs")) logs.add(BlockPos.of(packed));
-            if (logs.isEmpty() || logs.size() > MAX_LOGS) continue;
+            int maxLogs = com.nstut.firstworks.FirstworksConfig.CHARCOAL_MAX_LOGS.get();
+            if (logs.isEmpty() || logs.size() > maxLogs) continue;
             Phase phase;
             try {
                 phase = Phase.valueOf(entry.getString("Phase"));
@@ -268,7 +271,17 @@ public final class CharcoalMoundData extends SavedData {
         }
 
         private boolean isLoaded(ServerLevel level) {
-            return level.hasChunkAt(opening) && logs.stream().allMatch(level::hasChunkAt);
+            if (!level.hasChunkAt(opening)) return false;
+            for (BlockPos log : logs) {
+                if (!level.hasChunkAt(log)) return false;
+                for (Direction direction : Direction.values()) {
+                    BlockPos neighbor = log.relative(direction);
+                    if (!logs.contains(neighbor) && !level.hasChunkAt(neighbor)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
 
         private boolean logsIntact(ServerLevel level) {
