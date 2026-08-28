@@ -103,6 +103,7 @@ public final class TreeBarkTextureManager implements ResourceManagerReloadListen
         for (ResourceLocation loc : BuiltInRegistries.BLOCK.keySet()) {
             if (com.nstut.firstworks.registry.WoodTypeRegistry.isRegisteredLog(loc)) continue;
             String path = loc.getPath();
+            if (path.startsWith("stripped_")) continue;
             for (String suffix : new String[]{ "_log", "_stem", "_wood", "_hyphae" }) {
                 if (path.endsWith(suffix)) {
                     String base = path.substring(0, path.length() - suffix.length());
