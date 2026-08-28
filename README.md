@@ -65,6 +65,12 @@ Place one clay ball into the single-cavity Wooden Brick Mold (equipped with an i
 
 Brick-molding recipes are data-driven, appear in JEI, and can be added through KubeJS. The `enableMasonryProgression` option controls whether this chain replaces vanilla brick smelting and block crafting.
 
+## Charcoal and grinding
+
+Build a charcoal mound from four or more connected log blocks, surround it with blocks in `#firstworks:charcoal_sealants`, and ignite one exposed opening with a Fire Starter or flint and steel. Seal the opening and wait for carbonization; the completed mound persists through chunk unloading and yields charcoal when opened. Wood and sealant tags are data-driven for modpack expansion.
+
+Place the Mortar & Pestle as a workstation, insert a grindable item, and use an empty hand to start its visible pestle animation. Recipes are data-driven and support KubeJS and JEI.
+
 ## Datapacks and KubeJS
 
 Barrel processes use the `firstworks:barrel_processing` recipe type. Loom recipes use `firstworks:loom_weaving`, while held-spindle recipes use `firstworks:spinning`. Both define their input, output, work required, and batch size.
@@ -161,7 +167,7 @@ FirstworksEvents.brickMoldingCompleted(event => {
 
 ## Optional integrations
 
-- **Jade** shows live Barrel processing and Loom loading, stroke progress, cancellation, and both the stored input and output fluid levels (the top layer is whichever fluid is in the output store).
+- **Jade** shows live Barrel processing, Loom loading/weaving, and Mortar & Pestle grinding status.
 - **JEI** provides dedicated Barrel Processing, Hand Spinning, and Loom Weaving categories with their tools and wood variants registered as catalysts.
 
 ## Credits

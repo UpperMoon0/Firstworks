@@ -58,7 +58,9 @@ Turn Twine or String into Cloth on a functional wooden Loom. Load thread directl
 
 ## Primitive masonry
 
-Load one clay ball into a single-cavity Wooden Brick Mold (featuring an integrated molding board base for reliable center interaction) and press twice with an empty hand. The material visibly spreads farther across the cavity after each press, ending as a fully packed clay-textured surface tinted from the recipe output. Collect the unfired brick and fire it over a campfire, then mix sand and water into Wet Mortar in a sealed Barrel to bind structural blocks. The Mold supports hopper loading, output extraction, empty-handed Create Deployers, and custom press counts through datapacks or KubeJS.
+Load one clay ball into a Wooden Brick Mold and press twice with an empty hand to form an unfired brick. Fire it over a campfire, then mix sand and water into Wet Mortar in a sealed Barrel. The mold supports hopper loading, output extraction, Create Deployers, and custom press counts through datapacks or KubeJS.
+
+Build charcoal mounds from connected logs surrounded by configurable sealant blocks. Ignite, seal, and wait for the mound to finish; open it to reveal its charcoal yield. Place the Mortar & Pestle workstation, insert a grindable item, and use an empty hand to start its animated grinding process.
 
 ## Made for survival and modpacks
 
@@ -66,8 +68,8 @@ Firstworks can stand alone as a tactile early-game mechanic or serve as the prim
 
 Optional integrations make the system easier to read without changing its in-world character:
 
-- **Jade** shows live Barrel status and Loom loading, weaving progress, and completed output.
-- **JEI** adds dedicated Barrel Processing, Hand Spinning, and Loom Weaving recipe categories.
+- **Jade** shows live Barrel, Loom, and Mortar & Pestle status.
+- **JEI** adds dedicated processing, spinning, weaving, brick-molding, and grinding categories.
 
 ## Credits
 
