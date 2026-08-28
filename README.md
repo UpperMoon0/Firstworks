@@ -14,6 +14,7 @@ Firstworks owns the reusable raw-hide and animal-bone rules. Datapacks and modpa
 - `#firstworks:no_bone_drops`
 - `#firstworks:leather_drops_as_raw_hide`
 - `#firstworks:no_raw_hide_drops`
+- `#firstworks:charcoal_igniters`
 
 The default bone list contains vertebrate animals. Squid, glow squid, bees, allays, and undead horses are intentionally excluded. Bone drops and leather replacement can also be disabled independently in the common config.
 
@@ -162,6 +163,14 @@ FirstworksEvents.brickMoldingStarting(event => {
 
 FirstworksEvents.brickMoldingCompleted(event => {
   console.info(`Molded ${event.result} at ${event.pos}`)
+})
+
+FirstworksEvents.mortarGrindingStarting(event => {
+  // event.cancel() prevents this grinding attempt.
+})
+
+FirstworksEvents.mortarGrindingCompleted(event => {
+  console.info(`Ground ${event.result} at ${event.pos}`)
 })
 ```
 
