@@ -15,6 +15,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
@@ -22,10 +24,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.common.ItemAbilities;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.item.Item;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import java.util.Map;
-import net.neoforged.neoforge.registries.datamaps.builtin.NeoForgeDataMaps;
+import com.nstut.firstworks.content.TreeBarkItem;
 
 @EventBusSubscriber(modid = Firstworks.MOD_ID)
 public final class GameplayEvents {
@@ -73,17 +72,33 @@ public final class GameplayEvents {
         shears.hurtAndBreak(1, event.getEntity(), slot);
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void collectBarkWhenStripping(BlockEvent.BlockToolModificationEvent event) {
         if (event.isSimulated() || event.getItemAbility() != ItemAbilities.AXE_STRIP) return;
         if (!(event.getLevel() instanceof ServerLevel level)) return;
-        Block block = event.getState().getBlock();
-        if (block.builtInRegistryHolder().getData(NeoForgeDataMaps.STRIPPABLES) == null) return;
+
+        BlockState state = event.getState();
+        Block block = state.getBlock();
+
+        BlockState blockResult = block.getToolModifiedState(
+                state,
+                event.getContext(),
+                ItemAbilities.AXE_STRIP,
+                true
+        );
+
+        boolean modifiedByEvent = event.getFinalState() != state;
+
+        if (blockResult == null && !modifiedByEvent) return;
 
         String woodType = getWoodTypeForBlock(block);
         int barkCount = 1 + level.getRandom().nextInt(3);
-        ItemStack barkStack = com.nstut.firstworks.content.TreeBarkItem.create(ModItems.TREE_BARK.get(), woodType, barkCount);
-        Block.popResource(level, event.getPos(), barkStack);
+
+        Block.popResource(
+                level,
+                event.getPos(),
+                TreeBarkItem.create(ModItems.TREE_BARK.get(), woodType, barkCount)
+        );
     }
 
     private static String getWoodTypeForBlock(Block block) {
