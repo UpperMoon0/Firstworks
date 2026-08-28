@@ -1,6 +1,7 @@
 package com.nstut.firstworks;
 
 import com.nstut.firstworks.registry.ModItems;
+import com.nstut.firstworks.registry.ModTags;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
