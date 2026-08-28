@@ -52,11 +52,31 @@ public final class WoodTypeRegistry {
         return new LinkedHashSet<>(BY_WOOD_TYPE.keySet());
     }
 
-    /** Resolve the wood type for an (un)stripped log, preferring explicit registration. */
-    public static String resolveWoodType(ResourceLocation logKey) {
-        Entry entry = BY_LOG.get(logKey);
+    /**
+     * Resolve the wood type for an (un)stripped log if it matches an explicit registration or conventional
+     * wood naming pattern (_log, _wood, _stem, _hyphae, bamboo_block). Returns null for unrecognized blocks.
+     */
+    public static String tryResolveWoodType(ResourceLocation key) {
+        Entry entry = BY_LOG.get(key);
         if (entry != null) return entry.woodType();
-        return inferWoodType(logKey);
+
+        String path = key.getPath();
+        for (String suffix : new String[]{ "_log", "_wood", "_stem", "_hyphae" }) {
+            if (path.endsWith(suffix)) {
+                String base = path.substring(0, path.length() - suffix.length());
+                return key.getNamespace().equals("minecraft") ? base : key.getNamespace() + ":" + base;
+            }
+        }
+        if (key.getNamespace().equals("minecraft") && path.equals("bamboo_block")) {
+            return "bamboo";
+        }
+        return null;
+    }
+
+    /** Resolve the wood type for an (un)stripped log, falling back to oak for visual/default contexts. */
+    public static String resolveWoodType(ResourceLocation logKey) {
+        String resolved = tryResolveWoodType(logKey);
+        return resolved != null ? resolved : "oak";
     }
 
     /** Conventional inference for logs not explicitly registered through {@code registerWoodType}. */

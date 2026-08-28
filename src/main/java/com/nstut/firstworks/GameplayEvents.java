@@ -24,7 +24,9 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.common.ItemAbilities;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import com.nstut.firstworks.content.TreeBarkItem;
+import com.nstut.firstworks.registry.WoodTypeRegistry;
 
 @EventBusSubscriber(modid = Firstworks.MOD_ID)
 public final class GameplayEvents {
@@ -91,7 +93,10 @@ public final class GameplayEvents {
 
         if (blockResult == null && !modifiedByEvent) return;
 
-        String woodType = getWoodTypeForBlock(block);
+        ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(block);
+        String woodType = WoodTypeRegistry.tryResolveWoodType(blockId);
+        if (woodType == null) return;
+
         int barkCount = 1 + level.getRandom().nextInt(3);
 
         Block.popResource(
@@ -99,11 +104,6 @@ public final class GameplayEvents {
                 event.getPos(),
                 TreeBarkItem.create(ModItems.TREE_BARK.get(), woodType, barkCount)
         );
-    }
-
-    private static String getWoodTypeForBlock(Block block) {
-        return com.nstut.firstworks.registry.WoodTypeRegistry.resolveWoodType(
-                BuiltInRegistries.BLOCK.getKey(block));
     }
 
     @SubscribeEvent
