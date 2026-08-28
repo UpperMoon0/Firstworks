@@ -117,7 +117,7 @@ public final class CharcoalMoundData extends SavedData {
 
             if (charge.phase == Phase.CARBONIZING) {
                 if (!charge.logsIntact(level) || !isShellValid(level, charge.logs, charge.opening, false)) {
-                    finish(level, charge, BREACHED_YIELD);
+                    finish(level, charge, BREACHED_YIELD, findBreach(level, charge));
                     iterator.remove();
                     changed = true;
                     continue;
@@ -128,7 +128,7 @@ public final class CharcoalMoundData extends SavedData {
 
             // READY mounds reveal their charcoal only when the shell/opening is breached.
             if (!charge.logsIntact(level) || !isShellValid(level, charge.logs, charge.opening, false)) {
-                finish(level, charge, NORMAL_YIELD);
+                finish(level, charge, NORMAL_YIELD, findBreach(level, charge));
                 iterator.remove();
                 changed = true;
             }
@@ -163,7 +163,19 @@ public final class CharcoalMoundData extends SavedData {
         return true;
     }
 
-    private static void finish(ServerLevel level, Charge charge, float yield) {
+    private static BlockPos findBreach(ServerLevel level, Charge charge) {
+        for (BlockPos log : charge.logs) {
+            for (Direction direction : Direction.values()) {
+                BlockPos neighbor = log.relative(direction);
+                if (!charge.logs.contains(neighbor) && !level.getBlockState(neighbor).is(ModTags.CHARCOAL_SEALANTS)) {
+                    return neighbor;
+                }
+            }
+        }
+        return charge.opening;
+    }
+
+    private static void finish(ServerLevel level, Charge charge, float yield, BlockPos breachedAt) {
         int consumed = 0;
         for (BlockPos pos : charge.logs) {
             if (!level.getBlockState(pos).is(ModTags.CHARCOAL_WOODS)) continue;
@@ -172,7 +184,7 @@ public final class CharcoalMoundData extends SavedData {
         }
         int output = Mth.floor(consumed * yield);
         if (output > 0) {
-            BlockPos drop = charge.opening;
+            BlockPos drop = breachedAt;
             if (!level.getBlockState(drop).getCollisionShape(level, drop).isEmpty()) drop = drop.above();
             while (output > 0) {
                 int stackSize = Math.min(output, Items.CHARCOAL.getDefaultMaxStackSize());
