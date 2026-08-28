@@ -16,20 +16,68 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
 
-public record BarrelRecipe(Ingredient ingredient, int inputCount, ResourceLocation fluid, int fluidAmount,
+import com.mojang.datafixers.util.Either;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.material.Fluid;
+import net.neoforged.neoforge.fluids.FluidStack;
+
+public record BarrelRecipe(Ingredient ingredient, int inputCount, FluidIngredient fluid, int fluidAmount,
         ItemStack result, ResourceLocation outputFluid, int outputFluidAmount, int duration, boolean sealed)
         implements Recipe<SingleRecipeInput> {
 
     public static final ResourceLocation NO_FLUID = ResourceLocation.withDefaultNamespace("empty");
 
-    public boolean matchesFluid(net.neoforged.neoforge.fluids.FluidStack stack) {
-        if (stack.isEmpty()) return false;
-        net.minecraft.world.level.material.Fluid f = stack.getFluid();
-        ResourceLocation id = net.minecraft.core.registries.BuiltInRegistries.FLUID.getKey(f);
-        if (id.equals(this.fluid)) return true;
-        net.minecraft.tags.TagKey<net.minecraft.world.level.material.Fluid> tag = net.minecraft.tags.TagKey.create(
-                net.minecraft.core.registries.Registries.FLUID, this.fluid);
-        return f.is(tag);
+    public record FluidIngredient(Either<ResourceLocation, TagKey<Fluid>> target) {
+        public static final Codec<FluidIngredient> CODEC = Codec.STRING.xmap(
+                str -> {
+                    if (str.startsWith("#")) {
+                        return new FluidIngredient(Either.right(TagKey.create(Registries.FLUID, ResourceLocation.parse(str.substring(1)))));
+                    }
+                    return new FluidIngredient(Either.left(ResourceLocation.parse(str)));
+                },
+                ing -> ing.target.map(ResourceLocation::toString, tag -> "#" + tag.location())
+        );
+
+        public static final StreamCodec<RegistryFriendlyByteBuf, FluidIngredient> STREAM_CODEC = StreamCodec.of(
+                (buffer, ing) -> buffer.writeUtf(ing.target.map(ResourceLocation::toString, tag -> "#" + tag.location())),
+                buffer -> {
+                    String str = buffer.readUtf();
+                    if (str.startsWith("#")) {
+                        return new FluidIngredient(Either.right(TagKey.create(Registries.FLUID, ResourceLocation.parse(str.substring(1)))));
+                    }
+                    return new FluidIngredient(Either.left(ResourceLocation.parse(str)));
+                }
+        );
+
+        public static FluidIngredient of(String str) {
+            if (str.startsWith("#")) {
+                return new FluidIngredient(Either.right(TagKey.create(Registries.FLUID, ResourceLocation.parse(str.substring(1)))));
+            }
+            return new FluidIngredient(Either.left(ResourceLocation.parse(str)));
+        }
+
+        public static FluidIngredient of(ResourceLocation loc) {
+            return new FluidIngredient(Either.left(loc));
+        }
+
+        public boolean test(FluidStack stack) {
+            if (stack.isEmpty()) return false;
+            Fluid f = stack.getFluid();
+            return target.map(
+                    exactId -> BuiltInRegistries.FLUID.getKey(f).equals(exactId),
+                    f::is
+            );
+        }
+
+        public String asString() {
+            return target.map(ResourceLocation::toString, tag -> "#" + tag.location());
+        }
+    }
+
+    public boolean matchesFluid(FluidStack stack) {
+        return fluid.test(stack);
     }
 
     @Override
@@ -71,7 +119,7 @@ public record BarrelRecipe(Ingredient ingredient, int inputCount, ResourceLocati
         private static final MapCodec<BarrelRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Ingredient.CODEC.fieldOf("ingredient").forGetter(BarrelRecipe::ingredient),
                 Codec.intRange(1, 64).optionalFieldOf("input_count", 1).forGetter(BarrelRecipe::inputCount),
-                ResourceLocation.CODEC.fieldOf("fluid").forGetter(BarrelRecipe::fluid),
+                FluidIngredient.CODEC.fieldOf("fluid").forGetter(BarrelRecipe::fluid),
                 Codec.intRange(1, 4000).fieldOf("fluid_amount").forGetter(BarrelRecipe::fluidAmount),
                 ItemStack.OPTIONAL_CODEC.optionalFieldOf("result", ItemStack.EMPTY).forGetter(BarrelRecipe::result),
                 ResourceLocation.CODEC.optionalFieldOf("output_fluid", NO_FLUID).forGetter(BarrelRecipe::outputFluid),
@@ -84,7 +132,7 @@ public record BarrelRecipe(Ingredient ingredient, int inputCount, ResourceLocati
                 (buffer, recipe) -> {
                     Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, recipe.ingredient);
                     buffer.writeVarInt(recipe.inputCount);
-                    ResourceLocation.STREAM_CODEC.encode(buffer, recipe.fluid);
+                    FluidIngredient.STREAM_CODEC.encode(buffer, recipe.fluid);
                     buffer.writeVarInt(recipe.fluidAmount);
                     ItemStack.OPTIONAL_STREAM_CODEC.encode(buffer, recipe.result);
                     ResourceLocation.STREAM_CODEC.encode(buffer, recipe.outputFluid);
@@ -95,7 +143,7 @@ public record BarrelRecipe(Ingredient ingredient, int inputCount, ResourceLocati
                 buffer -> new BarrelRecipe(
                         Ingredient.CONTENTS_STREAM_CODEC.decode(buffer),
                         buffer.readVarInt(),
-                        ResourceLocation.STREAM_CODEC.decode(buffer),
+                        FluidIngredient.STREAM_CODEC.decode(buffer),
                         buffer.readVarInt(),
                         ItemStack.OPTIONAL_STREAM_CODEC.decode(buffer),
                         ResourceLocation.STREAM_CODEC.decode(buffer),

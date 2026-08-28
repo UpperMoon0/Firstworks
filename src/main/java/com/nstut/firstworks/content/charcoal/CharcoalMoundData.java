@@ -156,7 +156,7 @@ public final class CharcoalMoundData extends SavedData {
                 BlockPos neighbor = log.relative(direction);
                 if (logs.contains(neighbor)) continue;
                 if (allowOpening && neighbor.equals(opening)) continue;
-                if (!level.getBlockState(neighbor).is(ModTags.CHARCOAL_SEALANTS)) return false;
+                if (!level.hasChunkAt(neighbor) || !level.getBlockState(neighbor).is(ModTags.CHARCOAL_SEALANTS)) return false;
             }
         }
         return true;

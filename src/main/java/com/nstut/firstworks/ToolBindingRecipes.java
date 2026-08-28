@@ -35,6 +35,7 @@ public final class ToolBindingRecipes {
         boolean masonry = FirstworksConfig.ENABLE_MASONRY_PROGRESSION.getAsBoolean();
         boolean replaceLeather = FirstworksConfig.REPLACE_ANIMAL_LEATHER.getAsBoolean();
         rewrite(event.getPlayerList().getServer().getRecipeManager(), bindPrimitive, bindMetal, textiles, masonry, replaceLeather);
+        com.nstut.firstworks.content.barrel.BarrelBlockEntity.invalidateAllBarrels();
     }
 
     private static void rewrite(RecipeManager manager, boolean bindPrimitive, boolean bindMetal, boolean textiles, boolean masonry, boolean replaceLeather) {

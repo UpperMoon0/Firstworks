@@ -1,8 +1,0 @@
-{
-  "entity": "naturalist:bear",
-  "bones": {
-    "min": 3,
-    "max": 5,
-    "looting_bonus": 1
-  }
-}

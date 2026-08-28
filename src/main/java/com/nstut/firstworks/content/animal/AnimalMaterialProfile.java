@@ -14,10 +14,16 @@ public record AnimalMaterialProfile(
         Optional<DropRange> hide
 ) {
     public record DropRange(int min, int max, int lootingBonus) {
+        public DropRange {
+            if (min < 0) throw new IllegalArgumentException("min must be >= 0");
+            if (max < min) throw new IllegalArgumentException("max must be >= min (" + max + " < " + min + ")");
+            if (lootingBonus < 0) throw new IllegalArgumentException("lootingBonus must be >= 0");
+        }
+
         public static final Codec<DropRange> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                Codec.INT.fieldOf("min").forGetter(DropRange::min),
-                Codec.INT.fieldOf("max").forGetter(DropRange::max),
-                Codec.INT.optionalFieldOf("looting_bonus", 1).forGetter(DropRange::lootingBonus)
+                Codec.intRange(0, Integer.MAX_VALUE).fieldOf("min").forGetter(DropRange::min),
+                Codec.intRange(0, Integer.MAX_VALUE).fieldOf("max").forGetter(DropRange::max),
+                Codec.intRange(0, Integer.MAX_VALUE).optionalFieldOf("looting_bonus", 1).forGetter(DropRange::lootingBonus)
         ).apply(instance, DropRange::new));
 
         public int roll(RandomSource random, int lootingLevel) {

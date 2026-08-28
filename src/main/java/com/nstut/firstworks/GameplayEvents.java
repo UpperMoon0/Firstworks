@@ -69,26 +69,22 @@ public final class GameplayEvents {
     @SubscribeEvent
     public static void replaceAnimalLeather(LivingDropsEvent event) {
         if (!FirstworksConfig.REPLACE_ANIMAL_LEATHER.getAsBoolean()) return;
+        if (event.getEntity().getType().is(ModTags.NO_RAW_HIDE_DROPS)) return;
+
         var profile = com.nstut.firstworks.content.animal.AnimalMaterialManager.getProfile(event.getEntity().getType());
         int looting = getLootingLevel(event);
         if (profile.isPresent() && profile.get().hide().isPresent()) {
             int count = profile.get().hide().get().roll(event.getEntity().getRandom(), looting);
-            boolean replaced = false;
-            for (ItemEntity drop : event.getDrops()) {
-                if (drop.getItem().is(Items.LEATHER)) {
-                    drop.setItem(new ItemStack(ModItems.RAW_HIDE.get(), count));
-                    replaced = true;
-                    break;
-                }
-            }
-            if (!replaced && count > 0) {
+            // Normalize drops: remove any existing leather or modded raw hides (e.g. naturalist:hide)
+            event.getDrops().removeIf(drop -> drop.getItem().is(Items.LEATHER) || drop.getItem().is(ModTags.RAW_HIDES));
+            if (count > 0) {
                 event.getDrops().add(new ItemEntity(event.getEntity().level(), event.getEntity().getX(),
                         event.getEntity().getY(), event.getEntity().getZ(), new ItemStack(ModItems.RAW_HIDE.get(), count)));
             }
             return;
         }
-        if (!event.getEntity().getType().is(ModTags.LEATHER_DROPS_AS_RAW_HIDE)
-                || event.getEntity().getType().is(ModTags.NO_RAW_HIDE_DROPS)) return;
+
+        if (!event.getEntity().getType().is(ModTags.LEATHER_DROPS_AS_RAW_HIDE)) return;
         event.getDrops().forEach(drop -> {
             ItemStack stack = drop.getItem();
             if (stack.is(Items.LEATHER)) {
@@ -100,6 +96,8 @@ public final class GameplayEvents {
     @SubscribeEvent
     public static void addAnimalBones(LivingDropsEvent event) {
         if (!FirstworksConfig.ADD_ANIMAL_BONE_DROPS.getAsBoolean()) return;
+        if (event.getEntity().getType().is(ModTags.NO_BONE_DROPS)) return;
+
         var profile = com.nstut.firstworks.content.animal.AnimalMaterialManager.getProfile(event.getEntity().getType());
         int looting = getLootingLevel(event);
         if (profile.isPresent() && profile.get().bones().isPresent()) {
@@ -110,8 +108,8 @@ public final class GameplayEvents {
             }
             return;
         }
-        if (!event.getEntity().getType().is(ModTags.DROPS_BONES)
-                || event.getEntity().getType().is(ModTags.NO_BONE_DROPS)) return;
+
+        if (!event.getEntity().getType().is(ModTags.DROPS_BONES)) return;
         int count = 1 + event.getEntity().getRandom().nextInt(2);
         if (looting > 0) {
             count += event.getEntity().getRandom().nextInt(looting + 1);

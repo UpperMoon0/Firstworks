@@ -13,6 +13,8 @@ public final class FirstworksLoomBuilder extends FirstworksVariantBuilder {
 
     public FirstworksLoomBuilder(ResourceLocation id) {
         super(id);
+        tagBlock(new ResourceLocation[]{Firstworks.id("looms")});
+        tagItem(new ResourceLocation[]{Firstworks.id("looms")});
     }
 
     void configure(ResourceLocation planks, ResourceLocation slab, ResourceLocation plankTexture,

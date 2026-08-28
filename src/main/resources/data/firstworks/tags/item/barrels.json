@@ -1,16 +1,16 @@
-﻿{
- \replace\: false,
- \values\: [
- \firstworks:barrel\,
- \firstworks:spruce_barrel\,
- \firstworks:birch_barrel\,
- \firstworks:jungle_barrel\,
- \firstworks:acacia_barrel\,
- \firstworks:dark_oak_barrel\,
- \firstworks:mangrove_barrel\,
- \firstworks:cherry_barrel\,
- \firstworks:bamboo_barrel\,
- \firstworks:crimson_barrel\,
- \firstworks:warped_barrel\
- ]
+{
+  "replace": false,
+  "values": [
+    "firstworks:barrel",
+    "firstworks:spruce_barrel",
+    "firstworks:birch_barrel",
+    "firstworks:jungle_barrel",
+    "firstworks:acacia_barrel",
+    "firstworks:dark_oak_barrel",
+    "firstworks:mangrove_barrel",
+    "firstworks:cherry_barrel",
+    "firstworks:bamboo_barrel",
+    "firstworks:crimson_barrel",
+    "firstworks:warped_barrel"
+  ]
 }
