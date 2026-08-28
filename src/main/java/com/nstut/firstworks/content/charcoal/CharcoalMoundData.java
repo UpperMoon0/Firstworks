@@ -99,14 +99,28 @@ public final class CharcoalMoundData extends SavedData {
                 continue;
             }
 
-            if (!charge.logsIntact(level) || !isShellValid(level, charge.logs, charge.opening, false)) {
-                finish(level, charge, BREACHED_YIELD);
-                iterator.remove();
+            if (charge.phase == Phase.CARBONIZING && level.getGameTime() >= charge.deadline) {
+                // Completion is durable: leave the mound sealed until the player opens it.
+                charge.phase = Phase.READY;
                 changed = true;
+                level.playSound(null, charge.opening, SoundEvents.FIRE_EXTINGUISH,
+                        SoundSource.BLOCKS, 0.7F, 0.8F);
                 continue;
             }
-            smoke(level, charge.opening, 1);
-            if (level.getGameTime() >= charge.deadline) {
+
+            if (charge.phase == Phase.CARBONIZING) {
+                if (!charge.logsIntact(level) || !isShellValid(level, charge.logs, charge.opening, false)) {
+                    finish(level, charge, BREACHED_YIELD);
+                    iterator.remove();
+                    changed = true;
+                    continue;
+                }
+                smoke(level, charge.opening, 1);
+                continue;
+            }
+
+            // READY mounds reveal their charcoal only when the shell/opening is breached.
+            if (!charge.logsIntact(level) || !isShellValid(level, charge.logs, charge.opening, false)) {
                 finish(level, charge, NORMAL_YIELD);
                 iterator.remove();
                 changed = true;
@@ -152,6 +166,7 @@ public final class CharcoalMoundData extends SavedData {
         int output = Mth.floor(consumed * yield);
         if (output > 0) {
             BlockPos drop = charge.opening;
+            if (!level.getBlockState(drop).getCollisionShape(level, drop).isEmpty()) drop = drop.above();
             while (output > 0) {
                 int stackSize = Math.min(output, Items.CHARCOAL.getDefaultMaxStackSize());
                 Containers.dropItemStack(level, drop.getX() + 0.5, drop.getY() + 0.5, drop.getZ() + 0.5,
@@ -208,7 +223,7 @@ public final class CharcoalMoundData extends SavedData {
         static IgnitionResult failure(Component message) { return new IgnitionResult(false, message); }
     }
 
-    private enum Phase { WAITING_FOR_SEAL, CARBONIZING }
+    private enum Phase { WAITING_FOR_SEAL, CARBONIZING, READY }
 
     private static final class Charge {
         private final Set<BlockPos> logs;
