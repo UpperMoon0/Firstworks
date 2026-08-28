@@ -28,22 +28,26 @@ public final class ToolBindingRecipes {
     @SubscribeEvent
     public static void bindVanillaTools(OnDatapackSyncEvent event) {
         boolean bindTools = FirstworksConfig.BIND_VANILLA_TOOL_RECIPES.getAsBoolean();
+        boolean bindPrimitive = bindTools && FirstworksConfig.BIND_PRIMITIVE_VANILLA_TOOLS.getAsBoolean();
+        boolean bindMetal = bindTools && FirstworksConfig.BIND_METAL_VANILLA_TOOLS.getAsBoolean();
         boolean textiles = FirstworksConfig.ENABLE_TEXTILE_PROGRESSION.getAsBoolean();
         boolean masonry = FirstworksConfig.ENABLE_MASONRY_PROGRESSION.getAsBoolean();
         boolean replaceLeather = FirstworksConfig.REPLACE_ANIMAL_LEATHER.getAsBoolean();
-        rewrite(event.getPlayerList().getServer().getRecipeManager(), bindTools, textiles, masonry, replaceLeather);
+        rewrite(event.getPlayerList().getServer().getRecipeManager(), bindPrimitive, bindMetal, textiles, masonry, replaceLeather);
     }
 
-    private static void rewrite(RecipeManager manager, boolean bindTools, boolean textiles, boolean masonry, boolean replaceLeather) {
-        Ingredient primitiveBinding = Ingredient.of(ModItems.CRUDE_CORDAGE.get(), ModItems.ROPE.get());
-        Ingredient rope = Ingredient.of(ModItems.ROPE.get());
+    private static void rewrite(RecipeManager manager, boolean bindPrimitive, boolean bindMetal, boolean textiles, boolean masonry, boolean replaceLeather) {
+        Ingredient primitiveBinding = Ingredient.of(ModTags.PRIMITIVE_BINDINGS);
+        Ingredient rope = Ingredient.of(ModTags.STRONG_BINDINGS);
         Map<ResourceLocation, Recipe<?>> replacements = new HashMap<>();
 
-        if (bindTools) {
+        if (bindPrimitive) {
             addTier(replacements, "wooden", Ingredient.of(ItemTags.PLANKS), primitiveBinding,
                     Items.WOODEN_PICKAXE, Items.WOODEN_AXE, Items.WOODEN_SHOVEL, Items.WOODEN_HOE, Items.WOODEN_SWORD);
             addTier(replacements, "stone", Ingredient.of(ItemTags.STONE_TOOL_MATERIALS), primitiveBinding,
                     Items.STONE_PICKAXE, Items.STONE_AXE, Items.STONE_SHOVEL, Items.STONE_HOE, Items.STONE_SWORD);
+        }
+        if (bindMetal) {
             addTier(replacements, "iron", Ingredient.of(Items.IRON_INGOT), rope,
                     Items.IRON_PICKAXE, Items.IRON_AXE, Items.IRON_SHOVEL, Items.IRON_HOE, Items.IRON_SWORD);
             addTier(replacements, "golden", Ingredient.of(Items.GOLD_INGOT), rope,

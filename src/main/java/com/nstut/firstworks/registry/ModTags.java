@@ -11,6 +11,10 @@ import net.minecraft.world.entity.EntityType;
 public final class ModTags {
     public static final TagKey<Item> PRIMITIVE_KNIVES = TagKey.create(
             Registries.ITEM, Firstworks.id("primitive_knives"));
+    public static final TagKey<Item> PRIMITIVE_BINDINGS = TagKey.create(
+            Registries.ITEM, Firstworks.id("primitive_bindings"));
+    public static final TagKey<Item> STRONG_BINDINGS = TagKey.create(
+            Registries.ITEM, Firstworks.id("strong_bindings"));
     public static final TagKey<Block> CHARCOAL_SEALANTS = TagKey.create(
             Registries.BLOCK, Firstworks.id("charcoal_sealants"));
     public static final TagKey<Block> CHARCOAL_WOODS = TagKey.create(

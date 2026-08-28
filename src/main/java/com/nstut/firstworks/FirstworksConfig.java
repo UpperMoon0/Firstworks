@@ -22,6 +22,12 @@ public final class FirstworksConfig {
                     "Disable this to retain vanilla tool recipes while keeping the Firstworks cordage materials available.",
                     "Changing this option requires a datapack reload or game restart.")
             .define("bindVanillaToolRecipes", true);
+    public static final ModConfigSpec.BooleanValue BIND_PRIMITIVE_VANILLA_TOOLS = BUILDER
+            .comment("Require #firstworks:primitive_bindings for vanilla wooden and stone tools.")
+            .define("bindPrimitiveVanillaTools", true);
+    public static final ModConfigSpec.BooleanValue BIND_METAL_VANILLA_TOOLS = BUILDER
+            .comment("Require #firstworks:strong_bindings for vanilla iron, gold, and diamond tools.")
+            .define("bindMetalVanillaTools", true);
 
     public static final ModConfigSpec.BooleanValue ENABLE_TEXTILE_PROGRESSION = BUILDER
             .comment("Replace sheep wool drops with colored fleece, remove String-to-Wool, and require Cloth and Clean Wool for beds.",
@@ -37,7 +43,7 @@ public final class FirstworksConfig {
 
     public static final ModConfigSpec.BooleanValue RAIN_FILLS_BARRELS = BUILDER
             .comment("Allow rain to naturally fill open Barrels whose input store holds no fluid or only water.",
-                    "Disabled by default to avoid changing existing-world behaviour.",
+                    "Enabled by default; disable to keep open Barrels dry unless filled manually.",
                     "Rain does not fill Barrels whose input store already contains a non-water fluid.",
                     "Existing output fluid is never modified. Cover or enclose a Barrel to keep it dry.")
             .define("rainFillsBarrels", true);
