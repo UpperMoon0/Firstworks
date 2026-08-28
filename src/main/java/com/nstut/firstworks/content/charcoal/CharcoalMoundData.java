@@ -107,23 +107,20 @@ public final class CharcoalMoundData extends SavedData {
                 continue;
             }
 
-            if (charge.phase == Phase.CARBONIZING && level.getGameTime() >= charge.deadline) {
-                // Completion is durable: leave the mound sealed until the player opens it.
-                charge.phase = Phase.READY;
-                changed = true;
-                level.playSound(null, charge.opening, SoundEvents.FIRE_EXTINGUISH,
-                        SoundSource.BLOCKS, 0.7F, 0.8F);
-                continue;
-            }
-
             if (charge.phase == Phase.CARBONIZING) {
                 if (!charge.logsIntact(level) || !isShellValid(level, charge.logs, charge.opening, false)) {
                     finish(level, charge, breachedYield, findBreach(level, charge));
                     iterator.remove();
                     changed = true;
-                    continue;
+                } else if (level.getGameTime() >= charge.deadline) {
+                    // Completion is durable: leave the mound sealed until the player opens it.
+                    charge.phase = Phase.READY;
+                    changed = true;
+                    level.playSound(null, charge.opening, SoundEvents.FIRE_EXTINGUISH,
+                            SoundSource.BLOCKS, 0.7F, 0.8F);
+                } else {
+                    smoke(level, charge.opening, 1);
                 }
-                smoke(level, charge.opening, 1);
                 continue;
             }
 

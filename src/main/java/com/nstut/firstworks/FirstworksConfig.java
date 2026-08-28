@@ -6,7 +6,8 @@ public final class FirstworksConfig {
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
     public static final ModConfigSpec.BooleanValue REPLACE_ANIMAL_LEATHER = BUILDER
-            .comment("Replace leather from entity types in #firstworks:leather_drops_as_raw_hide with Firstworks raw hide.",
+            .comment("Replace leather from entity types in #firstworks:leather_drops_as_raw_hide with Firstworks raw hide,",
+                    "and rewrite vanilla's 4-rabbit-hide crafting recipe to yield raw hide instead of finished leather.",
                     "#firstworks:no_raw_hide_drops takes priority, allowing datapacks to exclude entries without replacing the default tag.",
                     "Disable this when a modpack manages hide acquisition entirely through loot tables.")
             .define("replaceAnimalLeatherDrops", true);

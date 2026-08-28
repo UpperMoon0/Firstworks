@@ -91,7 +91,7 @@ public final class ToolBindingRecipes {
         }
         if (changed > 0 || removed > 0) {
             manager.replaceRecipes(rewritten);
-            Firstworks.LOGGER.info("Reworked {} tool recipes and removed {} bypass textile recipes", changed, removed);
+            Firstworks.LOGGER.info("Reworked {} tool recipes and removed {} bypass progression recipes", changed, removed);
         }
     }
 

@@ -1,9 +1,0 @@
-{
-  "type": "minecraft:crafting_shapeless",
-  "category": "misc",
-  "ingredients": [
-    { "item": "minecraft:clay_ball" },
-    { "item": "minecraft:yellow_dye" }
-  ],
-  "result": { "id": "firstworks:raw_ochre", "count": 2 }
-}
