@@ -72,7 +72,11 @@ dependencies {
     compileOnly 'maven.modrinth:jade:15.10.5+neoforge'
     localRuntime 'dev.latvian.mods:kubejs-neoforge:2101.7.2-build.368'
     localRuntime 'mezz.jei:jei-1.21.1-neoforge:19.43.0.390'
-    localRuntime 'maven.modrinth:jade:15.10.5+neoforge'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+}
+
+test {
+    useJUnitPlatform()
 }
 
 def generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
