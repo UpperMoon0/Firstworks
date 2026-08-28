@@ -17,6 +17,9 @@ import net.minecraft.world.level.Level;
 
 public record MortarGrindingRecipe(Ingredient ingredient, int inputCount, ItemStack result, int duration)
         implements Recipe<SingleRecipeInput> {
+    public static final int MAX_INPUT_COUNT = 64;
+    public static final int MAX_DURATION = 72_000;
+
     @Override public boolean matches(SingleRecipeInput input, Level level) {
         return ingredient.test(input.item()) && input.item().getCount() >= inputCount;
     }
@@ -30,9 +33,11 @@ public record MortarGrindingRecipe(Ingredient ingredient, int inputCount, ItemSt
     public static final class Serializer implements RecipeSerializer<MortarGrindingRecipe> {
         private static final MapCodec<MortarGrindingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Ingredient.CODEC.fieldOf("ingredient").forGetter(MortarGrindingRecipe::ingredient),
-                Codec.INT.optionalFieldOf("input_count", 1).forGetter(MortarGrindingRecipe::inputCount),
+                Codec.intRange(1, MAX_INPUT_COUNT).optionalFieldOf("input_count", 1)
+                        .forGetter(MortarGrindingRecipe::inputCount),
                 ItemStack.CODEC.fieldOf("result").forGetter(MortarGrindingRecipe::result),
-                Codec.INT.optionalFieldOf("duration", 40).forGetter(MortarGrindingRecipe::duration)
+                Codec.intRange(1, MAX_DURATION).optionalFieldOf("duration", 40)
+                        .forGetter(MortarGrindingRecipe::duration)
         ).apply(instance, MortarGrindingRecipe::new));
         private static final StreamCodec<RegistryFriendlyByteBuf, MortarGrindingRecipe> STREAM_CODEC = StreamCodec.of(
                 (buffer, recipe) -> {

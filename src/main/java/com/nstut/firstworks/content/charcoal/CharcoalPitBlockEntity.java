@@ -25,7 +25,10 @@ public final class CharcoalPitBlockEntity extends BlockEntity {
             ResourceLocation.fromNamespaceAndPath(Firstworks.MOD_ID, "charcoal_pit_fuels"));
 
     private ItemStack stored = ItemStack.EMPTY;
-    private int progress;
+    /** Absolute game time keeps carbonization advancing while this chunk is unloaded. */
+    private long finishGameTime;
+    /** Read only to migrate pits saved by the development build before absolute timing. */
+    private int legacyProgress;
     private boolean burning;
     private final IItemHandler automation = new PitItemHandler();
 
@@ -37,24 +40,36 @@ public final class CharcoalPitBlockEntity extends BlockEntity {
         if (level.isClientSide || !pit.burning) return;
         if (!level.getBlockState(pos.above()).is(Blocks.DIRT)) {
             pit.burning = false;
-            pit.progress = 0;
+            pit.finishGameTime = 0L;
+            pit.legacyProgress = 0;
             pit.syncLit(false);
             return;
         }
-        if (++pit.progress < PROCESS_TICKS) {
-            if (pit.progress % 200 == 0) pit.setChanged();
+        long now = level.getGameTime();
+        if (pit.finishGameTime <= 0L) {
+            pit.finishGameTime = now + Math.max(1, PROCESS_TICKS - pit.legacyProgress);
+            pit.legacyProgress = 0;
+            pit.setChanged();
+        }
+        if (now < pit.finishGameTime) {
             return;
         }
-        int count = pit.stored.getCount();
+        int count = Math.max(1, pit.stored.getCount() * 3 / 4);
         pit.stored = new ItemStack(Items.CHARCOAL, count);
-        pit.progress = 0;
+        pit.finishGameTime = 0L;
+        pit.legacyProgress = 0;
         pit.burning = false;
         pit.syncLit(false);
     }
 
     public boolean canAccept(ItemStack stack) {
         return !burning && !stack.isEmpty() && stack.is(FUELS)
-                && (stored.isEmpty() || stored.is(FUELS)) && stored.getCount() < CAPACITY;
+                && canMergeFuelStacks(stored, stack)
+                && stored.getCount() < CAPACITY;
+    }
+
+    static boolean canMergeFuelStacks(ItemStack stored, ItemStack incoming) {
+        return stored.isEmpty() || ItemStack.isSameItemSameComponents(stored, incoming);
     }
 
     public int insertLogs(ItemStack stack, boolean creative) {
@@ -74,7 +89,8 @@ public final class CharcoalPitBlockEntity extends BlockEntity {
     public boolean ignite() {
         if (!canIgnite() || level == null || !level.getBlockState(worldPosition.above()).is(Blocks.DIRT)) return false;
         burning = true;
-        progress = 0;
+        finishGameTime = level.getGameTime() + PROCESS_TICKS;
+        legacyProgress = 0;
         syncLit(true);
         return true;
     }
@@ -83,13 +99,18 @@ public final class CharcoalPitBlockEntity extends BlockEntity {
         if (burning || stored.isEmpty()) return false;
         player.getInventory().placeItemBackInInventory(stored.copy());
         stored = ItemStack.EMPTY;
-        progress = 0;
+        finishGameTime = 0L;
+        legacyProgress = 0;
         setChanged();
         return true;
     }
 
     public ItemStack getStoredStack() { return stored.copy(); }
-    public int getProgress() { return progress; }
+    public int getProgress() {
+        if (!burning || level == null || finishGameTime <= 0L) return legacyProgress;
+        long elapsed = PROCESS_TICKS - Math.max(0L, finishGameTime - level.getGameTime());
+        return (int) Math.clamp(elapsed, 0L, PROCESS_TICKS);
+    }
     public boolean isBurning() { return burning; }
     public IItemHandler getItemHandler() { return automation; }
 
@@ -104,7 +125,8 @@ public final class CharcoalPitBlockEntity extends BlockEntity {
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put("Stored", stored.saveOptional(registries));
-        tag.putInt("Progress", progress);
+        tag.putLong("FinishGameTime", finishGameTime);
+        tag.putInt("Progress", getProgress());
         tag.putBoolean("Burning", burning);
     }
 
@@ -112,7 +134,8 @@ public final class CharcoalPitBlockEntity extends BlockEntity {
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         stored = ItemStack.parseOptional(registries, tag.getCompound("Stored"));
-        progress = tag.getInt("Progress");
+        finishGameTime = tag.getLong("FinishGameTime");
+        legacyProgress = finishGameTime <= 0L ? tag.getInt("Progress") : 0;
         burning = tag.getBoolean("Burning");
     }
 
