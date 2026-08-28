@@ -1,6 +1,7 @@
 package com.nstut.firstworks;
 
 import com.nstut.firstworks.content.ColoredFleeceItem;
+import com.nstut.firstworks.content.charcoal.CharcoalMoundData;
 import com.nstut.firstworks.registry.ModItems;
 import com.nstut.firstworks.registry.ModTags;
 import net.minecraft.server.level.ServerLevel;
@@ -23,6 +24,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.common.ItemAbilities;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -31,6 +33,30 @@ import com.nstut.firstworks.registry.WoodTypeRegistry;
 
 @EventBusSubscriber(modid = Firstworks.MOD_ID)
 public final class GameplayEvents {
+    @SubscribeEvent
+    public static void igniteCharcoalMound(PlayerInteractEvent.RightClickBlock event) {
+        ItemStack tool = event.getEntity().getItemInHand(event.getHand());
+        if (!tool.is(ModItems.FIRE_STARTER.get()) && !tool.is(Items.FLINT_AND_STEEL)) return;
+        if (!event.getLevel().getBlockState(event.getPos()).is(ModTags.CHARCOAL_WOODS)) return;
+
+        event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide));
+        event.setCanceled(true);
+        if (!(event.getLevel() instanceof ServerLevel level) || event.getFace() == null) return;
+
+        CharcoalMoundData.IgnitionResult result = CharcoalMoundData.get(level)
+                .ignite(level, event.getPos(), event.getFace());
+        event.getEntity().displayClientMessage(result.message(), true);
+        if (!result.success() || event.getEntity().hasInfiniteMaterials()) return;
+        EquipmentSlot slot = event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND
+                ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
+        tool.hurtAndBreak(1, event.getEntity(), slot);
+    }
+
+    @SubscribeEvent
+    public static void tickCharcoalMounds(LevelTickEvent.Post event) {
+        if (event.getLevel() instanceof ServerLevel level) CharcoalMoundData.get(level).tick(level);
+    }
+
     @SubscribeEvent
     public static void replaceAnimalLeather(LivingDropsEvent event) {
         if (!FirstworksConfig.REPLACE_ANIMAL_LEATHER.getAsBoolean()) return;

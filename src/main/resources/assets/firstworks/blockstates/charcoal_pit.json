@@ -1,6 +1,0 @@
-{
-  "variants": {
-    "lit=false": { "model": "firstworks:block/charcoal_pit" },
-    "lit=true": { "model": "firstworks:block/charcoal_pit_lit" }
-  }
-}

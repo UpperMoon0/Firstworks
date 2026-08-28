@@ -5,9 +5,9 @@ import com.nstut.firstworks.content.barrel.BarrelBlockEntity;
 import com.nstut.firstworks.content.barrel.BarrelBlock;
 import com.nstut.firstworks.content.brick_mold.BrickMoldBlockEntity;
 import com.nstut.firstworks.content.basket.BasketBlockEntity;
-import com.nstut.firstworks.content.charcoal.CharcoalPitBlockEntity;
 import com.nstut.firstworks.content.loom.LoomBlockEntity;
 import com.nstut.firstworks.content.loom.LoomBlock;
+import com.nstut.firstworks.content.mortar.MortarBlockEntity;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -29,8 +29,9 @@ public final class ModBlockEntities {
             "brick_mold", () -> BlockEntityType.Builder.of(BrickMoldBlockEntity::new, ModBlocks.BRICK_MOLD.get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BasketBlockEntity>> BASKET = TYPES.register(
             "basket", () -> BlockEntityType.Builder.of(BasketBlockEntity::new, ModBlocks.BASKET.get()).build(null));
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CharcoalPitBlockEntity>> CHARCOAL_PIT = TYPES.register(
-            "charcoal_pit", () -> BlockEntityType.Builder.of(CharcoalPitBlockEntity::new, ModBlocks.CHARCOAL_PIT.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MortarBlockEntity>> MORTAR = TYPES.register(
+            "mortar_and_pestle", () -> BlockEntityType.Builder.of(MortarBlockEntity::new,
+                    ModBlocks.MORTAR_AND_PESTLE.get()).build(null));
 
     public static void register(IEventBus bus) {
         TYPES.register(bus);
@@ -43,7 +44,7 @@ public final class ModBlockEntities {
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, LOOM.get(), (loom, side) -> loom.getItemHandler(side));
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BRICK_MOLD.get(), (mold, side) -> mold.getItemHandler(side));
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BASKET.get(), (basket, side) -> basket.getItemHandler());
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, CHARCOAL_PIT.get(), (pit, side) -> pit.getItemHandler());
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, MORTAR.get(), (mortar, side) -> mortar.getItemHandler(side));
     }
 
     private ModBlockEntities() {}

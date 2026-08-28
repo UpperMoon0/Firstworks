@@ -13,6 +13,8 @@ public final class ModTags {
             Registries.ITEM, Firstworks.id("primitive_knives"));
     public static final TagKey<Block> CHARCOAL_SEALANTS = TagKey.create(
             Registries.BLOCK, Firstworks.id("charcoal_sealants"));
+    public static final TagKey<Block> CHARCOAL_WOODS = TagKey.create(
+            Registries.BLOCK, Firstworks.id("charcoal_woods"));
     public static final TagKey<EntityType<?>> DROPS_BONES = TagKey.create(
             Registries.ENTITY_TYPE, Firstworks.id("drops_bones"));
     public static final TagKey<EntityType<?>> NO_BONE_DROPS = TagKey.create(

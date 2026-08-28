@@ -6,7 +6,6 @@ import com.nstut.firstworks.content.TanninSolutionBucketItem;
 import com.nstut.firstworks.content.ColoredFleeceItem;
 import com.nstut.firstworks.content.ClayBucketItem;
 import com.nstut.firstworks.content.HandSpindleItem;
-import com.nstut.firstworks.content.MortarAndPestleItem;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.BlockItem;
@@ -64,11 +63,9 @@ public final class ModItems {
             () -> new ColoredFleeceItem(new Item.Properties()));
     public static final DeferredHolder<Item, Item> BASKET = ITEMS.register("basket",
             () -> new BlockItem(ModBlocks.BASKET.get(), new Item.Properties()));
-    public static final DeferredHolder<Item, Item> CHARCOAL_PIT = ITEMS.register("charcoal_pit",
-            () -> new BlockItem(ModBlocks.CHARCOAL_PIT.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> COPPER_FASTENERS = simple("copper_fasteners");
     public static final DeferredHolder<Item, Item> MORTAR_AND_PESTLE = ITEMS.register("mortar_and_pestle",
-            () -> new MortarAndPestleItem(new Item.Properties().durability(192)));
+            () -> new BlockItem(ModBlocks.MORTAR_AND_PESTLE.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> CHARCOAL_POWDER = simple("charcoal_powder");
     public static final DeferredHolder<Item, Item> RAW_OCHRE = simple("raw_ochre");
     public static final DeferredHolder<Item, Item> GROUND_OCHRE = simple("ground_ochre");

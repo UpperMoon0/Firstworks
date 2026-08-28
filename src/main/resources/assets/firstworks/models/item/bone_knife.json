@@ -1,4 +1,4 @@
 {
   "parent": "minecraft:item/handheld",
-  "textures": { "layer0": "minecraft:item/bone" }
+  "textures": { "layer0": "firstworks:item/bone_knife" }
 }
