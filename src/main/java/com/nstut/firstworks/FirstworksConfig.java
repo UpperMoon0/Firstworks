@@ -40,7 +40,7 @@ public final class FirstworksConfig {
                     "Disabled by default to avoid changing existing-world behaviour.",
                     "Rain does not fill Barrels whose input store already contains a non-water fluid.",
                     "Existing output fluid is never modified. Cover or enclose a Barrel to keep it dry.")
-            .define("rainFillsBarrels", false);
+            .define("rainFillsBarrels", true);
 
     public static final ModConfigSpec.IntValue RAIN_FILL_AMOUNT = BUILDER
             .comment("Water (in millibuckets) gathered from rain per precipitation event.",
