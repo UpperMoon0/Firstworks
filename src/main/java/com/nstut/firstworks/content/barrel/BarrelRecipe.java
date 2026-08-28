@@ -60,13 +60,13 @@ public record BarrelRecipe(Ingredient ingredient, int inputCount, ResourceLocati
     public static final class Serializer implements RecipeSerializer<BarrelRecipe> {
         private static final MapCodec<BarrelRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Ingredient.CODEC.fieldOf("ingredient").forGetter(BarrelRecipe::ingredient),
-                Codec.INT.optionalFieldOf("input_count", 1).forGetter(BarrelRecipe::inputCount),
+                Codec.intRange(1, 64).optionalFieldOf("input_count", 1).forGetter(BarrelRecipe::inputCount),
                 ResourceLocation.CODEC.fieldOf("fluid").forGetter(BarrelRecipe::fluid),
-                Codec.INT.fieldOf("fluid_amount").forGetter(BarrelRecipe::fluidAmount),
+                Codec.intRange(1, 4000).fieldOf("fluid_amount").forGetter(BarrelRecipe::fluidAmount),
                 ItemStack.OPTIONAL_CODEC.optionalFieldOf("result", ItemStack.EMPTY).forGetter(BarrelRecipe::result),
                 ResourceLocation.CODEC.optionalFieldOf("output_fluid", NO_FLUID).forGetter(BarrelRecipe::outputFluid),
-                Codec.INT.optionalFieldOf("output_fluid_amount", 0).forGetter(BarrelRecipe::outputFluidAmount),
-                Codec.INT.optionalFieldOf("duration", 200).forGetter(BarrelRecipe::duration),
+                Codec.intRange(0, 4000).optionalFieldOf("output_fluid_amount", 0).forGetter(BarrelRecipe::outputFluidAmount),
+                Codec.intRange(1, Integer.MAX_VALUE).optionalFieldOf("duration", 200).forGetter(BarrelRecipe::duration),
                 Codec.BOOL.optionalFieldOf("sealed", true).forGetter(BarrelRecipe::sealed)
         ).apply(instance, BarrelRecipe::new));
 

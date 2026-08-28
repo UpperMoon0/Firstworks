@@ -36,7 +36,7 @@ public final class GameplayEvents {
     @SubscribeEvent
     public static void igniteCharcoalMound(PlayerInteractEvent.RightClickBlock event) {
         ItemStack tool = event.getEntity().getItemInHand(event.getHand());
-        if (!tool.is(ModItems.FIRE_STARTER.get()) && !tool.is(Items.FLINT_AND_STEEL)) return;
+        if (!tool.is(ModTags.CHARCOAL_IGNITERS)) return;
         if (!event.getLevel().getBlockState(event.getPos()).is(ModTags.CHARCOAL_WOODS)) return;
 
         // Only claim the interaction when this log is a viable mound probe.

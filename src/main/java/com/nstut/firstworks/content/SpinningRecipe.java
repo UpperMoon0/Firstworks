@@ -32,9 +32,9 @@ public record SpinningRecipe(Ingredient ingredient, int inputCount, ItemStack re
     public static final class Serializer implements RecipeSerializer<SpinningRecipe> {
         private static final MapCodec<SpinningRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Ingredient.CODEC.fieldOf("ingredient").forGetter(SpinningRecipe::ingredient),
-                Codec.INT.optionalFieldOf("input_count", 1).forGetter(SpinningRecipe::inputCount),
+                Codec.intRange(1, 64).optionalFieldOf("input_count", 1).forGetter(SpinningRecipe::inputCount),
                 ItemStack.CODEC.fieldOf("result").forGetter(SpinningRecipe::result),
-                Codec.INT.optionalFieldOf("duration", 32).forGetter(SpinningRecipe::duration)
+                Codec.intRange(1, Integer.MAX_VALUE).optionalFieldOf("duration", 32).forGetter(SpinningRecipe::duration)
         ).apply(instance, SpinningRecipe::new));
         private static final StreamCodec<RegistryFriendlyByteBuf, SpinningRecipe> STREAM_CODEC = StreamCodec.of(
                 (buffer, recipe) -> {
