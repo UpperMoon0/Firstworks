@@ -232,5 +232,29 @@ public final class GameplayEvents {
         Block.popResource(level, event.getPos(), new ItemStack(ModItems.PLANT_FIBRE.get(), amount));
     }
 
+    @SubscribeEvent
+    public static void gatherRawOchre(BlockEvent.BreakEvent event) {
+        if (!(event.getLevel() instanceof ServerLevel level)) return;
+        if (event.getPlayer() == null || event.getPlayer().isCreative()) return;
+        BlockState state = event.getState();
+        if (!state.is(ModTags.OCHRE_SOURCES)) return;
+
+        ItemStack tool = event.getPlayer().getMainHandItem();
+        if (hasSilkTouch(level, tool)) return;
+
+        boolean guaranteed = tool.is(ModTags.PRIMITIVE_KNIVES);
+        if (guaranteed || level.getRandom().nextFloat() < 0.20F) {
+            Block.popResource(level, event.getPos(), new ItemStack(ModItems.RAW_OCHRE.get(), 1));
+        }
+    }
+
+    private static boolean hasSilkTouch(ServerLevel level, ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        return level.registryAccess().lookup(net.minecraft.core.registries.Registries.ENCHANTMENT)
+                .flatMap(reg -> reg.get(net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH))
+                .map(st -> net.minecraft.world.item.enchantment.EnchantmentHelper.getItemEnchantmentLevel(st, stack) > 0)
+                .orElse(false);
+    }
+
     private GameplayEvents() {}
 }

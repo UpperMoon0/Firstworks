@@ -8,13 +8,49 @@ Firstworks has no dependency on Create or the Inventors modpack.
 
 ## Data-driven animal materials
 
-Firstworks owns the reusable raw-hide and animal-bone rules. Datapacks and modpacks can extend the positive entity-type tags or add entries to the higher-priority exclusion tags:
+Firstworks owns reusable raw-hide and animal-bone drops, supporting both fine-grained data-driven mob profiles and broad entity tags.
+
+### Priority and Precedence Order
+
+When a living entity dies, Firstworks evaluates drops in this strict order:
+1. **Exclusion tags (`#firstworks:no_*`)**: Highest priority packmaker veto. If an entity is tagged here, Firstworks will not modify its bone or hide drops under any circumstances.
+2. **Animal Material Profiles (`data/<namespace>/firstworks/animal_materials/<name>.json`)**: Fine-grained per-entity drop profiles configuring precise min/max bone and hide counts with Looting scaling.
+3. **Fallback Tags (`#firstworks:drops_bones`, `#firstworks:leather_drops_as_raw_hide`)**: Generic 1–2 drop rules for entities without custom profiles.
+4. **Unmodified Vanilla/Modded**: No Firstworks changes applied.
+
+### Animal Material Profile Schema
+
+Create JSON files under `data/<namespace>/firstworks/animal_materials/<name>.json`:
+
+```json
+{
+  "entity": "examplemod:large_deer",
+  "bones": {
+    "min": 3,
+    "max": 6,
+    "looting_bonus": 1
+  },
+  "hide": {
+    "min": 2,
+    "max": 4,
+    "looting_bonus": 1
+  }
+}
+```
+
+- `entity`: The entity type ID (e.g. `minecraft:cow`, `naturalist:elephant`).
+- `bones` *(optional)*: `min` (inclusive), `max` (inclusive), `looting_bonus` (extra rolled per Looting level).
+- `hide` *(optional)*: `min` (inclusive), `max` (inclusive), `looting_bonus`.
+- **Hide Normalization**: When a profile defines a `hide` drop, Firstworks automatically removes any existing `minecraft:leather` and modded raw hides matching `#firstworks:raw_hides` (such as `naturalist:hide`) before adding the profile-defined `firstworks:raw_hide` amount. This completely prevents duplicate hide drops when integrating third-party animal mods.
+
+### Tags
 
 - `#firstworks:drops_bones`
 - `#firstworks:no_bone_drops`
 - `#firstworks:leather_drops_as_raw_hide`
 - `#firstworks:no_raw_hide_drops`
 - `#firstworks:charcoal_igniters`
+- `#firstworks:ochre_sources`
 
 The default bone list contains vertebrate animals. Squid, glow squid, bees, allays, and undead horses are intentionally excluded. Bone drops and leather replacement can also be disabled independently in the common config.
 

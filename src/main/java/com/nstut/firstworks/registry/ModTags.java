@@ -39,6 +39,8 @@ public final class ModTags {
             Registries.ITEM, Firstworks.id("looms"));
     public static final TagKey<Item> RAW_HIDES = TagKey.create(
             Registries.ITEM, Firstworks.id("raw_hides"));
+    public static final TagKey<Block> OCHRE_SOURCES = TagKey.create(
+            Registries.BLOCK, Firstworks.id("ochre_sources"));
 
     private ModTags() {}
 }
