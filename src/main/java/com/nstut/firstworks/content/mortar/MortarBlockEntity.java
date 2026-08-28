@@ -3,6 +3,7 @@ package com.nstut.firstworks.content.mortar;
 import com.nstut.firstworks.content.MortarGrindingRecipe;
 import com.nstut.firstworks.registry.ModBlockEntities;
 import com.nstut.firstworks.registry.ModRecipes;
+import com.nstut.firstworks.compat.OptionalIntegrations;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -58,6 +59,10 @@ public final class MortarBlockEntity extends BlockEntity {
         mortar.input.shrink(recipe.inputCount());
         if (mortar.input.isEmpty()) mortar.input = ItemStack.EMPTY;
         mortar.output = recipe.result().copy();
+        if (level instanceof ServerLevel serverLevel) {
+            OptionalIntegrations.fireMortarGrindingCompleted(serverLevel, mortar, active.get().id(), recipe,
+                    mortar.input.copy(), mortar.output.copy());
+        }
         mortar.grinding = false;
         mortar.finishGameTime = 0L;
         mortar.setChangedAndSync();
@@ -90,6 +95,8 @@ public final class MortarBlockEntity extends BlockEntity {
         if (grinding || !output.isEmpty() || level == null) return false;
         Optional<RecipeHolder<MortarGrindingRecipe>> active = findRecipe(input);
         if (active.isEmpty() || input.getCount() < active.get().value().inputCount()) return false;
+        if (level instanceof ServerLevel serverLevel && !OptionalIntegrations.fireMortarGrindingStarting(
+                serverLevel, this, active.get().id(), active.get().value(), input.copy(), active.get().value().result())) return false;
         grinding = true;
         finishGameTime = level.getGameTime() + active.get().value().duration();
         setChangedAndSync();

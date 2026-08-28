@@ -7,6 +7,8 @@ import com.nstut.firstworks.content.loom.LoomRecipe;
 import com.nstut.firstworks.content.SpinningRecipe;
 import com.nstut.firstworks.content.brick_mold.BrickMoldBlockEntity;
 import com.nstut.firstworks.content.brick_mold.BrickMoldingRecipe;
+import com.nstut.firstworks.content.mortar.MortarBlockEntity;
+import com.nstut.firstworks.content.MortarGrindingRecipe;
 import dev.latvian.mods.kubejs.script.ScriptType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -62,6 +64,18 @@ public final class KubeJSCompat {
             BrickMoldingRecipe recipe, ItemStack input, ItemStack result) {
         FirstworksKubeEvents.BRICK_MOLDING_COMPLETED.post(ScriptType.SERVER,
                 new BrickMoldingKubeEvent(level, mold, recipeId, recipe, input, result));
+    }
+
+    public static boolean fireMortarGrindingStarting(ServerLevel level, MortarBlockEntity mortar, ResourceLocation recipeId,
+            MortarGrindingRecipe recipe, ItemStack input, ItemStack result) {
+        return FirstworksKubeEvents.MORTAR_GRINDING_STARTING.post(ScriptType.SERVER,
+                new MortarGrindingKubeEvent(level, mortar, recipeId, recipe, input, result)).interruptFalse();
+    }
+
+    public static void fireMortarGrindingCompleted(ServerLevel level, MortarBlockEntity mortar, ResourceLocation recipeId,
+            MortarGrindingRecipe recipe, ItemStack input, ItemStack result) {
+        FirstworksKubeEvents.MORTAR_GRINDING_COMPLETED.post(ScriptType.SERVER,
+                new MortarGrindingKubeEvent(level, mortar, recipeId, recipe, input, result));
     }
 
     private KubeJSCompat() {}
