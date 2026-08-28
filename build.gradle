@@ -29,6 +29,8 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 configurations {
     localRuntime
     runtimeClasspath.extendsFrom localRuntime
+    testCompileClasspath.extendsFrom compileClasspath
+    testRuntimeClasspath.extendsFrom runtimeClasspath
 }
 
 neoForge {
@@ -77,8 +79,6 @@ dependencies {
     localRuntime 'mezz.jei:jei-1.21.1-neoforge:19.43.0.390'
     localRuntime 'maven.modrinth:jade:15.10.5+neoforge'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
-    testImplementation sourceSets.main.compileClasspath
-    testRuntimeOnly sourceSets.main.runtimeClasspath
 }
 
 test {
