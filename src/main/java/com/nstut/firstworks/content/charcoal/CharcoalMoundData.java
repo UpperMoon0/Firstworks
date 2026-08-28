@@ -185,7 +185,13 @@ public final class CharcoalMoundData extends SavedData {
         int output = Mth.floor(consumed * yield);
         if (output > 0) {
             BlockPos drop = breachedAt;
-            if (!level.getBlockState(drop).getCollisionShape(level, drop).isEmpty()) drop = drop.above();
+            for (int i = 0; i < 4; i++) {
+                if (level.getBlockState(drop).getCollisionShape(level, drop).isEmpty()) break;
+                drop = drop.above();
+            }
+            if (!level.getBlockState(drop).getCollisionShape(level, drop).isEmpty()) {
+                drop = charge.opening.above();
+            }
             while (output > 0) {
                 int stackSize = Math.min(output, Items.CHARCOAL.getDefaultMaxStackSize());
                 Containers.dropItemStack(level, drop.getX() + 0.5, drop.getY() + 0.5, drop.getZ() + 0.5,

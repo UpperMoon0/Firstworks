@@ -56,12 +56,13 @@ public final class MortarBlockEntity extends BlockEntity {
         if (level.getGameTime() < mortar.finishGameTime) return;
 
         MortarGrindingRecipe recipe = active.get().value();
+        ItemStack consumed = mortar.input.copyWithCount(recipe.inputCount());
         mortar.input.shrink(recipe.inputCount());
         if (mortar.input.isEmpty()) mortar.input = ItemStack.EMPTY;
         mortar.output = recipe.result().copy();
         if (level instanceof ServerLevel serverLevel) {
             OptionalIntegrations.fireMortarGrindingCompleted(serverLevel, mortar, active.get().id(), recipe,
-                    mortar.input.copy(), mortar.output.copy());
+                    consumed, mortar.output.copy());
         }
         mortar.grinding = false;
         mortar.finishGameTime = 0L;
@@ -74,9 +75,16 @@ public final class MortarBlockEntity extends BlockEntity {
                 new SingleRecipeInput(stack), level);
     }
 
+    public Optional<RecipeHolder<MortarGrindingRecipe>> findRecipeForIngredient(ItemStack stack) {
+        if (stack.isEmpty() || level == null) return Optional.empty();
+        return level.getRecipeManager().getAllRecipesFor(ModRecipes.MORTAR_GRINDING_TYPE.get()).stream()
+                .filter(holder -> holder.value().ingredient().test(stack))
+                .findFirst();
+    }
+
     public boolean canInsert(ItemStack stack) {
         if (grinding || stack.isEmpty() || !output.isEmpty()) return false;
-        Optional<RecipeHolder<MortarGrindingRecipe>> recipe = findRecipe(stack);
+        Optional<RecipeHolder<MortarGrindingRecipe>> recipe = findRecipeForIngredient(stack);
         if (recipe.isEmpty()) return false;
         if (!input.isEmpty() && !ItemStack.isSameItemSameComponents(input, stack)) return false;
         return input.getCount() < recipe.get().value().inputCount();
@@ -95,7 +103,7 @@ public final class MortarBlockEntity extends BlockEntity {
         if (grinding || !output.isEmpty() || level == null) return false;
         Optional<RecipeHolder<MortarGrindingRecipe>> active = findRecipe(input);
         if (active.isEmpty() || input.getCount() < active.get().value().inputCount()) return false;
-        if (level instanceof ServerLevel serverLevel && !OptionalIntegrations.fireMortarGrindingStarting(
+        if (level instanceof ServerLevel serverLevel && OptionalIntegrations.fireMortarGrindingStarting(
                 serverLevel, this, active.get().id(), active.get().value(), input.copy(), active.get().value().result())) return false;
         grinding = true;
         finishGameTime = level.getGameTime() + active.get().value().duration();
@@ -172,7 +180,7 @@ public final class MortarBlockEntity extends BlockEntity {
         }
         @Override public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
             if (slot != 0 || !canInsert(stack)) return stack;
-            int required = findRecipe(stack).map(holder -> holder.value().inputCount()).orElse(0);
+            int required = findRecipeForIngredient(stack).map(holder -> holder.value().inputCount()).orElse(0);
             int accepted = Math.min(required - input.getCount(), stack.getCount());
             if (!simulate && accepted > 0) {
                 if (input.isEmpty()) input = stack.copyWithCount(accepted);
@@ -193,7 +201,7 @@ public final class MortarBlockEntity extends BlockEntity {
             return result;
         }
         @Override public int getSlotLimit(int slot) {
-            return slot == 0 ? findRecipe(input).map(holder -> holder.value().inputCount()).orElse(64) : 64;
+            return slot == 0 ? findRecipeForIngredient(input).map(holder -> holder.value().inputCount()).orElse(64) : 64;
         }
         @Override public boolean isItemValid(int slot, ItemStack stack) { return slot == 0 && canInsert(stack); }
     }
