@@ -105,7 +105,7 @@ public final class TreeBarkTextureManager implements ResourceManagerReloadListen
         for (ResourceLocation loc : BuiltInRegistries.BLOCK.keySet()) {
             if (com.nstut.firstworks.registry.WoodTypeRegistry.isRegisteredLog(loc)) continue;
             String path = loc.getPath();
-            if (path.endsWith("_log") || path.endsWith("_stem")) {
+            if (path.endsWith("_log") || path.endsWith("_wood") || path.endsWith("_stem") || path.endsWith("_hyphae")) {
                 String base = path.substring(0, path.lastIndexOf('_'));
                 String woodType = loc.getNamespace().equals("minecraft")
                         ? base
