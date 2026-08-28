@@ -6,6 +6,7 @@ import com.nstut.firstworks.content.brick_mold.BrickMoldingRecipe;
 import com.nstut.firstworks.content.loom.LoomRecipe;
 import com.nstut.firstworks.content.ScrapingRecipe;
 import com.nstut.firstworks.content.SpinningRecipe;
+import com.nstut.firstworks.content.MortarGrindingRecipe;
 import com.nstut.firstworks.content.FleeceDyeingRecipe;
 import com.nstut.firstworks.content.WoolBlockRecipe;
 import com.nstut.firstworks.content.TextileBedRecipe;
@@ -38,6 +39,10 @@ public final class ModRecipes {
             "spinning", () -> RecipeType.simple(Firstworks.id("spinning")));
     public static final DeferredHolder<RecipeSerializer<?>, SpinningRecipe.Serializer> SPINNING_SERIALIZER = SERIALIZERS.register(
             "spinning", SpinningRecipe.Serializer::new);
+    public static final DeferredHolder<RecipeType<?>, RecipeType<MortarGrindingRecipe>> MORTAR_GRINDING_TYPE = TYPES.register(
+            "mortar_grinding", () -> RecipeType.simple(Firstworks.id("mortar_grinding")));
+    public static final DeferredHolder<RecipeSerializer<?>, MortarGrindingRecipe.Serializer> MORTAR_GRINDING_SERIALIZER = SERIALIZERS.register(
+            "mortar_grinding", MortarGrindingRecipe.Serializer::new);
     public static final DeferredHolder<RecipeSerializer<?>, FleeceDyeingRecipe.Serializer> FLEECE_DYEING_SERIALIZER = SERIALIZERS.register(
             "fleece_dyeing", FleeceDyeingRecipe.Serializer::new);
     public static final DeferredHolder<RecipeSerializer<?>, WoolBlockRecipe.Serializer> WOOL_BLOCK_SERIALIZER = SERIALIZERS.register(

@@ -1,0 +1,24 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "minecraft:block/bamboo_planks",
+    "basket": "minecraft:block/stripped_bamboo_block"
+  },
+  "elements": [
+    { "from": [2,0,2], "to": [14,2,14], "faces": {
+      "down":{"texture":"#basket"}, "up":{"texture":"#basket"}, "north":{"texture":"#basket"},
+      "south":{"texture":"#basket"}, "west":{"texture":"#basket"}, "east":{"texture":"#basket"} } },
+    { "from": [2,2,2], "to": [4,12,14], "faces": {
+      "down":{"texture":"#basket"}, "up":{"texture":"#basket"}, "north":{"texture":"#basket"},
+      "south":{"texture":"#basket"}, "west":{"texture":"#basket"}, "east":{"texture":"#basket"} } },
+    { "from": [12,2,2], "to": [14,12,14], "faces": {
+      "down":{"texture":"#basket"}, "up":{"texture":"#basket"}, "north":{"texture":"#basket"},
+      "south":{"texture":"#basket"}, "west":{"texture":"#basket"}, "east":{"texture":"#basket"} } },
+    { "from": [4,2,2], "to": [12,12,4], "faces": {
+      "down":{"texture":"#basket"}, "up":{"texture":"#basket"}, "north":{"texture":"#basket"},
+      "south":{"texture":"#basket"}, "west":{"texture":"#basket"}, "east":{"texture":"#basket"} } },
+    { "from": [4,2,12], "to": [12,12,14], "faces": {
+      "down":{"texture":"#basket"}, "up":{"texture":"#basket"}, "north":{"texture":"#basket"},
+      "south":{"texture":"#basket"}, "west":{"texture":"#basket"}, "east":{"texture":"#basket"} } }
+  ]
+}

@@ -1,6 +1,8 @@
 {
   "replace": false,
   "values": [
+    "firstworks:basket",
+    "firstworks:charcoal_pit",
     "firstworks:barrel",
     "firstworks:spruce_barrel",
     "firstworks:birch_barrel",

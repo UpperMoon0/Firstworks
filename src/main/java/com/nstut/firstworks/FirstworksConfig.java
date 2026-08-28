@@ -6,9 +6,16 @@ public final class FirstworksConfig {
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
     public static final ModConfigSpec.BooleanValue REPLACE_ANIMAL_LEATHER = BUILDER
-            .comment("Replace leather dropped directly by vanilla animals with Firstworks raw hide, and replace the 4-rabbit-hide leather recipe with raw hide.",
-                    "Disable this when a modpack manages hide acquisition through KubeJS or loot tables.")
+            .comment("Replace leather from entity types in #firstworks:leather_drops_as_raw_hide with Firstworks raw hide.",
+                    "#firstworks:no_raw_hide_drops takes priority, allowing datapacks to exclude entries without replacing the default tag.",
+                    "Disable this when a modpack manages hide acquisition entirely through loot tables.")
             .define("replaceAnimalLeatherDrops", true);
+
+    public static final ModConfigSpec.BooleanValue ADD_ANIMAL_BONE_DROPS = BUILDER
+            .comment("Add 1-2 bones to entities in #firstworks:drops_bones.",
+                    "#firstworks:no_bone_drops takes priority, allowing datapacks to exclude entries without replacing the default tag.",
+                    "The default list contains vertebrate animals and deliberately excludes squid, bees, allays, and undead horses.")
+            .define("addAnimalBoneDrops", true);
 
     public static final ModConfigSpec.BooleanValue BIND_VANILLA_TOOL_RECIPES = BUILDER
             .comment("Require fibre bindings in vanilla wooden and stone tools, and rope in vanilla metal and diamond tools.",

@@ -6,6 +6,17 @@ The included hide-tanning chain is the first complete use of this system, not it
 
 Firstworks has no dependency on Create or the Inventors modpack.
 
+## Data-driven animal materials
+
+Firstworks owns the reusable raw-hide and animal-bone rules. Datapacks and modpacks can extend the positive entity-type tags or add entries to the higher-priority exclusion tags:
+
+- `#firstworks:drops_bones`
+- `#firstworks:no_bone_drops`
+- `#firstworks:leather_drops_as_raw_hide`
+- `#firstworks:no_raw_hide_drops`
+
+The default bone list contains vertebrate animals. Squid, glow squid, bees, allays, and undead horses are intentionally excluded. Bone drops and leather replacement can also be disabled independently in the common config.
+
 ## Primitive barrel processing
 
 - Craft a Barrel from matching planks and slabs. Every vanilla wood family has a variant.
@@ -20,7 +31,7 @@ Opening a working Barrel cancels its current progress without consuming or eject
 
 ## Built-in cordage and leatherworking
 
-Grass and ferns have a 30% chance to provide Plant Fibre when gathered normally; using any sword guarantees the fibre. Hand-twist it into Crude Cordage for primitive tools, then ret fibre in a water-filled Barrel. Craft early Bone and Flint tools (pickaxe, axe, shovel, hoe, sword) as accessible alternatives before metalworking. To spin fibre, hold the durable Hand Spindle in your main hand, place two Retted Fibre in your offhand, and hold use until they become two Twine. Releasing early cancels without consuming the fibre. Twine can then be woven into Cloth or combined into Rope. Wooden, stone, bone, and flint tools require primitive bindings; vanilla iron, gold, and diamond tools require Rope by default; netherite upgrades retain the bound diamond tool beneath them.
+Grass and ferns have a 30% chance to provide Plant Fibre when gathered normally; using a Bone or Flint Knife guarantees the fibre. Hand-twist it into Crude Cordage for primitive tools, then ret fibre in a water-filled Barrel. Craft early Bone and Flint tools (pickaxe, axe, shovel, hoe, sword, and knife) as accessible alternatives before metalworking. To spin fibre, hold the durable Hand Spindle in your main hand, place two Retted Fibre in your offhand, and hold use until they become two Twine. Releasing early cancels without consuming the fibre. Twine can then be woven into Cloth or combined into Rope. Wooden, stone, bone, and flint tools require primitive bindings; vanilla iron, gold, and diamond tools require Rope by default; netherite upgrades retain the bound diamond tool beneath them.
 
 Bind a vanilla torch, stick, and Crude Cordage or Rope into a **Standing Torch**—a rustic, floor-supported torch stand (light level 14) with flame and smoke particles and solid collision. Combine flint, Plant Fibre, and Crude Cordage or Rope into a single-use **Fire Starter** that ignites or relights campfires and fire targets before breaking after one use.
 
@@ -32,7 +43,7 @@ Firstworks uses the Barrel to turn leather into a physical early-game production
 
 1. Animals that normally drop leather drop Raw Hide instead, and crafting 4 Rabbit Hides yields Raw Hide instead of finished leather.
 2. Soak Raw Hides in water.
-3. Scrape each Soaked Hide with any sword, consuming one durability.
+3. Scrape each Soaked Hide with a Bone or Flint Knife, consuming one durability.
 4. Strip logs with an axe to collect one to three Tree Bark.
 5. Seal Tree Bark in water to brew Tannin Solution.
 6. Tan Scraped Hide in the solution.

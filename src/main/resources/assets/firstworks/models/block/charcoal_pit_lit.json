@@ -1,0 +1,4 @@
+{
+  "parent": "firstworks:block/charcoal_pit",
+  "textures": { "top": "minecraft:block/campfire_log_lit" }
+}

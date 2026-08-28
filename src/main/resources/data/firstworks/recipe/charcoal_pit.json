@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["DSD", "STS", "DDD"],
+  "key": {
+    "D": { "item": "minecraft:dirt" },
+    "S": { "item": "minecraft:stick" },
+    "T": { "item": "firstworks:twine" }
+  },
+  "result": { "id": "firstworks:charcoal_pit" }
+}
