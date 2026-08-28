@@ -1,0 +1,13 @@
+{
+  "entity": "naturalist:elephant",
+  "bones": {
+    "min": 6,
+    "max": 10,
+    "looting_bonus": 2
+  },
+  "hide": {
+    "min": 2,
+    "max": 4,
+    "looting_bonus": 1
+  }
+}

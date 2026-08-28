@@ -62,8 +62,31 @@ public final class GameplayEvents {
     }
 
     @SubscribeEvent
+    public static void onAddReloadListeners(net.neoforged.neoforge.event.AddReloadListenerEvent event) {
+        event.addListener(com.nstut.firstworks.content.animal.AnimalMaterialManager.INSTANCE);
+    }
+
+    @SubscribeEvent
     public static void replaceAnimalLeather(LivingDropsEvent event) {
         if (!FirstworksConfig.REPLACE_ANIMAL_LEATHER.getAsBoolean()) return;
+        var profile = com.nstut.firstworks.content.animal.AnimalMaterialManager.getProfile(event.getEntity().getType());
+        int looting = getLootingLevel(event);
+        if (profile.isPresent() && profile.get().hide().isPresent()) {
+            int count = profile.get().hide().get().roll(event.getEntity().getRandom(), looting);
+            boolean replaced = false;
+            for (ItemEntity drop : event.getDrops()) {
+                if (drop.getItem().is(Items.LEATHER)) {
+                    drop.setItem(new ItemStack(ModItems.RAW_HIDE.get(), count));
+                    replaced = true;
+                    break;
+                }
+            }
+            if (!replaced && count > 0) {
+                event.getDrops().add(new ItemEntity(event.getEntity().level(), event.getEntity().getX(),
+                        event.getEntity().getY(), event.getEntity().getZ(), new ItemStack(ModItems.RAW_HIDE.get(), count)));
+            }
+            return;
+        }
         if (!event.getEntity().getType().is(ModTags.LEATHER_DROPS_AS_RAW_HIDE)
                 || event.getEntity().getType().is(ModTags.NO_RAW_HIDE_DROPS)) return;
         event.getDrops().forEach(drop -> {
@@ -77,11 +100,35 @@ public final class GameplayEvents {
     @SubscribeEvent
     public static void addAnimalBones(LivingDropsEvent event) {
         if (!FirstworksConfig.ADD_ANIMAL_BONE_DROPS.getAsBoolean()) return;
+        var profile = com.nstut.firstworks.content.animal.AnimalMaterialManager.getProfile(event.getEntity().getType());
+        int looting = getLootingLevel(event);
+        if (profile.isPresent() && profile.get().bones().isPresent()) {
+            int count = profile.get().bones().get().roll(event.getEntity().getRandom(), looting);
+            if (count > 0) {
+                event.getDrops().add(new ItemEntity(event.getEntity().level(), event.getEntity().getX(),
+                        event.getEntity().getY(), event.getEntity().getZ(), new ItemStack(Items.BONE, count)));
+            }
+            return;
+        }
         if (!event.getEntity().getType().is(ModTags.DROPS_BONES)
                 || event.getEntity().getType().is(ModTags.NO_BONE_DROPS)) return;
         int count = 1 + event.getEntity().getRandom().nextInt(2);
+        if (looting > 0) {
+            count += event.getEntity().getRandom().nextInt(looting + 1);
+        }
         event.getDrops().add(new ItemEntity(event.getEntity().level(), event.getEntity().getX(),
                 event.getEntity().getY(), event.getEntity().getZ(), new ItemStack(Items.BONE, count)));
+    }
+
+    private static int getLootingLevel(LivingDropsEvent event) {
+        if (event.getEntity().level() instanceof ServerLevel serverLevel && event.getSource() != null
+                && event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker) {
+            return serverLevel.registryAccess().lookup(net.minecraft.core.registries.Registries.ENCHANTMENT)
+                    .flatMap(reg -> reg.get(net.minecraft.world.item.enchantment.Enchantments.LOOTING))
+                    .map(looting -> net.minecraft.world.item.enchantment.EnchantmentHelper.getEnchantmentLevel(looting, attacker))
+                    .orElse(0);
+        }
+        return 0;
     }
 
     @SubscribeEvent
