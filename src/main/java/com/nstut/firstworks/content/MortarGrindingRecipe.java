@@ -20,6 +20,15 @@ public record MortarGrindingRecipe(Ingredient ingredient, int inputCount, ItemSt
     public static final int MAX_INPUT_COUNT = 64;
     public static final int MAX_DURATION = 72_000;
 
+    public MortarGrindingRecipe {
+        if (inputCount < 1 || inputCount > MAX_INPUT_COUNT) {
+            throw new IllegalArgumentException("inputCount must be between 1 and " + MAX_INPUT_COUNT);
+        }
+        if (duration < 1 || duration > MAX_DURATION) {
+            throw new IllegalArgumentException("duration must be between 1 and " + MAX_DURATION);
+        }
+    }
+
     @Override public boolean matches(SingleRecipeInput input, Level level) {
         return ingredient.test(input.item()) && input.item().getCount() >= inputCount;
     }

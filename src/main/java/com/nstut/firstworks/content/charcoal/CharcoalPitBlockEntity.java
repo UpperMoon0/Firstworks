@@ -2,6 +2,7 @@ package com.nstut.firstworks.content.charcoal;
 
 import com.nstut.firstworks.Firstworks;
 import com.nstut.firstworks.registry.ModBlockEntities;
+import com.nstut.firstworks.registry.ModTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
@@ -13,7 +14,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -38,7 +38,7 @@ public final class CharcoalPitBlockEntity extends BlockEntity {
 
     public static void tick(Level level, BlockPos pos, BlockState state, CharcoalPitBlockEntity pit) {
         if (level.isClientSide || !pit.burning) return;
-        if (!level.getBlockState(pos.above()).is(Blocks.DIRT)) {
+        if (!level.getBlockState(pos.above()).is(ModTags.CHARCOAL_SEALANTS)) {
             pit.burning = false;
             pit.finishGameTime = 0L;
             pit.legacyProgress = 0;
@@ -87,7 +87,8 @@ public final class CharcoalPitBlockEntity extends BlockEntity {
     }
 
     public boolean ignite() {
-        if (!canIgnite() || level == null || !level.getBlockState(worldPosition.above()).is(Blocks.DIRT)) return false;
+        if (!canIgnite() || level == null
+                || !level.getBlockState(worldPosition.above()).is(ModTags.CHARCOAL_SEALANTS)) return false;
         burning = true;
         finishGameTime = level.getGameTime() + PROCESS_TICKS;
         legacyProgress = 0;

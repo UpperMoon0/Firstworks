@@ -3,6 +3,7 @@ package com.nstut.firstworks.content.charcoal;
 import com.mojang.serialization.MapCodec;
 import com.nstut.firstworks.registry.ModBlockEntities;
 import com.nstut.firstworks.registry.ModItems;
+import com.nstut.firstworks.registry.ModTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -17,7 +18,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -61,7 +61,7 @@ public final class CharcoalPitBlock extends BaseEntityBlock {
         }
         if ((stack.is(Items.FLINT_AND_STEEL) || stack.is(ModItems.FIRE_STARTER.get())) && pit.canIgnite()) {
             if (!level.isClientSide) {
-                if (level.getBlockState(pos.above()).is(Blocks.DIRT) && pit.ignite()) {
+                if (level.getBlockState(pos.above()).is(ModTags.CHARCOAL_SEALANTS) && pit.ignite()) {
                     EquipmentSlot slot = hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
                     stack.hurtAndBreak(1, player, slot);
                     level.playSound(null, pos, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 0.8F, 0.7F);

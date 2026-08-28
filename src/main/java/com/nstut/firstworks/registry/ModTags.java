@@ -3,6 +3,7 @@ package com.nstut.firstworks.registry;
 import com.nstut.firstworks.Firstworks;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.entity.EntityType;
 
@@ -10,6 +11,8 @@ import net.minecraft.world.entity.EntityType;
 public final class ModTags {
     public static final TagKey<Item> PRIMITIVE_KNIVES = TagKey.create(
             Registries.ITEM, Firstworks.id("primitive_knives"));
+    public static final TagKey<Block> CHARCOAL_SEALANTS = TagKey.create(
+            Registries.BLOCK, Firstworks.id("charcoal_sealants"));
     public static final TagKey<EntityType<?>> DROPS_BONES = TagKey.create(
             Registries.ENTITY_TYPE, Firstworks.id("drops_bones"));
     public static final TagKey<EntityType<?>> NO_BONE_DROPS = TagKey.create(
