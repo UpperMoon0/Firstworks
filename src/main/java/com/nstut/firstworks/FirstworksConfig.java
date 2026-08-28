@@ -70,6 +70,12 @@ public final class FirstworksConfig {
             .comment("Charcoal yield multiplier if the mound is opened before carbonization completes.")
             .defineInRange("charcoalBreachedYield", 0.25D, 0.0D, 1.0D);
 
+    public static final ModConfigSpec.DoubleValue PLANT_FIBRE_HAND_CHANCE = BUILDER
+            .comment("Chance (0.0 to 1.0) to gather Plant Fibre with an empty hand or non-knife tool.",
+                    "Default: 0.30",
+                    "Range: 0.0 ~ 1.0")
+            .defineInRange("plantFibreHandChance", 0.30D, 0.0D, 1.0D);
+
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     private FirstworksConfig() {}

@@ -41,6 +41,12 @@ public final class ModTags {
             Registries.ITEM, Firstworks.id("raw_hides"));
     public static final TagKey<Block> OCHRE_SOURCES = TagKey.create(
             Registries.BLOCK, Firstworks.id("ochre_sources"));
+    public static final TagKey<Block> PLANT_FIBRE_SOURCES = TagKey.create(
+            Registries.BLOCK, Firstworks.id("plant_fibre_sources"));
+    public static final TagKey<Block> DOUBLE_PLANT_FIBRE_SOURCES = TagKey.create(
+            Registries.BLOCK, Firstworks.id("double_plant_fibre_sources"));
+    public static final TagKey<net.minecraft.world.level.material.Fluid> CLAY_BUCKET_FLUIDS = TagKey.create(
+            Registries.FLUID, Firstworks.id("clay_bucket_fluids"));
 
     private ModTags() {}
 }

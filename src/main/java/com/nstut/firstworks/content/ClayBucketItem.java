@@ -28,7 +28,7 @@ public final class ClayBucketItem extends BucketItem {
             Fluid target = hit.getType() == HitResult.Type.BLOCK
                     ? level.getFluidState(hit.getBlockPos()).getType()
                     : Fluids.EMPTY;
-            if (!Fluids.WATER.isSame(target) && !ModFluids.TANNIN_SOLUTION.get().isSame(target)) {
+            if (!target.is(com.nstut.firstworks.registry.ModTags.CLAY_BUCKET_FLUIDS)) {
                 return InteractionResultHolder.fail(player.getItemInHand(hand));
             }
         }

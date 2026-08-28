@@ -216,11 +216,11 @@ public final class GameplayEvents {
     @SubscribeEvent
     public static void gatherPlantFibre(BlockEvent.BreakEvent event) {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
-        Block block = event.getState().getBlock();
+        BlockState state = event.getState();
         int amount;
-        if (block == Blocks.TALL_GRASS || block == Blocks.LARGE_FERN) {
+        if (state.is(ModTags.DOUBLE_PLANT_FIBRE_SOURCES)) {
             amount = 2;
-        } else if (block == Blocks.FERN || block == Blocks.SHORT_GRASS) {
+        } else if (state.is(ModTags.PLANT_FIBRE_SOURCES)) {
             amount = 1;
         } else {
             return;
@@ -228,7 +228,8 @@ public final class GameplayEvents {
 
         ItemStack tool = event.getPlayer().getMainHandItem();
         boolean guaranteed = tool.is(ModTags.PRIMITIVE_KNIVES);
-        if (!guaranteed && level.getRandom().nextFloat() >= 0.30F) return;
+        double chance = FirstworksConfig.PLANT_FIBRE_HAND_CHANCE.get();
+        if (!guaranteed && level.getRandom().nextDouble() >= chance) return;
         Block.popResource(level, event.getPos(), new ItemStack(ModItems.PLANT_FIBRE.get(), amount));
     }
 
