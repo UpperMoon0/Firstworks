@@ -72,10 +72,8 @@ public final class ModItems {
     public static final DeferredHolder<Item, Item> RAW_OCHRE = simple("raw_ochre");
     public static final DeferredHolder<Item, Item> GROUND_OCHRE = simple("ground_ochre");
     public static final DeferredHolder<Item, Item> FLOUR = simple("flour");
-    public static final DeferredHolder<Item, Item> SADDLE_QUERN = ITEMS.register("saddle_quern",
-            () -> new BlockItem(ModBlocks.SADDLE_QUERN.get(), new Item.Properties()));
-    public static final DeferredHolder<Item, Item> ROTARY_QUERN = ITEMS.register("rotary_quern",
-            () -> new BlockItem(ModBlocks.ROTARY_QUERN.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> QUERN = ITEMS.register("quern",
+            () -> new BlockItem(ModBlocks.QUERN.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> TANNIN_SOLUTION_BUCKET = ITEMS.register("tannin_solution_bucket",
             () -> new TanninSolutionBucketItem(ModFluids.TANNIN_SOLUTION.get(),
                     new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));

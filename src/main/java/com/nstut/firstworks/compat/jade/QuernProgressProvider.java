@@ -27,7 +27,6 @@ public enum QuernProgressProvider implements IBlockComponentProvider, IServerDat
 
         ItemStack input = quern.getInput();
         ItemStack output = quern.getOutput();
-        boolean rotary = quern.getBlockState().getBlock() instanceof QuernBlock block && block.isRotary();
         if (!input.isEmpty()) {
             data.putString("In", input.getDescriptionId());
             data.putInt("Count", input.getCount());
@@ -36,9 +35,8 @@ public enum QuernProgressProvider implements IBlockComponentProvider, IServerDat
             data.putString("Out", output.getDescriptionId());
             data.putInt("OutCount", output.getCount());
         }
-        data.putInt("Done", rotary ? quern.getRotaryTicks() : quern.getStrokes());
+        data.putInt("Done", quern.getProgress());
         data.putInt("Need", quern.requiredWork());
-        data.putBoolean("Rotary", rotary);
     }
 
     @Override
@@ -56,13 +54,8 @@ public enum QuernProgressProvider implements IBlockComponentProvider, IServerDat
 
         tooltip.add(Component.translatable(data.getString("In")).withStyle(ChatFormatting.GOLD));
         int required = Math.max(1, data.getInt("Need"));
-        if (data.getBoolean("Rotary")) {
-            tooltip.add(Component.translatable("jade.firstworks.quern.rotary",
-                    Math.min(100, data.getInt("Done") * 100 / required)));
-        } else {
-            tooltip.add(Component.translatable("jade.firstworks.quern.saddle",
-                    data.getInt("Done"), required));
-        }
+        tooltip.add(Component.translatable("jade.firstworks.quern.progress",
+                Math.min(100, data.getInt("Done") * 100 / required)));
     }
 
     @Override

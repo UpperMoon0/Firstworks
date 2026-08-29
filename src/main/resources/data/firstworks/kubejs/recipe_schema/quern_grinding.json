@@ -21,20 +21,13 @@
       "optional": 1
     },
     {
-      "name": "saddle_strokes",
+      "name": "work",
       "role": "other",
       "type": {
         "type": "int",
         "min": 1
       },
-      "function_names": ["saddleStrokes"],
-      "optional": 8
-    },
-    {
-      "name": "rotary_duration",
-      "role": "other",
-      "type": "ticks",
-      "function_names": ["rotaryDuration"],
+      "function_names": ["work"],
       "optional": 60
     }
   ],

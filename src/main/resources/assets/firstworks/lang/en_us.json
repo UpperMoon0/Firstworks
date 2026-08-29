@@ -136,15 +136,12 @@
   "jei.firstworks.charcoal_mound.use": "Build connected logs, surround them with sealant blocks, ignite an opening, then seal it. Wait for carbonization and mine the charcoal piles inside.",
   "jei.firstworks.charcoal_mound.info": "Making Charcoal:\n\n• Build a connected core of %1$s–%2$s logs.\n• Completely cover every exposed side with sealant blocks (dirt, clay, mud, etc.), leaving one opening.\n• Ignite an exposed log through the opening with a fire starter, then seal the opening within %3$s seconds.\n• Keep the mound sealed during carbonization (%4$s). Breaking it open early reduces yield.\n• When carbonization finishes, remove the outer seal and mine the Charcoal Piles inside.\n\nNormal yield: %5$s%%\nEarly breach yield: %6$s%%",
   "jei.firstworks.duration": "Time: %s s",
-  "block.firstworks.saddle_quern": "Saddle Quern",
-  "block.firstworks.rotary_quern": "Rotary Quern",
+  "block.firstworks.quern": "Quern",
   "item.firstworks.flour": "Flour",
   "jei.firstworks.quern_grinding": "Quern Grinding",
-  "jei.firstworks.quern.saddle": "Saddle Quern: %s strokes",
-  "jei.firstworks.quern.rotary": "Rotary Quern: %s s",
+  "jei.firstworks.quern.work": "Required Work: %s",
   "jade.firstworks.quern.empty": "Empty - add a grindable batch",
   "jade.firstworks.quern.loaded": "Loaded: %s / %s",
-  "jade.firstworks.quern.saddle": "Grinding strokes: %s / %s",
-  "jade.firstworks.quern.rotary": "Rotary progress: %s%%",
+  "jade.firstworks.quern.progress": "Grinding progress: %s%%",
   "jade.firstworks.quern.ready": "Ready: %sx %s"
 }

@@ -47,10 +47,8 @@ public final class ModBlocks {
                     .sound(SoundType.STONE)
                     .noOcclusion()
                     .pushReaction(PushReaction.DESTROY)));
-    public static final DeferredHolder<Block, QuernBlock> SADDLE_QUERN = BLOCKS.register("saddle_quern",
-            () -> new QuernBlock(Block.Properties.ofFullCopy(Blocks.STONE).noOcclusion(), false));
-    public static final DeferredHolder<Block, QuernBlock> ROTARY_QUERN = BLOCKS.register("rotary_quern",
-            () -> new QuernBlock(Block.Properties.ofFullCopy(Blocks.STONE).noOcclusion(), true));
+    public static final DeferredHolder<Block, QuernBlock> QUERN = BLOCKS.register("quern",
+            () -> new QuernBlock(Block.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
     public static final DeferredHolder<Block, LiquidBlock> TANNIN_SOLUTION = BLOCKS.register("tannin_solution",
             () -> new LiquidBlock(ModFluids.TANNIN_SOLUTION.get(), Block.Properties.of()
                     .mapColor(net.minecraft.world.level.material.MapColor.WATER)

@@ -14,15 +14,24 @@ import net.minecraft.world.phys.shapes.*;
 import org.jetbrains.annotations.Nullable;
 
 public final class QuernBlock extends BaseEntityBlock {
-    private static final VoxelShape SADDLE = Shapes.or(Block.box(2,0,2,14,3,14), Block.box(3,3,3,13,7,13));
-    private static final VoxelShape ROTARY = Shapes.or(Block.box(1,0,1,15,3,15), Block.box(2,3,2,14,8,14),
-            Block.box(7,8,7,9,16,9));
-    private final boolean rotary;
-    public QuernBlock(Properties properties, boolean rotary) { super(properties); this.rotary = rotary; }
-    public boolean isRotary() { return rotary; }
-    @Override protected MapCodec<? extends BaseEntityBlock> codec() { return simpleCodec(p -> new QuernBlock(p, rotary)); }
-    @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return rotary ? ROTARY : SADDLE;
+    public static final MapCodec<QuernBlock> CODEC = simpleCodec(QuernBlock::new);
+    private static final VoxelShape SHAPE = Shapes.or(
+            Block.box(1, 0, 1, 15, 6.5, 15),
+            Block.box(2.5, 6.5, 2.5, 13.5, 9, 13.5),
+            Block.box(7, 9, 7, 9, 12, 9));
+
+    public QuernBlock(Properties properties) {
+        super(properties);
+    }
+
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return SHAPE;
     }
     @Override protected RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
     @Nullable @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new QuernBlockEntity(pos, state); }

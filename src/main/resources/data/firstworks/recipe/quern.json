@@ -1,0 +1,23 @@
+﻿{
+  "type": "minecraft:crafting_shaped",
+  "category": "decorations",
+  "pattern": [
+    " C ",
+    "SSS",
+    "BBB"
+  ],
+  "key": {
+    "C": {
+      "item": "firstworks:copper_fasteners"
+    },
+    "S": {
+      "tag": "c:stones"
+    },
+    "B": {
+      "tag": "minecraft:wooden_slabs"
+    }
+  },
+  "result": {
+    "id": "firstworks:quern"
+  }
+}

@@ -35,7 +35,7 @@ public final class ModBlockEntities {
                     ModBlocks.MORTAR_AND_PESTLE.get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<QuernBlockEntity>> QUERN = TYPES.register(
             "quern", () -> BlockEntityType.Builder.of(QuernBlockEntity::new,
-                    ModBlocks.SADDLE_QUERN.get(), ModBlocks.ROTARY_QUERN.get()).build(null));
+                    ModBlocks.QUERN.get()).build(null));
 
     public static void register(IEventBus bus) {
         TYPES.register(bus);

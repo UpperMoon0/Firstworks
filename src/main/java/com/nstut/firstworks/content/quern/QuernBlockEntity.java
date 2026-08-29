@@ -21,7 +21,7 @@ import java.util.Optional;
 
 public final class QuernBlockEntity extends BlockEntity {
     private ItemStack input = ItemStack.EMPTY, output = ItemStack.EMPTY;
-    private int strokes, rotaryTicks;
+    private int progress;
     private boolean rotating;
     private float rotation;
     private final IItemHandler inputHandler = new QuernItemHandler(true, false);
@@ -33,7 +33,7 @@ public final class QuernBlockEntity extends BlockEntity {
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, QuernBlockEntity quern) {
-        if (!quern.rotating || !quern.isRotary()) return;
+        if (!quern.rotating) return;
         if (level.isClientSide) {
             quern.rotation = (quern.rotation + 9F) % 360F;
             return;
@@ -45,17 +45,17 @@ public final class QuernBlockEntity extends BlockEntity {
             return;
         }
         quern.rotation = (quern.rotation + 9F) % 360F;
-        quern.rotaryTicks++;
-        if (quern.rotaryTicks % 12 == 0) {
+        quern.progress++;
+        if (quern.progress % 12 == 0) {
             level.playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, .3F, .65F);
             if (level instanceof ServerLevel sl) {
                 sl.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, quern.input.copyWithCount(1)),
-                        pos.getX() + .5, pos.getY() + .62, pos.getZ() + .5, 2, .12, .03, .12, .01);
+                        pos.getX() + .5, pos.getY() + .55, pos.getZ() + .5, 2, .12, .03, .12, .01);
             }
         }
-        if (quern.rotaryTicks >= holder.get().value().rotaryDuration()) {
+        if (quern.progress >= holder.get().value().work()) {
             quern.complete(holder.get());
-        } else if (quern.rotaryTicks % 5 == 0) {
+        } else if (quern.progress % 5 == 0) {
             quern.sync();
         }
     }
@@ -66,27 +66,19 @@ public final class QuernBlockEntity extends BlockEntity {
                 || input.getCount() < holder.get().value().inputCount()) {
             return false;
         }
-        boolean beginning = isRotary() ? !rotating && rotaryTicks == 0 : strokes == 0;
+        boolean beginning = progress == 0;
         if (beginning && level instanceof ServerLevel server && OptionalIntegrations.fireQuernGrindingStarting(
                 server, this, holder.get().id(), holder.get().value(), input.copy(), holder.get().value().result())) {
             return false;
         }
-        if (isRotary()) {
-            rotating = !rotating;
-            if (rotating && rotaryTicks == 0) {
-                level.playSound(null, worldPosition, SoundEvents.WOODEN_BUTTON_CLICK_ON, SoundSource.BLOCKS, .6F, .7F);
-            }
-            sync();
-            return true;
-        }
-        strokes++;
-        rotation = (rotation + 52F) % 360F;
+        progress += 5;
+        rotation = (rotation + 45F) % 360F;
         level.playSound(null, worldPosition, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, .38F, .72F + level.random.nextFloat() * .1F);
         if (level instanceof ServerLevel sl) {
             sl.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, input.copyWithCount(1)),
-                    worldPosition.getX() + .5, worldPosition.getY() + .5, worldPosition.getZ() + .5, 3, .14, .03, .14, .015);
+                    worldPosition.getX() + .5, worldPosition.getY() + .55, worldPosition.getZ() + .5, 3, .14, .03, .14, .015);
         }
-        if (strokes >= holder.get().value().saddleStrokes()) {
+        if (progress >= holder.get().value().work()) {
             complete(holder.get());
         } else {
             sync();
@@ -100,8 +92,7 @@ public final class QuernBlockEntity extends BlockEntity {
         input.shrink(recipe.inputCount());
         if (input.isEmpty()) input = ItemStack.EMPTY;
         output = recipe.result().copy();
-        strokes = 0;
-        rotaryTicks = 0;
+        progress = 0;
         rotating = false;
         if (level instanceof ServerLevel server) {
             OptionalIntegrations.fireQuernGrindingCompleted(server, this, holder.id(), recipe, consumed, output);
@@ -155,29 +146,28 @@ public final class QuernBlockEntity extends BlockEntity {
     }
 
     private void reset() {
-        strokes = 0;
-        rotaryTicks = 0;
+        progress = 0;
         rotating = false;
     }
 
     private void stop() {
         rotating = false;
-        rotaryTicks = 0;
+        progress = 0;
         sync();
     }
 
-    private boolean isRotary() {
-        return getBlockState().getBlock() instanceof QuernBlock q && q.isRotary();
+    public void setRotating(boolean rotating) {
+        this.rotating = rotating;
+        sync();
     }
 
     public ItemStack getInput() { return input; }
     public ItemStack getOutput() { return output; }
-    public int getStrokes() { return strokes; }
-    public int getRotaryTicks() { return rotaryTicks; }
+    public int getProgress() { return progress; }
     public boolean isRotating() { return rotating; }
     public float getRotation(float partial) { return rotation + (rotating ? 9F * partial : 0F); }
     public int requiredWork() {
-        return recipe().map(r -> isRotary() ? r.value().rotaryDuration() : r.value().saddleStrokes()).orElse(0);
+        return recipe().map(r -> r.value().work()).orElse(0);
     }
 
     public IItemHandler getItemHandler(@Nullable Direction side) {
@@ -196,8 +186,7 @@ public final class QuernBlockEntity extends BlockEntity {
         super.saveAdditional(tag, regs);
         if (!input.isEmpty()) tag.put("Input", input.save(regs));
         if (!output.isEmpty()) tag.put("Output", output.save(regs));
-        tag.putInt("Strokes", strokes);
-        tag.putInt("RotaryTicks", rotaryTicks);
+        tag.putInt("Progress", progress);
         tag.putBoolean("Rotating", rotating);
         tag.putFloat("Rotation", rotation);
     }
@@ -207,8 +196,7 @@ public final class QuernBlockEntity extends BlockEntity {
         super.loadAdditional(tag, regs);
         input = ItemStack.parseOptional(regs, tag.getCompound("Input"));
         output = ItemStack.parseOptional(regs, tag.getCompound("Output"));
-        strokes = tag.getInt("Strokes");
-        rotaryTicks = tag.getInt("RotaryTicks");
+        progress = tag.getInt("Progress");
         rotating = tag.getBoolean("Rotating");
         rotation = tag.getFloat("Rotation");
     }

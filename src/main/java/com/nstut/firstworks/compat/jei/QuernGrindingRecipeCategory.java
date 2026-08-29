@@ -21,7 +21,7 @@ public final class QuernGrindingRecipeCategory implements IRecipeCategory<QuernG
     private final IDrawable arrow;
 
     public QuernGrindingRecipeCategory(IGuiHelper guiHelper) {
-        icon = guiHelper.createDrawableItemLike(ModItems.SADDLE_QUERN.get());
+        icon = guiHelper.createDrawableItemLike(ModItems.QUERN.get());
         arrow = guiHelper.getRecipeArrow();
     }
 
@@ -42,7 +42,7 @@ public final class QuernGrindingRecipeCategory implements IRecipeCategory<QuernG
 
     @Override
     public int getHeight() {
-        return 58;
+        return 50;
     }
 
     @Override
@@ -54,16 +54,13 @@ public final class QuernGrindingRecipeCategory implements IRecipeCategory<QuernG
     public void setRecipe(IRecipeLayoutBuilder builder, QuernGrindingRecipe recipe, IFocusGroup focuses) {
         builder.addSlot(RecipeIngredientRole.CATALYST, 3, 5)
                 .setStandardSlotBackground()
-                .addItemLike(ModItems.SADDLE_QUERN.get());
-        builder.addSlot(RecipeIngredientRole.CATALYST, 24, 5)
-                .setStandardSlotBackground()
-                .addItemLike(ModItems.ROTARY_QUERN.get());
-        builder.addSlot(RecipeIngredientRole.INPUT, 49, 5)
+                .addItemLike(ModItems.QUERN.get());
+        builder.addSlot(RecipeIngredientRole.INPUT, 35, 5)
                 .setStandardSlotBackground()
                 .addItemStacks(Arrays.stream(recipe.ingredient().getItems())
                         .map(stack -> stack.copyWithCount(recipe.inputCount()))
                         .toList());
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 126, 5)
+        builder.addSlot(RecipeIngredientRole.OUTPUT, 112, 5)
                 .setStandardSlotBackground()
                 .addItemStack(recipe.result());
     }
@@ -71,14 +68,10 @@ public final class QuernGrindingRecipeCategory implements IRecipeCategory<QuernG
     @Override
     public void draw(QuernGrindingRecipe recipe, IRecipeSlotsView slots, GuiGraphics graphics,
             double mouseX, double mouseY) {
-        arrow.draw(graphics, 87, 5);
+        arrow.draw(graphics, 73, 5);
         var font = Minecraft.getInstance().font;
         graphics.drawString(font,
-                Component.translatable("jei.firstworks.quern.saddle", recipe.saddleStrokes()),
+                Component.translatable("jei.firstworks.quern.work", recipe.work()),
                 3, 34, 0xFF606060, false);
-        graphics.drawString(font,
-                Component.translatable("jei.firstworks.quern.rotary",
-                        String.format(Locale.ROOT, "%.1f", recipe.rotaryDuration() / 20F)),
-                3, 46, 0xFF606060, false);
     }
 }

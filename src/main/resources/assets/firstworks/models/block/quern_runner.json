@@ -1,0 +1,76 @@
+﻿{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "minecraft:block/stone",
+    "stone": "minecraft:block/stone",
+    "wood": "minecraft:block/oak_planks",
+    "log": "minecraft:block/oak_log"
+  },
+  "elements": [
+    {
+      "comment": "Upper runner stone north half",
+      "from": [2.5, 6, 8.5],
+      "to": [13.5, 8.5, 13.5],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Upper runner stone south half",
+      "from": [2.5, 6, 2.5],
+      "to": [13.5, 8.5, 7.5],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Upper runner stone west collar",
+      "from": [2.5, 6, 7.5],
+      "to": [6.5, 8.5, 8.5],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Upper runner stone east collar",
+      "from": [9.5, 6, 7.5],
+      "to": [13.5, 8.5, 8.5],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Vertical wooden hand peg crank",
+      "from": [11, 8.5, 7.25],
+      "to": [12.5, 12, 8.75],
+      "faces": {
+        "up":    { "texture": "#log" },
+        "down":  { "texture": "#log" },
+        "north": { "texture": "#wood" },
+        "south": { "texture": "#wood" },
+        "west":  { "texture": "#wood" },
+        "east":  { "texture": "#wood" }
+      }
+    }
+  ]
+}

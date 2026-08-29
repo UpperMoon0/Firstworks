@@ -1,1 +1,1 @@
-{"type":"firstworks:quern_grinding","ingredient":{"item":"minecraft:wheat"},"input_count":4,"result":{"id":"firstworks:flour","count":4},"saddle_strokes":12,"rotary_duration":60}
+﻿{"type":"firstworks:quern_grinding","ingredient":{"item":"minecraft:wheat"},"input_count":4,"result":{"id":"firstworks:flour","count":4},"work":60}

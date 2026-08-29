@@ -1,0 +1,107 @@
+﻿{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "minecraft:block/stone",
+    "stone": "minecraft:block/stone",
+    "andesite": "minecraft:block/andesite",
+    "wood": "minecraft:block/oak_planks",
+    "log": "minecraft:block/oak_log"
+  },
+  "elements": [
+    {
+      "comment": "Wooden sleeper south",
+      "from": [1, 0, 2],
+      "to": [15, 2, 5],
+      "faces": {
+        "down":  { "texture": "#wood", "cullface": "down" },
+        "up":    { "texture": "#wood" },
+        "north": { "texture": "#wood" },
+        "south": { "texture": "#wood" },
+        "west":  { "texture": "#log" },
+        "east":  { "texture": "#log" }
+      }
+    },
+    {
+      "comment": "Wooden sleeper north",
+      "from": [1, 0, 11],
+      "to": [15, 2, 14],
+      "faces": {
+        "down":  { "texture": "#wood", "cullface": "down" },
+        "up":    { "texture": "#wood" },
+        "north": { "texture": "#wood" },
+        "south": { "texture": "#wood" },
+        "west":  { "texture": "#log" },
+        "east":  { "texture": "#log" }
+      }
+    },
+    {
+      "comment": "Lower bedstone base",
+      "from": [2, 2, 2],
+      "to": [14, 6, 14],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Andesite rim north",
+      "from": [1, 2, 14],
+      "to": [15, 6.5, 15],
+      "faces": {
+        "up":    { "texture": "#andesite" },
+        "north": { "texture": "#andesite" },
+        "south": { "texture": "#andesite" },
+        "west":  { "texture": "#andesite" },
+        "east":  { "texture": "#andesite" }
+      }
+    },
+    {
+      "comment": "Andesite rim south",
+      "from": [1, 2, 1],
+      "to": [15, 6.5, 2],
+      "faces": {
+        "up":    { "texture": "#andesite" },
+        "north": { "texture": "#andesite" },
+        "south": { "texture": "#andesite" },
+        "west":  { "texture": "#andesite" },
+        "east":  { "texture": "#andesite" }
+      }
+    },
+    {
+      "comment": "Andesite rim west",
+      "from": [1, 2, 2],
+      "to": [2, 6.5, 14],
+      "faces": {
+        "up":    { "texture": "#andesite" },
+        "west":  { "texture": "#andesite" },
+        "east":  { "texture": "#andesite" }
+      }
+    },
+    {
+      "comment": "Andesite rim east",
+      "from": [14, 2, 2],
+      "to": [15, 6.5, 14],
+      "faces": {
+        "up":    { "texture": "#andesite" },
+        "west":  { "texture": "#andesite" },
+        "east":  { "texture": "#andesite" }
+      }
+    },
+    {
+      "comment": "Center wooden spindle",
+      "from": [7, 6, 7],
+      "to": [9, 10, 9],
+      "faces": {
+        "up":    { "texture": "#log" },
+        "north": { "texture": "#wood" },
+        "south": { "texture": "#wood" },
+        "west":  { "texture": "#wood" },
+        "east":  { "texture": "#wood" }
+      }
+    }
+  ]
+}

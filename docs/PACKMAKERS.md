@@ -375,7 +375,7 @@ FirstworksEvents.mortarGrindingCompleted(event => {
   - 9-slot primitive storage container with full automation and hopper support.
 - **Mortar & Pestle (`firstworks:mortar_and_pestle`)**:
   - Exposes standard NeoForge `IItemHandler` capability (extracts output only).
-- **Saddle & Rotary Querns (`firstworks:saddle_quern`, `firstworks:rotary_quern`)**:
+- **Quern (`firstworks:quern`)**:
   - **Top Face**: Inserts raw ingredients into input slot.
   - **Bottom Face**: Extracts completed result from output slot (raw input cannot be extracted by automation).
   - **Side Faces / Unsided**: Accepts input insertion and output extraction.
@@ -384,7 +384,7 @@ FirstworksEvents.mortarGrindingCompleted(event => {
 
 ## Quern Grinding
 
-Use `firstworks:quern_grinding` for bulk recipes shared by the hand-stroked Saddle Quern and continuously rotating Rotary Quern:
+Use `firstworks:quern_grinding` for bulk milling and grinding recipes:
 
 ```json
 {
@@ -392,12 +392,13 @@ Use `firstworks:quern_grinding` for bulk recipes shared by the hand-stroked Sadd
   "ingredient": { "item": "minecraft:wheat" },
   "input_count": 4,
   "result": { "id": "firstworks:flour", "count": 4 },
-  "saddle_strokes": 12,
-  "rotary_duration": 60
+  "work": 60
 }
 ```
 
-> **Note**: Because the quern matches ingredients independently of stack size to allow incremental 1-by-1 loading, quern recipes should define mutually exclusive ingredient sets (avoid registering multiple recipes with overlapping ingredient matchers).
+- **Manual Cranking**: Right-clicking the quern provides manual labor (+5 work units per crank).
+- **Automation / Driven Power**: Continuous rotation provides steady work progress (1 work unit per tick).
+- **Ingredient Exclusivity**: Because the quern matches ingredients independently of stack size to allow incremental 1-by-1 loading, quern recipes should define mutually exclusive ingredient sets (avoid registering multiple recipes with overlapping ingredient matchers).
 
 KubeJS exposes cancellable `quernGrindingStarting` and observational `quernGrindingCompleted` events.
 
