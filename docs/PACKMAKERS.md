@@ -393,7 +393,7 @@ Use `firstworks:quern_grinding` for bulk recipes shared by the hand-stroked Sadd
   "input_count": 4,
   "result": { "id": "firstworks:flour", "count": 4 },
   "saddle_strokes": 12,
-  "rotary_duration": 100
+  "rotary_duration": 60
 }
 ```
 

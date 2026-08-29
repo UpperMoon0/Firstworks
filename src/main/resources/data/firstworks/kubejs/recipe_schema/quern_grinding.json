@@ -1,1 +1,47 @@
-{"type":"firstworks:quern_grinding","keys":[{"name":"result","role":"output","type":"item_stack"},{"name":"ingredient","role":"input","type":"ingredient"},{"name":"input_count","type":"int","optional":true,"default":1},{"name":"saddle_strokes","type":"int","optional":true,"default":8},{"name":"rotary_duration","type":"int","optional":true,"default":80}]}
+{
+  "keys": [
+    {
+      "name": "result",
+      "role": "output",
+      "type": "item_stack"
+    },
+    {
+      "name": "ingredient",
+      "role": "input",
+      "type": "ingredient"
+    },
+    {
+      "name": "input_count",
+      "role": "input",
+      "type": {
+        "type": "int",
+        "min": 1
+      },
+      "function_names": ["inputCount"],
+      "optional": 1
+    },
+    {
+      "name": "saddle_strokes",
+      "role": "other",
+      "type": {
+        "type": "int",
+        "min": 1
+      },
+      "function_names": ["saddleStrokes"],
+      "optional": 8
+    },
+    {
+      "name": "rotary_duration",
+      "role": "other",
+      "type": "ticks",
+      "function_names": ["rotaryDuration"],
+      "optional": 60
+    }
+  ],
+  "unique": ["ingredient"],
+  "constructors": [
+    {
+      "keys": ["result", "ingredient"]
+    }
+  ]
+}
