@@ -21,6 +21,7 @@ public record QuernGrindingRecipe(Ingredient ingredient, int inputCount, ItemSta
     public boolean matches(SingleRecipeInput input, Level level) {
         // Match independently of batch size so the workstation can accept a
         // recipe batch one item at a time. The block entity gates processing.
+        // Packmakers must ensure quern recipe ingredient sets are mutually exclusive.
         return ingredient.test(input.item());
     }
     @Override public ItemStack assemble(SingleRecipeInput input, HolderLookup.Provider registries) { return result.copy(); }

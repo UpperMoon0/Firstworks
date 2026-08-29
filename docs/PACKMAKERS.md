@@ -374,7 +374,11 @@ FirstworksEvents.mortarGrindingCompleted(event => {
 - **Woven Basket (`firstworks:basket`)**:
   - 9-slot primitive storage container with full automation and hopper support.
 - **Mortar & Pestle (`firstworks:mortar_and_pestle`)**:
-  - Exposes standard NeoForge `IItemHandler` capability.
+  - Exposes standard NeoForge `IItemHandler` capability (extracts output only).
+- **Saddle & Rotary Querns (`firstworks:saddle_quern`, `firstworks:rotary_quern`)**:
+  - **Top Face**: Inserts raw ingredients into input slot.
+  - **Bottom Face**: Extracts completed result from output slot (raw input cannot be extracted by automation).
+  - **Side Faces / Unsided**: Accepts input insertion and output extraction.
 
 ---
 
@@ -392,6 +396,8 @@ Use `firstworks:quern_grinding` for bulk recipes shared by the hand-stroked Sadd
   "rotary_duration": 100
 }
 ```
+
+> **Note**: Because the quern matches ingredients independently of stack size to allow incremental 1-by-1 loading, quern recipes should define mutually exclusive ingredient sets (avoid registering multiple recipes with overlapping ingredient matchers).
 
 KubeJS exposes cancellable `quernGrindingStarting` and observational `quernGrindingCompleted` events.
 
