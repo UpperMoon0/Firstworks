@@ -15,6 +15,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.saveddata.SavedData;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -42,30 +43,73 @@ public final class CharcoalMoundData extends SavedData {
                 new SavedData.Factory<>(CharcoalMoundData::new, CharcoalMoundData::load), DATA_NAME);
     }
 
-    public IgnitionResult ignite(ServerLevel level, BlockPos ignitionLog, Direction exposedFace) {
+    public record IgnitionProbe(
+            boolean isMoundCandidate,
+            boolean isValid,
+            @Nullable Component failureReason,
+            Set<BlockPos> logs,
+            BlockPos opening
+    ) {}
+
+    public IgnitionProbe probe(ServerLevel level, BlockPos ignitionLog, Direction exposedFace) {
+        if (!level.getBlockState(ignitionLog).is(ModTags.CHARCOAL_WOODS)) {
+            return new IgnitionProbe(false, false, null, Set.of(), ignitionLog);
+        }
+
         Set<BlockPos> logs = discoverLogs(level, ignitionLog);
+        BlockPos opening = ignitionLog.relative(exposedFace);
+
+        // A mound candidate is either multi-log or touches at least one sealant block
+        boolean touchesSealant = false;
+        for (BlockPos log : logs) {
+            for (Direction dir : Direction.values()) {
+                if (level.getBlockState(log.relative(dir)).is(ModTags.CHARCOAL_SEALANTS)) {
+                    touchesSealant = true;
+                    break;
+                }
+            }
+            if (touchesSealant) break;
+        }
+
+        boolean isMoundCandidate = (logs.size() >= 2 || touchesSealant);
+        if (!isMoundCandidate) {
+            return new IgnitionProbe(false, false, null, logs, opening);
+        }
+
         int minLogs = com.nstut.firstworks.FirstworksConfig.CHARCOAL_MIN_LOGS.get();
         int maxLogs = com.nstut.firstworks.FirstworksConfig.CHARCOAL_MAX_LOGS.get();
-        int sealWindow = com.nstut.firstworks.FirstworksConfig.CHARCOAL_SEAL_WINDOW.get();
+
         if (logs.size() < minLogs) {
-            return IgnitionResult.failure(Component.translatable("message.firstworks.charcoal.too_small", minLogs));
+            return new IgnitionProbe(true, false,
+                    Component.translatable("message.firstworks.charcoal.too_small", minLogs), logs, opening);
         }
         if (logs.size() > maxLogs) {
-            return IgnitionResult.failure(Component.translatable("message.firstworks.charcoal.too_large", maxLogs));
+            return new IgnitionProbe(true, false,
+                    Component.translatable("message.firstworks.charcoal.too_large", maxLogs), logs, opening);
         }
         if (charges.stream().anyMatch(charge -> charge.overlaps(logs))) {
-            return IgnitionResult.failure(Component.translatable("message.firstworks.charcoal.already_lit"));
+            return new IgnitionProbe(true, false,
+                    Component.translatable("message.firstworks.charcoal.already_lit"), logs, opening);
         }
-
-        BlockPos opening = ignitionLog.relative(exposedFace);
         if (logs.contains(opening) || level.getBlockState(opening).is(ModTags.CHARCOAL_SEALANTS)) {
-            return IgnitionResult.failure(Component.translatable("message.firstworks.charcoal.need_opening"));
+            return new IgnitionProbe(true, false,
+                    Component.translatable("message.firstworks.charcoal.need_opening"), logs, opening);
         }
         if (!isShellValid(level, logs, opening, true)) {
-            return IgnitionResult.failure(Component.translatable("message.firstworks.charcoal.unsealed"));
+            return new IgnitionProbe(true, false,
+                    Component.translatable("message.firstworks.charcoal.unsealed"), logs, opening);
         }
 
-        Charge charge = new Charge(logs, opening, Phase.WAITING_FOR_SEAL,
+        return new IgnitionProbe(true, true, null, logs, opening);
+    }
+
+    public IgnitionResult igniteFromProbe(ServerLevel level, IgnitionProbe probe) {
+        if (!probe.isValid()) {
+            return IgnitionResult.failure(probe.failureReason());
+        }
+
+        int sealWindow = com.nstut.firstworks.FirstworksConfig.CHARCOAL_SEAL_WINDOW.get();
+        Charge charge = new Charge(probe.logs(), probe.opening(), Phase.WAITING_FOR_SEAL,
                 level.getGameTime() + sealWindow);
         charges.add(charge);
         for (BlockPos log : charge.logs) {
@@ -74,30 +118,35 @@ public final class CharcoalMoundData extends SavedData {
         setDirty();
 
         // Diegetic feedback: firecharge sound + visible flame and smoke burst from opening
-        level.playSound(null, ignitionLog, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 0.85F, 0.7F);
-        level.playSound(null, opening, SoundEvents.FIRE_AMBIENT, SoundSource.BLOCKS, 0.7F, 0.9F);
+        level.playSound(null, probe.opening(), SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 0.85F, 0.7F);
+        level.playSound(null, probe.opening(), SoundEvents.FIRE_AMBIENT, SoundSource.BLOCKS, 0.7F, 0.9F);
         level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE,
-                opening.getX() + 0.5, opening.getY() + 0.5, opening.getZ() + 0.5,
+                probe.opening().getX() + 0.5, probe.opening().getY() + 0.5, probe.opening().getZ() + 0.5,
                 10, 0.15, 0.15, 0.15, 0.02);
         level.sendParticles(ParticleTypes.FLAME,
-                opening.getX() + 0.5, opening.getY() + 0.35, opening.getZ() + 0.5,
+                probe.opening().getX() + 0.5, probe.opening().getY() + 0.35, probe.opening().getZ() + 0.5,
                 6, 0.12, 0.12, 0.12, 0.015);
 
         return IgnitionResult.success();
     }
 
-    public static boolean canIgnite(ServerLevel level, BlockPos ignitionLog, Direction exposedFace) {
-        Set<BlockPos> logs = discoverLogs(level, ignitionLog);
-        int minLogs = com.nstut.firstworks.FirstworksConfig.CHARCOAL_MIN_LOGS.get();
-        int maxLogs = com.nstut.firstworks.FirstworksConfig.CHARCOAL_MAX_LOGS.get();
-        if (logs.size() < minLogs || logs.size() > maxLogs) return false;
-        BlockPos opening = ignitionLog.relative(exposedFace);
-        if (logs.contains(opening) || level.getBlockState(opening).is(ModTags.CHARCOAL_SEALANTS)) return false;
-        return isShellValid(level, logs, opening, true);
+    public IgnitionResult ignite(ServerLevel level, BlockPos ignitionLog, Direction exposedFace) {
+        IgnitionProbe probe = probe(level, ignitionLog, exposedFace);
+        return igniteFromProbe(level, probe);
+    }
+
+    private Charge findChargeAt(BlockPos pos) {
+        Charge direct = chargeByLog.get(pos);
+        if (direct != null) return direct;
+        for (Direction direction : Direction.values()) {
+            Charge neighbor = chargeByLog.get(pos.relative(direction));
+            if (neighbor != null) return neighbor;
+        }
+        return null;
     }
 
     public Optional<MoundStatus> getStatusAt(BlockPos pos, long gameTime) {
-        Charge charge = chargeByLog.get(pos);
+        Charge charge = findChargeAt(pos);
         if (charge == null) return Optional.empty();
         long remainingTicks = Math.max(0L, charge.deadline - gameTime);
         float normalYield = com.nstut.firstworks.FirstworksConfig.CHARCOAL_NORMAL_YIELD.get().floatValue();
@@ -107,6 +156,26 @@ public final class CharcoalMoundData extends SavedData {
 
     public Optional<MoundStatus> getStatusAt(ServerLevel level, BlockPos pos) {
         return getStatusAt(pos, level.getGameTime());
+    }
+
+    public void onBlockPlaced(ServerLevel level, BlockPos pos) {
+        if (charges.isEmpty()) return;
+        boolean changed = false;
+        int carbonizationTicks = com.nstut.firstworks.FirstworksConfig.CHARCOAL_CARBONIZE_DURATION.get();
+        for (Charge charge : charges) {
+            if (charge.phase == Phase.WAITING_FOR_SEAL && charge.opening.equals(pos)) {
+                if (level.getBlockState(pos).is(ModTags.CHARCOAL_SEALANTS)) {
+                    charge.phase = Phase.CARBONIZING;
+                    charge.deadline = level.getGameTime() + carbonizationTicks;
+                    level.playSound(null, charge.opening, SoundEvents.GENERIC_EXTINGUISH_FIRE,
+                            SoundSource.BLOCKS, 0.75F, 0.6F);
+                    level.playSound(null, charge.opening, SoundEvents.GRAVEL_PLACE,
+                            SoundSource.BLOCKS, 0.8F, 0.65F);
+                    changed = true;
+                }
+            }
+        }
+        if (changed) setDirty();
     }
 
     public void tick(ServerLevel level) {
@@ -120,6 +189,16 @@ public final class CharcoalMoundData extends SavedData {
         Iterator<Charge> iterator = charges.iterator();
         while (iterator.hasNext()) {
             Charge charge = iterator.next();
+
+            // Backward compatibility: migrate legacy READY charges on first tick
+            if (charge.phase == Phase.LEGACY_READY) {
+                materializeCharcoal(level, charge, normalYield);
+                removeChargeFromIndex(charge);
+                iterator.remove();
+                changed = true;
+                continue;
+            }
+
             boolean needsWork = (charge.pendingBreach != null || isPeriodicTick);
             if (!needsWork) continue;
 
@@ -164,7 +243,6 @@ public final class CharcoalMoundData extends SavedData {
                         continue;
                     }
                 } else {
-                    // Break was cancelled by another mod or didn't actually destroy the block
                     charge.pendingBreach = null;
                     changed = true;
                 }
@@ -184,7 +262,6 @@ public final class CharcoalMoundData extends SavedData {
                 if (level.getBlockState(charge.opening).is(ModTags.CHARCOAL_SEALANTS)) {
                     charge.phase = Phase.CARBONIZING;
                     charge.deadline = level.getGameTime() + carbonizationTicks;
-                    // Muffled "whumpf" dirt thud + extinguish
                     level.playSound(null, charge.opening, SoundEvents.GENERIC_EXTINGUISH_FIRE,
                             SoundSource.BLOCKS, 0.75F, 0.6F);
                     level.playSound(null, charge.opening, SoundEvents.GRAVEL_PLACE,
@@ -222,17 +299,18 @@ public final class CharcoalMoundData extends SavedData {
                     iterator.remove();
                     changed = true;
                 } else {
-                    // Thin smoke leaking through random exterior sealant blocks
-                    for (BlockPos log : charge.logs) {
-                        if (level.random.nextFloat() < 0.25F) {
-                            BlockPos above = log.above();
-                            while (charge.logs.contains(above)) above = above.above();
-                            level.sendParticles(ParticleTypes.SMOKE,
-                                    above.getX() + 0.2 + level.random.nextDouble() * 0.6,
-                                    above.getY() + 1.02,
-                                    above.getZ() + 0.2 + level.random.nextDouble() * 0.6,
-                                    1, 0.02, 0.02, 0.02, 0.005);
-                        }
+                    // Capped smoke points scaling (1 to 3 sources maximum)
+                    int smokePoints = Math.min(3, 1 + charge.logs.size() / 32);
+                    List<BlockPos> logList = new ArrayList<>(charge.logs);
+                    for (int i = 0; i < smokePoints; i++) {
+                        BlockPos log = logList.get(level.random.nextInt(logList.size()));
+                        BlockPos surface = log.above();
+                        while (charge.logs.contains(surface)) surface = surface.above();
+                        level.sendParticles(ParticleTypes.SMOKE,
+                                surface.getX() + 0.2 + level.random.nextDouble() * 0.6,
+                                surface.getY() + 1.02,
+                                surface.getZ() + 0.2 + level.random.nextDouble() * 0.6,
+                                1, 0.02, 0.02, 0.02, 0.005);
                     }
                     if (level.getGameTime() % 60L == 0L) {
                         level.playSound(null, charge.opening, SoundEvents.CAMPFIRE_CRACKLE, SoundSource.BLOCKS, 0.12F, 0.6F);
@@ -281,7 +359,7 @@ public final class CharcoalMoundData extends SavedData {
         ArrayDeque<BlockPos> queue = new ArrayDeque<>();
         queue.add(start.immutable());
         int limit = com.nstut.firstworks.FirstworksConfig.CHARCOAL_MAX_LOGS.get();
-        while (!queue.isEmpty() && found.size() <= limit) {
+        while (!queue.isEmpty() && found.size() <= limit + 1) {
             BlockPos pos = queue.removeFirst();
             if (found.contains(pos) || !level.hasChunkAt(pos)
                     || !level.getBlockState(pos).is(ModTags.CHARCOAL_WOODS)) continue;
@@ -367,10 +445,15 @@ public final class CharcoalMoundData extends SavedData {
             int maxLogs = com.nstut.firstworks.FirstworksConfig.CHARCOAL_MAX_LOGS.get();
             if (logs.isEmpty() || logs.size() > maxLogs) continue;
             Phase phase;
-            try {
-                phase = Phase.valueOf(entry.getString("Phase"));
-            } catch (IllegalArgumentException ignored) {
-                continue;
+            String phaseStr = entry.getString("Phase");
+            if ("READY".equalsIgnoreCase(phaseStr) || "LEGACY_READY".equalsIgnoreCase(phaseStr)) {
+                phase = Phase.LEGACY_READY;
+            } else {
+                try {
+                    phase = Phase.valueOf(phaseStr);
+                } catch (IllegalArgumentException ignored) {
+                    continue;
+                }
             }
             BlockPos pendingBreach = entry.contains("PendingBreach") ? BlockPos.of(entry.getLong("PendingBreach")) : null;
             long pendingBreachTime = entry.getLong("PendingBreachTime");
@@ -384,7 +467,7 @@ public final class CharcoalMoundData extends SavedData {
         return data;
     }
 
-    public record IgnitionResult(boolean isSuccessful, @org.jetbrains.annotations.Nullable Component message) {
+    public record IgnitionResult(boolean isSuccessful, @Nullable Component message) {
         public static IgnitionResult success() { return new IgnitionResult(true, null); }
         public static IgnitionResult failure(Component message) { return new IgnitionResult(false, message); }
     }
@@ -396,7 +479,7 @@ public final class CharcoalMoundData extends SavedData {
             int expectedYield
     ) {}
 
-    public enum Phase { WAITING_FOR_SEAL, CARBONIZING }
+    public enum Phase { WAITING_FOR_SEAL, CARBONIZING, LEGACY_READY }
 
     private static final class Charge {
         private final Set<BlockPos> logs;

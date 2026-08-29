@@ -28,7 +28,7 @@ public final class Firstworks {
         ModFluids.register(modBus);
         ModRecipes.register(modBus);
         ModBlockEntities.register(modBus);
-        container.registerConfig(ModConfig.Type.COMMON, FirstworksConfig.SPEC);
+        container.registerConfig(ModConfig.Type.SERVER, FirstworksConfig.SPEC);
         LOGGER.info("Firstworks is preparing the first works");
     }
 

@@ -66,18 +66,19 @@ public final class MortarBlockEntityRenderer implements BlockEntityRenderer<Mort
     private static void renderCuboid(PoseStack poseStack, VertexConsumer vertices, TextureAtlasSprite sprite,
             float minX, float minY, float minZ, float maxX, float maxY, float maxZ,
             int light, int overlay) {
-        float sizeX = (maxX - minX) * 16.0F;
-        float sizeY = (maxY - minY) * 16.0F;
-        float sizeZ = (maxZ - minZ) * 16.0F;
+        float sizeX = Math.min(16.0F, Math.max(1.0F, (maxX - minX) * 16.0F));
+        float sizeY = Math.min(16.0F, Math.max(1.0F, (maxY - minY) * 16.0F));
+        float sizeZ = Math.min(16.0F, Math.max(1.0F, (maxZ - minZ) * 16.0F));
 
-        // Center the texture sampling on the 16x16 sprite
         float u0_xz = (16.0F - sizeX) / 2.0F;
         float u1_xz = u0_xz + sizeX;
         float v0_xz = (16.0F - sizeZ) / 2.0F;
         float v1_xz = v0_xz + sizeZ;
 
-        float u0_side = (16.0F - sizeX) / 2.0F;
-        float u1_side = u0_side + sizeX;
+        float u0_sideX = (16.0F - sizeX) / 2.0F;
+        float u1_sideX = u0_sideX + sizeX;
+        float u0_sideZ = (16.0F - sizeZ) / 2.0F;
+        float u1_sideZ = u0_sideZ + sizeZ;
         float v0_side = (16.0F - sizeY) / 2.0F;
         float v1_side = v0_side + sizeY;
 
@@ -94,22 +95,22 @@ public final class MortarBlockEntityRenderer implements BlockEntityRenderer<Mort
         // North face (z-)
         face(poseStack, vertices, sprite,
                 maxX, minY, minZ, minX, minY, minZ, minX, maxY, minZ, maxX, maxY, minZ,
-                u0_side, v0_side, u1_side, v1_side,
+                u0_sideX, v0_side, u1_sideX, v1_side,
                 0, 0, -1, light, overlay);
         // South face (z+)
         face(poseStack, vertices, sprite,
                 minX, minY, maxZ, maxX, minY, maxZ, maxX, maxY, maxZ, minX, maxY, maxZ,
-                u0_side, v0_side, u1_side, v1_side,
+                u0_sideX, v0_side, u1_sideX, v1_side,
                 0, 0, 1, light, overlay);
         // West face (x-)
         face(poseStack, vertices, sprite,
                 minX, minY, minZ, minX, minY, maxZ, minX, maxY, maxZ, minX, maxY, minZ,
-                u0_side, v0_side, u1_side, v1_side,
+                u0_sideZ, v0_side, u1_sideZ, v1_side,
                 -1, 0, 0, light, overlay);
         // East face (x+)
         face(poseStack, vertices, sprite,
                 maxX, minY, maxZ, maxX, minY, minZ, maxX, maxY, minZ, maxX, maxY, maxZ,
-                u0_side, v0_side, u1_side, v1_side,
+                u0_sideZ, v0_side, u1_sideZ, v1_side,
                 1, 0, 0, light, overlay);
     }
 
