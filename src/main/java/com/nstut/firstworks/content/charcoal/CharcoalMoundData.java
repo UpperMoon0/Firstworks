@@ -33,9 +33,6 @@ public final class CharcoalMoundData extends SavedData {
     private static final String DATA_NAME = "firstworks_charcoal_mounds";
 
     private final List<Charge> charges = new ArrayList<>();
-    private final List<PendingBreach> pendingBreaches = new ArrayList<>();
-
-    public record PendingBreach(BlockPos pos, long gameTime) {}
 
     public static CharcoalMoundData get(ServerLevel level) {
         return level.getDataStorage().computeIfAbsent(
@@ -83,60 +80,58 @@ public final class CharcoalMoundData extends SavedData {
     }
 
     public void tick(ServerLevel level) {
+        if (charges.isEmpty()) return;
+        boolean isPeriodicTick = (level.getGameTime() % 20L == 0L);
         boolean changed = false;
         float normalYield = com.nstut.firstworks.FirstworksConfig.CHARCOAL_NORMAL_YIELD.get().floatValue();
         float breachedYield = com.nstut.firstworks.FirstworksConfig.CHARCOAL_BREACHED_YIELD.get().floatValue();
         int carbonizationTicks = com.nstut.firstworks.FirstworksConfig.CHARCOAL_CARBONIZE_DURATION.get();
 
-        if (!pendingBreaches.isEmpty()) {
-            Iterator<PendingBreach> breachIterator = pendingBreaches.iterator();
-            while (breachIterator.hasNext()) {
-                PendingBreach pending = breachIterator.next();
-                Iterator<Charge> chargeIterator = charges.iterator();
-                boolean handled = false;
-                while (chargeIterator.hasNext()) {
-                    Charge charge = chargeIterator.next();
-                    if (!charge.isLoaded(level)) continue;
-                    if (!charge.logs.contains(pending.pos) && !charge.isShellNeighbor(pending.pos)) continue;
-
-                    if (charge.phase == Phase.WAITING_FOR_SEAL) {
-                        if (charge.logs.contains(pending.pos)) {
-                            chargeIterator.remove();
-                            changed = true;
-                            handled = true;
-                        }
-                    } else if (charge.phase == Phase.CARBONIZING) {
-                        if (pending.gameTime >= charge.deadline) {
-                            finish(level, charge, normalYield, pending.pos);
-                        } else {
-                            finish(level, charge, breachedYield, pending.pos);
-                        }
-                        chargeIterator.remove();
-                        changed = true;
-                        handled = true;
-                    } else if (charge.phase == Phase.READY) {
-                        finish(level, charge, normalYield, pending.pos);
-                        chargeIterator.remove();
-                        changed = true;
-                        handled = true;
-                    }
-                }
-                if (handled || level.getGameTime() - pending.gameTime > 100L) {
-                    breachIterator.remove();
-                    changed = true;
-                }
-            }
-        }
-
-        if (level.getGameTime() % 20L != 0L || charges.isEmpty()) {
-            if (changed) setDirty();
-            return;
-        }
-
         Iterator<Charge> iterator = charges.iterator();
         while (iterator.hasNext()) {
             Charge charge = iterator.next();
             if (!charge.isLoaded(level)) continue;
+
+            // 1. Evaluate event-driven pending breach bound to this specific charge
+            if (charge.pendingBreach != null) {
+                BlockPos breachPos = charge.pendingBreach;
+                long breachTime = charge.pendingBreachTime;
+                boolean isLog = charge.logs.contains(breachPos);
+                boolean blockActuallyDestroyed = isLog
+                        ? !level.getBlockState(breachPos).is(ModTags.CHARCOAL_WOODS)
+                        : !level.getBlockState(breachPos).is(ModTags.CHARCOAL_SEALANTS);
+
+                if (blockActuallyDestroyed) {
+                    if (charge.phase == Phase.WAITING_FOR_SEAL) {
+                        if (isLog) {
+                            iterator.remove();
+                            changed = true;
+                            continue;
+                        }
+                    } else if (charge.phase == Phase.CARBONIZING) {
+                        if (breachTime >= charge.deadline) {
+                            finish(level, charge, normalYield, breachPos);
+                        } else {
+                            finish(level, charge, breachedYield, breachPos);
+                        }
+                        iterator.remove();
+                        changed = true;
+                        continue;
+                    } else if (charge.phase == Phase.READY) {
+                        finish(level, charge, normalYield, breachPos);
+                        iterator.remove();
+                        changed = true;
+                        continue;
+                    }
+                } else {
+                    // Break was cancelled by another mod or didn't actually destroy the block
+                    charge.pendingBreach = null;
+                    changed = true;
+                }
+            }
+
+            // 2. Periodic integrity and deadline checks
+            if (!isPeriodicTick) continue;
 
             if (charge.phase == Phase.WAITING_FOR_SEAL) {
                 if (level.getBlockState(charge.opening).is(ModTags.CHARCOAL_SEALANTS)) {
@@ -158,7 +153,6 @@ public final class CharcoalMoundData extends SavedData {
 
             if (charge.phase == Phase.CARBONIZING) {
                 if (level.getGameTime() >= charge.deadline) {
-                    // Completion is durable: leave the mound sealed until the player opens it.
                     charge.phase = Phase.READY;
                     changed = true;
                     level.playSound(null, charge.opening, SoundEvents.FIRE_EXTINGUISH,
@@ -173,19 +167,51 @@ public final class CharcoalMoundData extends SavedData {
                 continue;
             }
 
-            // READY mounds reveal their charcoal only when the shell/opening is breached.
-            if (!charge.logsIntact(level) || !isShellValid(level, charge.logs, charge.opening, false)) {
-                finish(level, charge, normalYield, findBreach(level, charge));
-                iterator.remove();
-                changed = true;
+            if (charge.phase == Phase.READY) {
+                if (!charge.logsIntact(level) || !isShellValid(level, charge.logs, charge.opening, false)) {
+                    finish(level, charge, normalYield, findBreach(level, charge));
+                    iterator.remove();
+                    changed = true;
+                }
             }
         }
         if (changed) setDirty();
     }
 
+    public boolean isReadyLog(BlockPos pos) {
+        for (Charge charge : charges) {
+            if (charge.phase == Phase.READY && charge.logs.contains(pos)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void onReadyLogBroken(ServerLevel level, BlockPos pos) {
+        if (charges.isEmpty()) return;
+        Iterator<Charge> iterator = charges.iterator();
+        float normalYield = com.nstut.firstworks.FirstworksConfig.CHARCOAL_NORMAL_YIELD.get().floatValue();
+        while (iterator.hasNext()) {
+            Charge charge = iterator.next();
+            if (charge.phase == Phase.READY && charge.logs.contains(pos)) {
+                finish(level, charge, normalYield, pos);
+                iterator.remove();
+                setDirty();
+                return;
+            }
+        }
+    }
+
     public void onBlockBroken(ServerLevel level, BlockPos pos) {
-        pendingBreaches.add(new PendingBreach(pos.immutable(), level.getGameTime()));
-        setDirty();
+        if (charges.isEmpty()) return;
+        for (Charge charge : charges) {
+            if (charge.containsOrNeighbors(pos)) {
+                charge.pendingBreach = pos.immutable();
+                charge.pendingBreachTime = level.getGameTime();
+                setDirty();
+                return;
+            }
+        }
     }
 
     private static Set<BlockPos> discoverLogs(ServerLevel level, BlockPos start) {
@@ -270,18 +296,13 @@ public final class CharcoalMoundData extends SavedData {
             entry.putLong("Opening", charge.opening.asLong());
             entry.putString("Phase", charge.phase.name());
             entry.putLong("Deadline", charge.deadline);
+            if (charge.pendingBreach != null) {
+                entry.putLong("PendingBreach", charge.pendingBreach.asLong());
+                entry.putLong("PendingBreachTime", charge.pendingBreachTime);
+            }
             list.add(entry);
         }
         tag.put("Charges", list);
-
-        ListTag breachesList = new ListTag();
-        for (PendingBreach breach : pendingBreaches) {
-            CompoundTag breachEntry = new CompoundTag();
-            breachEntry.putLong("Pos", breach.pos.asLong());
-            breachEntry.putLong("GameTime", breach.gameTime);
-            breachesList.add(breachEntry);
-        }
-        tag.put("PendingBreaches", breachesList);
         return tag;
     }
 
@@ -300,13 +321,10 @@ public final class CharcoalMoundData extends SavedData {
             } catch (IllegalArgumentException ignored) {
                 continue;
             }
+            BlockPos pendingBreach = entry.contains("PendingBreach") ? BlockPos.of(entry.getLong("PendingBreach")) : null;
+            long pendingBreachTime = entry.getLong("PendingBreachTime");
             data.charges.add(new Charge(logs, BlockPos.of(entry.getLong("Opening")),
-                    phase, entry.getLong("Deadline")));
-        }
-        ListTag breachesList = tag.getList("PendingBreaches", Tag.TAG_COMPOUND);
-        for (int i = 0; i < breachesList.size(); i++) {
-            CompoundTag breachEntry = breachesList.getCompound(i);
-            data.pendingBreaches.add(new PendingBreach(BlockPos.of(breachEntry.getLong("Pos")), breachEntry.getLong("GameTime")));
+                    phase, entry.getLong("Deadline"), pendingBreach, pendingBreachTime));
         }
         return data;
     }
@@ -323,12 +341,25 @@ public final class CharcoalMoundData extends SavedData {
         private final BlockPos opening;
         private Phase phase;
         private long deadline;
+        private net.minecraft.core.BlockPos pendingBreach;
+        private long pendingBreachTime;
 
         private Charge(Set<BlockPos> logs, BlockPos opening, Phase phase, long deadline) {
+            this(logs, opening, phase, deadline, null, 0L);
+        }
+
+        private Charge(Set<BlockPos> logs, BlockPos opening, Phase phase, long deadline,
+                net.minecraft.core.BlockPos pendingBreach, long pendingBreachTime) {
             this.logs = Set.copyOf(logs);
             this.opening = opening.immutable();
             this.phase = phase;
             this.deadline = deadline;
+            this.pendingBreach = pendingBreach != null ? pendingBreach.immutable() : null;
+            this.pendingBreachTime = pendingBreachTime;
+        }
+
+        private boolean containsOrNeighbors(BlockPos pos) {
+            return logs.contains(pos) || isShellNeighbor(pos);
         }
 
         private boolean overlaps(Set<BlockPos> other) {

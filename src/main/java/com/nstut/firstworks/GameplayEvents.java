@@ -213,9 +213,9 @@ public final class GameplayEvents {
         );
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void gatherPlantFibre(BlockEvent.BreakEvent event) {
-        if (!(event.getLevel() instanceof ServerLevel level)) return;
+        if (event.isCanceled() || !(event.getLevel() instanceof ServerLevel level)) return;
         BlockState state = event.getState();
         int amount;
         if (state.is(ModTags.DOUBLE_PLANT_FIBRE_SOURCES)) {
@@ -233,9 +233,9 @@ public final class GameplayEvents {
         Block.popResource(level, event.getPos(), new ItemStack(ModItems.PLANT_FIBRE.get(), amount));
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void gatherRawOchre(BlockEvent.BreakEvent event) {
-        if (!(event.getLevel() instanceof ServerLevel level)) return;
+        if (event.isCanceled() || !(event.getLevel() instanceof ServerLevel level)) return;
         if (event.getPlayer() == null || event.getPlayer().isCreative()) return;
         BlockState state = event.getState();
         if (!state.is(ModTags.OCHRE_SOURCES)) return;
@@ -253,7 +253,13 @@ public final class GameplayEvents {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onBlockBreak(BlockEvent.BreakEvent event) {
         if (event.isCanceled() || !(event.getLevel() instanceof ServerLevel level)) return;
-        CharcoalMoundData.get(level).onBlockBroken(level, event.getPos());
+        CharcoalMoundData moundData = CharcoalMoundData.get(level);
+        if (moundData.isReadyLog(event.getPos())) {
+            event.setCanceled(true);
+            moundData.onReadyLogBroken(level, event.getPos());
+            return;
+        }
+        moundData.onBlockBroken(level, event.getPos());
     }
 
     private static boolean hasSilkTouch(ServerLevel level, ItemStack stack) {
