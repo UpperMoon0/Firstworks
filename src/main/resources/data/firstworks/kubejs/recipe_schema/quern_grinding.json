@@ -1,0 +1,1 @@
+{"type":"firstworks:quern_grinding","keys":[{"name":"result","role":"output","type":"item_stack"},{"name":"ingredient","role":"input","type":"ingredient"},{"name":"input_count","type":"int","optional":true,"default":1},{"name":"saddle_strokes","type":"int","optional":true,"default":8},{"name":"rotary_duration","type":"int","optional":true,"default":80}]}

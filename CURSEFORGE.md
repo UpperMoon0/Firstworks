@@ -62,14 +62,16 @@ Load one clay ball into a Wooden Brick Mold and press twice with an empty hand t
 
 Build charcoal mounds from connected logs surrounded by configurable sealant blocks. Ignite, seal, and wait for the mound to finish; open it to reveal its charcoal yield. Place the Mortar & Pestle workstation, insert a grindable item, and use an empty hand to start its animated grinding process.
 
+Bulk processing advances through two tactile stone workstations. Work a Saddle Quern stroke by stroke, then upgrade it with Copper Fasteners into a continuously rotating Rotary Quern. Both show their contents and motion in-world and use the same datapack-driven grinding recipes.
+
 ## Made for survival and modpacks
 
 Firstworks can stand alone as a tactile early-game mechanic or serve as the primitive processing layer of a larger progression pack. Its leather, textile, and tool-binding progressions can each be adjusted to fit the experience you want.
 
 Optional integrations make the system easier to read without changing its in-world character:
 
-- **Jade** shows live Barrel, Loom, and Mortar & Pestle status.
-- **JEI** adds dedicated processing, spinning, weaving, brick-molding, and grinding categories.
+- **Jade** shows live Barrel, Loom, Mortar & Pestle, and Quern status.
+- **JEI** adds dedicated processing, spinning, weaving, brick-molding, mortar, and quern categories.
 
 ## Credits
 

@@ -41,6 +41,11 @@ Looking to configure recipes, custom wood types, KubeJS events, animal drop prof
 ### 🥣 Mortar & Pestle
 - Place on any surface, add grindable materials (Raw Ochre, Charcoal, Bone), and right-click to grind. Features an animated in-world pestle.
 
+### 🪨 Saddle & Rotary Querns
+- **Saddle Quern**: Load a bulk batch and work the upper stone by hand through visible grinding strokes.
+- **Rotary Quern**: Upgrade the Saddle Quern with Copper Fasteners, engage its crank, and process the same recipes continuously at higher throughput.
+- Both expose item automation and provide dedicated Jade, JEI, datapack, and KubeJS integration.
+
 ### 🔪 Primitive Knives, Cordage & Tools
 - **Flint & Bone Knives**: Used for guaranteed plant fibre harvesting from grass, hide scraping, and early crafting.
 - **Cordage & Bindings**: Hand-twist Plant Fibre into Crude Cordage. Wooden and stone tools require primitive bindings; metal and diamond tools require Rope.
@@ -58,8 +63,8 @@ Looking to configure recipes, custom wood types, KubeJS events, animal drop prof
 
 ## Integrations
 
-- **Jade**: Live in-world tooltips for Barrels, Looms, Brick Molds, Mortar & Pestle, Charcoal Mounds (with progress bars and remaining time visible through the outer shell), and Charcoal Piles.
-- **JEI**: Dedicated recipe categories for Barrel Processing, Hand Spinning, Loom Weaving, Brick Molding, Mortar Grinding, and dynamic Charcoal Mound Information.
+- **Jade**: Live in-world tooltips for Barrels, Looms, Brick Molds, Mortar & Pestle, Querns, Charcoal Mounds, and Charcoal Piles.
+- **JEI**: Dedicated categories for Barrel Processing, Hand Spinning, Loom Weaving, Brick Molding, Mortar Grinding, Quern Grinding, and dynamic Charcoal Mound Information.
 - **KubeJS**: Custom wood type registration (`Firstworks.registerWoodType`), recipe support via `event.custom({...})`, and event handlers for process start/completion.
 
 ---

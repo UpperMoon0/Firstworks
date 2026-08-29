@@ -10,6 +10,7 @@ import com.nstut.firstworks.content.ColoredFleeceItem;
 import com.nstut.firstworks.content.TextileColors;
 import com.nstut.firstworks.content.SpinningRecipe;
 import com.nstut.firstworks.content.MortarGrindingRecipe;
+import com.nstut.firstworks.content.quern.QuernGrindingRecipe;
 import com.nstut.firstworks.registry.ModBlocks;
 import com.nstut.firstworks.registry.ModRecipes;
 import com.nstut.firstworks.registry.ModItems;
@@ -53,6 +54,8 @@ public final class FirstworksJeiPlugin implements IModPlugin {
             RecipeType.create(Firstworks.MOD_ID, "brick_molding", BrickMoldingRecipe.class);
     public static final RecipeType<MortarGrindingRecipe> MORTAR_GRINDING =
             RecipeType.create(Firstworks.MOD_ID, "mortar_grinding", MortarGrindingRecipe.class);
+    public static final RecipeType<QuernGrindingRecipe> QUERN_GRINDING =
+            RecipeType.create(Firstworks.MOD_ID, "quern_grinding", QuernGrindingRecipe.class);
     private static final ResourceLocation UID = Firstworks.id("jei_plugin");
 
     @Override
@@ -67,6 +70,7 @@ public final class FirstworksJeiPlugin implements IModPlugin {
         registration.addRecipeCategories(new SpinningRecipeCategory(registration.getJeiHelpers().getGuiHelper()));
         registration.addRecipeCategories(new BrickMoldingRecipeCategory(registration.getJeiHelpers().getGuiHelper()));
         registration.addRecipeCategories(new MortarGrindingRecipeCategory(registration.getJeiHelpers().getGuiHelper()));
+        registration.addRecipeCategories(new QuernGrindingRecipeCategory(registration.getJeiHelpers().getGuiHelper()));
     }
 
     @Override
@@ -116,6 +120,9 @@ public final class FirstworksJeiPlugin implements IModPlugin {
                 .getAllRecipesFor(ModRecipes.MORTAR_GRINDING_TYPE.get())
                 .stream().map(holder -> holder.value()).toList();
         registration.addRecipes(MORTAR_GRINDING, mortarRecipes);
+        var quernRecipes = Minecraft.getInstance().level.getRecipeManager().getAllRecipesFor(ModRecipes.QUERN_GRINDING_TYPE.get())
+                .stream().map(RecipeHolder::value).toList();
+        registration.addRecipes(QUERN_GRINDING, quernRecipes);
 
         var manager = Minecraft.getInstance().level.getRecipeManager();
         List<RecipeHolder<CraftingRecipe>> textileDisplays = new ArrayList<>();
@@ -139,6 +146,8 @@ public final class FirstworksJeiPlugin implements IModPlugin {
         registration.addRecipeCatalyst(ModItems.HAND_SPINDLE.get(), SPINDLE_SPINNING);
         registration.addRecipeCatalyst(ModBlocks.BRICK_MOLD.get(), BRICK_MOLDING);
         registration.addRecipeCatalyst(ModBlocks.MORTAR_AND_PESTLE.get(), MORTAR_GRINDING);
+        registration.addRecipeCatalyst(ModBlocks.SADDLE_QUERN.get(), QUERN_GRINDING);
+        registration.addRecipeCatalyst(ModBlocks.ROTARY_QUERN.get(), QUERN_GRINDING);
     }
 
     static List<ItemStack> fleeceVariants(Item item, int count) {

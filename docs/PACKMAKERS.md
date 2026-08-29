@@ -378,6 +378,25 @@ FirstworksEvents.mortarGrindingCompleted(event => {
 
 ---
 
+## Quern Grinding
+
+Use `firstworks:quern_grinding` for bulk recipes shared by the hand-stroked Saddle Quern and continuously rotating Rotary Quern:
+
+```json
+{
+  "type": "firstworks:quern_grinding",
+  "ingredient": { "item": "minecraft:wheat" },
+  "input_count": 4,
+  "result": { "id": "firstworks:flour", "count": 4 },
+  "saddle_strokes": 12,
+  "rotary_duration": 100
+}
+```
+
+KubeJS exposes cancellable `quernGrindingStarting` and observational `quernGrindingCompleted` events.
+
+---
+
 ## 7. In-World Charcoal Mound System
 
 - **Construction**: `charcoalMinLogs`–`charcoalMaxLogs` connected fuel blocks (`#firstworks:charcoal_woods`; defaults to 4–64 logs), encased in an airtight shell (`#firstworks:charcoal_sealants`; defaults to dirt, grass, mud, clay) leaving 1 exposed face open for ignition.

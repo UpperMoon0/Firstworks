@@ -10,6 +10,7 @@ import com.nstut.firstworks.content.MortarGrindingRecipe;
 import com.nstut.firstworks.content.FleeceDyeingRecipe;
 import com.nstut.firstworks.content.WoolBlockRecipe;
 import com.nstut.firstworks.content.TextileBedRecipe;
+import com.nstut.firstworks.content.quern.QuernGrindingRecipe;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -43,6 +44,10 @@ public final class ModRecipes {
             "mortar_grinding", () -> RecipeType.simple(Firstworks.id("mortar_grinding")));
     public static final DeferredHolder<RecipeSerializer<?>, MortarGrindingRecipe.Serializer> MORTAR_GRINDING_SERIALIZER = SERIALIZERS.register(
             "mortar_grinding", MortarGrindingRecipe.Serializer::new);
+    public static final DeferredHolder<RecipeType<?>, RecipeType<QuernGrindingRecipe>> QUERN_GRINDING_TYPE = TYPES.register(
+            "quern_grinding", () -> RecipeType.simple(Firstworks.id("quern_grinding")));
+    public static final DeferredHolder<RecipeSerializer<?>, QuernGrindingRecipe.Serializer> QUERN_GRINDING_SERIALIZER = SERIALIZERS.register(
+            "quern_grinding", QuernGrindingRecipe.Serializer::new);
     public static final DeferredHolder<RecipeSerializer<?>, FleeceDyeingRecipe.Serializer> FLEECE_DYEING_SERIALIZER = SERIALIZERS.register(
             "fleece_dyeing", FleeceDyeingRecipe.Serializer::new);
     public static final DeferredHolder<RecipeSerializer<?>, WoolBlockRecipe.Serializer> WOOL_BLOCK_SERIALIZER = SERIALIZERS.register(

@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","category":"decorations","pattern":[" C ","SQS","BBB"],"key":{"C":{"item":"firstworks:copper_fasteners"},"S":{"tag":"c:stones"},"Q":{"item":"firstworks:saddle_quern"},"B":{"tag":"minecraft:wooden_slabs"}},"result":{"id":"firstworks:rotary_quern"}}

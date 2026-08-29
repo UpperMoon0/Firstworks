@@ -2,6 +2,8 @@
   "replace": false,
   "values": [
     "firstworks:mortar_and_pestle",
-    "firstworks:charcoal_pile"
+    "firstworks:charcoal_pile",
+    "firstworks:saddle_quern",
+    "firstworks:rotary_quern"
   ]
 }

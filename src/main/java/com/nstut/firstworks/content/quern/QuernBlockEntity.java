@@ -1,0 +1,113 @@
+package com.nstut.firstworks.content.quern;
+
+import com.nstut.firstworks.registry.*;
+import com.nstut.firstworks.compat.OptionalIntegrations;
+import net.minecraft.core.*;
+import net.minecraft.core.particles.*;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.*;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.items.IItemHandler;
+import org.jetbrains.annotations.Nullable;
+import java.util.Optional;
+
+public final class QuernBlockEntity extends BlockEntity {
+    private ItemStack input = ItemStack.EMPTY, output = ItemStack.EMPTY;
+    private int strokes, rotaryTicks;
+    private boolean rotating;
+    private float rotation;
+    private final IItemHandler handler = new Handler();
+    public QuernBlockEntity(BlockPos pos, BlockState state) { super(ModBlockEntities.QUERN.get(), pos, state); }
+
+    public static void tick(Level level, BlockPos pos, BlockState state, QuernBlockEntity quern) {
+        if (!quern.rotating || !quern.isRotary()) return;
+        if (level.isClientSide) { quern.rotation = (quern.rotation + 9F) % 360F; return; }
+        Optional<RecipeHolder<QuernGrindingRecipe>> holder = quern.recipe();
+        if (holder.isEmpty() || !quern.output.isEmpty()
+                || quern.input.getCount() < holder.get().value().inputCount()) {
+            quern.stop();
+            return;
+        }
+        quern.rotation = (quern.rotation + 9F) % 360F;
+        quern.rotaryTicks++;
+        if (quern.rotaryTicks % 12 == 0) {
+            level.playSound(null,pos,SoundEvents.GRINDSTONE_USE,SoundSource.BLOCKS,.3F,.65F);
+            if (level instanceof ServerLevel sl) sl.sendParticles(new ItemParticleOption(ParticleTypes.ITEM,quern.input.copyWithCount(1)),
+                    pos.getX()+.5,pos.getY()+.62,pos.getZ()+.5,2,.12,.03,.12,.01);
+        }
+        if (quern.rotaryTicks >= holder.get().value().rotaryDuration()) quern.complete(holder.get());
+        else if (quern.rotaryTicks % 5 == 0) quern.sync();
+    }
+
+    public boolean work(Player player) {
+        Optional<RecipeHolder<QuernGrindingRecipe>> holder = recipe();
+        if (holder.isEmpty() || !output.isEmpty()
+                || input.getCount() < holder.get().value().inputCount()) {
+            return false;
+        }
+        boolean beginning = isRotary() ? !rotating && rotaryTicks == 0 : strokes == 0;
+        if (beginning && level instanceof ServerLevel server && OptionalIntegrations.fireQuernGrindingStarting(
+                server,this,holder.get().id(),holder.get().value(),input.copy(),holder.get().value().result())) return false;
+        if (isRotary()) {
+            rotating = !rotating;
+            if (rotating && rotaryTicks == 0) level.playSound(null,worldPosition,SoundEvents.WOODEN_BUTTON_CLICK_ON,SoundSource.BLOCKS,.6F,.7F);
+            sync(); return true;
+        }
+        strokes++;
+        rotation = (rotation + 52F) % 360F;
+        level.playSound(null,worldPosition,SoundEvents.GRINDSTONE_USE,SoundSource.BLOCKS,.38F,.72F + level.random.nextFloat()*.1F);
+        if (level instanceof ServerLevel sl) sl.sendParticles(new ItemParticleOption(ParticleTypes.ITEM,input.copyWithCount(1)),
+                worldPosition.getX()+.5,worldPosition.getY()+.5,worldPosition.getZ()+.5,3,.14,.03,.14,.015);
+        if (strokes >= holder.get().value().saddleStrokes()) complete(holder.get()); else sync();
+        return true;
+    }
+    private void complete(RecipeHolder<QuernGrindingRecipe> holder) {
+        QuernGrindingRecipe recipe = holder.value();
+        ItemStack consumed = input.copyWithCount(recipe.inputCount());
+        input.shrink(recipe.inputCount()); if (input.isEmpty()) input=ItemStack.EMPTY;
+        output=recipe.result().copy(); strokes=0; rotaryTicks=0; rotating=false;
+        if(level instanceof ServerLevel server) OptionalIntegrations.fireQuernGrindingCompleted(server,this,holder.id(),recipe,consumed,output);
+        level.playSound(null,worldPosition,SoundEvents.PLAYER_LEVELUP,SoundSource.BLOCKS,.25F,1.55F);
+        sync();
+    }
+    private Optional<RecipeHolder<QuernGrindingRecipe>> recipe() {
+        if (level==null || input.isEmpty()) return Optional.empty();
+        return level.getRecipeManager().getRecipeFor(ModRecipes.QUERN_GRINDING_TYPE.get(),new SingleRecipeInput(input),level);
+    }
+    public boolean canInsert(ItemStack stack) {
+        if (rotating || !output.isEmpty() || stack.isEmpty()) return false;
+        Optional<RecipeHolder<QuernGrindingRecipe>> r = level==null?Optional.empty():level.getRecipeManager().getRecipeFor(
+                ModRecipes.QUERN_GRINDING_TYPE.get(),new SingleRecipeInput(stack),level);
+        return r.isPresent() && (input.isEmpty() || ItemStack.isSameItemSameComponents(input,stack)) && input.getCount()<r.get().value().inputCount();
+    }
+    public void insert(ItemStack stack, boolean creative) { if (!canInsert(stack)) return; if(input.isEmpty())input=stack.copyWithCount(1);else input.grow(1);if(!creative)stack.shrink(1);reset();sync(); }
+    public boolean takeOutput(Player p){if(output.isEmpty())return false;p.getInventory().placeItemBackInInventory(output.copy());output=ItemStack.EMPTY;sync();return true;}
+    public boolean takeInput(Player p){if(input.isEmpty()||rotating)return false;p.getInventory().placeItemBackInInventory(input.copy());input=ItemStack.EMPTY;reset();sync();return true;}
+    private void reset(){strokes=0;rotaryTicks=0;rotating=false;}
+    private void stop(){rotating=false;rotaryTicks=0;sync();}
+    private boolean isRotary(){return getBlockState().getBlock() instanceof QuernBlock q && q.isRotary();}
+    public ItemStack getInput(){return input;} public ItemStack getOutput(){return output;}
+    public int getStrokes(){return strokes;} public int getRotaryTicks(){return rotaryTicks;} public boolean isRotating(){return rotating;}
+    public float getRotation(float partial){return rotation + (rotating?9F*partial:0F);}
+    public int requiredWork(){return recipe().map(r->isRotary()?r.value().rotaryDuration():r.value().saddleStrokes()).orElse(0);}
+    public IItemHandler getItemHandler(@Nullable Direction side){return handler;}
+    private void sync(){setChanged();if(level!=null)level.sendBlockUpdated(worldPosition,getBlockState(),getBlockState(),Block.UPDATE_CLIENTS);}
+    @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider regs){super.saveAdditional(tag,regs);if(!input.isEmpty())tag.put("Input",input.save(regs));if(!output.isEmpty())tag.put("Output",output.save(regs));tag.putInt("Strokes",strokes);tag.putInt("RotaryTicks",rotaryTicks);tag.putBoolean("Rotating",rotating);tag.putFloat("Rotation",rotation);}
+    @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider regs){super.loadAdditional(tag,regs);input=ItemStack.parseOptional(regs,tag.getCompound("Input"));output=ItemStack.parseOptional(regs,tag.getCompound("Output"));strokes=tag.getInt("Strokes");rotaryTicks=tag.getInt("RotaryTicks");rotating=tag.getBoolean("Rotating");rotation=tag.getFloat("Rotation");}
+    @Override public CompoundTag getUpdateTag(HolderLookup.Provider regs){CompoundTag t=new CompoundTag();saveAdditional(t,regs);return t;}
+    @Override public ClientboundBlockEntityDataPacket getUpdatePacket(){return ClientboundBlockEntityDataPacket.create(this);}
+    private final class Handler implements IItemHandler {
+        public int getSlots(){return 2;} public ItemStack getStackInSlot(int s){return s==0?input:output;}
+        public ItemStack insertItem(int s,ItemStack stack,boolean sim){if(s!=0||!canInsert(stack))return stack;ItemStack remain=stack.copy();if(!sim){ItemStack one=remain.split(1);insert(one,true);}else remain.shrink(1);return remain;}
+        public ItemStack extractItem(int s,int amount,boolean sim){ItemStack source=s==1?output:input;if(source.isEmpty()||amount<=0||(s==0&&rotating))return ItemStack.EMPTY;ItemStack got=source.copyWithCount(Math.min(amount,source.getCount()));if(!sim){source.shrink(got.getCount());if(source.isEmpty()){if(s==1)output=ItemStack.EMPTY;else input=ItemStack.EMPTY;}reset();sync();}return got;}
+        public int getSlotLimit(int s){return 64;} public boolean isItemValid(int s,ItemStack stack){return s==0&&canInsert(stack);}
+    }
+}

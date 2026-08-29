@@ -20,4 +20,6 @@ public interface FirstworksKubeEvents {
     EventHandler BRICK_MOLDING_COMPLETED = GROUP.server("brickMoldingCompleted", () -> BrickMoldingKubeEvent.class);
     EventHandler MORTAR_GRINDING_STARTING = GROUP.server("mortarGrindingStarting", () -> MortarGrindingKubeEvent.class).hasResult();
     EventHandler MORTAR_GRINDING_COMPLETED = GROUP.server("mortarGrindingCompleted", () -> MortarGrindingKubeEvent.class);
+    EventHandler QUERN_GRINDING_STARTING = GROUP.server("quernGrindingStarting", () -> QuernGrindingKubeEvent.class).hasResult();
+    EventHandler QUERN_GRINDING_COMPLETED = GROUP.server("quernGrindingCompleted", () -> QuernGrindingKubeEvent.class);
 }
