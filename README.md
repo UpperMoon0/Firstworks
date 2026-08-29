@@ -34,7 +34,7 @@ Looking to configure recipes, custom wood types, KubeJS events, animal drop prof
 - **Wet Mortar**: Mix sand and water in sealed barrels to create wet mortar for binding structural brick blocks.
 
 ### 🔥 Earthen Charcoal Mounds
-- **Physical Construction**: Stack 4 to 64 connected logs and encase them with dirt, mud, clay, or terracotta, leaving one opening.
+- **Physical Construction**: Stack connected logs (configurable via `charcoalMinLogs`–`charcoalMaxLogs`; defaults to 4–64) and encase them with dirt, grass, mud, or clay, leaving one opening.
 - **Diegetic Feedback**: Light the opening with a Fire Starter or flint and steel to see smoke and flame bursts. Seal the opening to hear a muffled dirt-thud "whumpf" and transition into carbonization.
 - **Physical Charcoal Piles**: Finished mounds replace logs bottom-up with layered `Charcoal Pile` blocks (`firstworks:charcoal_pile`) storing 1–4 charcoal per block.
 
@@ -60,7 +60,7 @@ Looking to configure recipes, custom wood types, KubeJS events, animal drop prof
 
 - **Jade**: Live in-world tooltips for Barrels, Looms, Brick Molds, Mortar & Pestle, Charcoal Mounds (with progress bars and remaining time visible through the outer shell), and Charcoal Piles.
 - **JEI**: Dedicated recipe categories for Barrel Processing, Hand Spinning, Loom Weaving, Brick Molding, Mortar Grinding, and dynamic Charcoal Mound Information.
-- **KubeJS**: Typed recipe builders, custom wood type registration (`Firstworks.registerWoodType`), and event handlers for process start/completion.
+- **KubeJS**: Custom wood type registration (`Firstworks.registerWoodType`), recipe support via `event.custom({...})`, and event handlers for process start/completion.
 
 ---
 
