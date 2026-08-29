@@ -69,9 +69,10 @@ public class FoodProgressionRecipeTest {
         try (FileReader reader = new FileReader(path.toFile())) {
             JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
             String raw = json.toString();
-            assertTrue(raw.contains("neoforge:data_component_ingredient"), "Must use DataComponentIngredient");
-            assertTrue(raw.contains("minecraft:water"), "Must specifically match water potion contents");
+            assertTrue(raw.contains("neoforge:components"), "Must use neoforge:components ingredient type");
+            assertTrue(raw.contains("minecraft:potion"), "Must target minecraft:potion");
             assertTrue(raw.contains("minecraft:potion_contents"), "Must check potion_contents component");
+            assertTrue(raw.contains("minecraft:water"), "Must specifically match water potion contents");
         }
     }
 
