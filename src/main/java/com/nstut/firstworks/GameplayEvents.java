@@ -68,7 +68,7 @@ public final class GameplayEvents {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onBlockPlaced(BlockEvent.EntityPlaceEvent event) {
         if (event.isCanceled() || !(event.getLevel() instanceof ServerLevel level)) return;
         CharcoalMoundData.get(level).onBlockPlaced(level, event.getPos());

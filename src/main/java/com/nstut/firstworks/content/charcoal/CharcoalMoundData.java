@@ -43,6 +43,28 @@ public final class CharcoalMoundData extends SavedData {
                 new SavedData.Factory<>(CharcoalMoundData::new, CharcoalMoundData::load), DATA_NAME);
     }
 
+    public record ShellCoverage(int exteriorFaces, int sealedFaces) {
+        public float ratio() {
+            return exteriorFaces > 0 ? (float) sealedFaces / (float) exteriorFaces : 0.0F;
+        }
+    }
+
+    public static ShellCoverage calculateShellCoverage(ServerLevel level, Set<BlockPos> logs) {
+        int exterior = 0;
+        int sealed = 0;
+        for (BlockPos log : logs) {
+            for (Direction dir : Direction.values()) {
+                BlockPos neighbor = log.relative(dir);
+                if (logs.contains(neighbor)) continue;
+                exterior++;
+                if (level.hasChunkAt(neighbor) && level.getBlockState(neighbor).is(ModTags.CHARCOAL_SEALANTS)) {
+                    sealed++;
+                }
+            }
+        }
+        return new ShellCoverage(exterior, sealed);
+    }
+
     public record IgnitionProbe(
             boolean isMoundCandidate,
             boolean isValid,
@@ -59,19 +81,12 @@ public final class CharcoalMoundData extends SavedData {
         Set<BlockPos> logs = discoverLogs(level, ignitionLog);
         BlockPos opening = ignitionLog.relative(exposedFace);
 
-        // A mound candidate is either multi-log or touches at least one sealant block
-        boolean touchesSealant = false;
-        for (BlockPos log : logs) {
-            for (Direction dir : Direction.values()) {
-                if (level.getBlockState(log.relative(dir)).is(ModTags.CHARCOAL_SEALANTS)) {
-                    touchesSealant = true;
-                    break;
-                }
-            }
-            if (touchesSealant) break;
-        }
+        // A deliberate charcoal mound has substantial shell coverage (>= 50% exterior faces sealed)
+        // or directly overlaps an existing active charge. Ordinary standing trees have <= 10% coverage.
+        ShellCoverage coverage = calculateShellCoverage(level, logs);
+        boolean isMoundCandidate = charges.stream().anyMatch(charge -> charge.overlaps(logs))
+                || coverage.ratio() >= 0.50F;
 
-        boolean isMoundCandidate = (logs.size() >= 2 || touchesSealant);
         if (!isMoundCandidate) {
             return new IgnitionProbe(false, false, null, logs, opening);
         }
@@ -161,18 +176,10 @@ public final class CharcoalMoundData extends SavedData {
     public void onBlockPlaced(ServerLevel level, BlockPos pos) {
         if (charges.isEmpty()) return;
         boolean changed = false;
-        int carbonizationTicks = com.nstut.firstworks.FirstworksConfig.CHARCOAL_CARBONIZE_DURATION.get();
         for (Charge charge : charges) {
             if (charge.phase == Phase.WAITING_FOR_SEAL && charge.opening.equals(pos)) {
-                if (level.getBlockState(pos).is(ModTags.CHARCOAL_SEALANTS)) {
-                    charge.phase = Phase.CARBONIZING;
-                    charge.deadline = level.getGameTime() + carbonizationTicks;
-                    level.playSound(null, charge.opening, SoundEvents.GENERIC_EXTINGUISH_FIRE,
-                            SoundSource.BLOCKS, 0.75F, 0.6F);
-                    level.playSound(null, charge.opening, SoundEvents.GRAVEL_PLACE,
-                            SoundSource.BLOCKS, 0.8F, 0.65F);
-                    changed = true;
-                }
+                charge.pendingSeal = pos.immutable();
+                changed = true;
             }
         }
         if (changed) setDirty();
@@ -190,7 +197,13 @@ public final class CharcoalMoundData extends SavedData {
         while (iterator.hasNext()) {
             Charge charge = iterator.next();
 
-            // Backward compatibility: migrate legacy READY charges on first tick
+            boolean needsWork = (charge.pendingBreach != null || charge.pendingSeal != null || isPeriodicTick);
+            if (!needsWork) continue;
+
+            // Ensure chunk is loaded before accessing world blocks or migrating legacy charges
+            if (!charge.isLoaded(level)) continue;
+
+            // 1. Backward compatibility: migrate legacy READY charges once loaded
             if (charge.phase == Phase.LEGACY_READY) {
                 materializeCharcoal(level, charge, normalYield);
                 removeChargeFromIndex(charge);
@@ -199,12 +212,22 @@ public final class CharcoalMoundData extends SavedData {
                 continue;
             }
 
-            boolean needsWork = (charge.pendingBreach != null || isPeriodicTick);
-            if (!needsWork) continue;
+            // 2. Evaluate deferred 1-tick pending seal (immune to cancellation races)
+            if (charge.pendingSeal != null && charge.phase == Phase.WAITING_FOR_SEAL) {
+                BlockPos sealPos = charge.pendingSeal;
+                charge.pendingSeal = null;
+                if (level.getBlockState(sealPos).is(ModTags.CHARCOAL_SEALANTS)) {
+                    charge.phase = Phase.CARBONIZING;
+                    charge.deadline = level.getGameTime() + carbonizationTicks;
+                    level.playSound(null, charge.opening, SoundEvents.GENERIC_EXTINGUISH_FIRE,
+                            SoundSource.BLOCKS, 0.75F, 0.6F);
+                    level.playSound(null, charge.opening, SoundEvents.GRAVEL_PLACE,
+                            SoundSource.BLOCKS, 0.8F, 0.65F);
+                    changed = true;
+                }
+            }
 
-            if (!charge.isLoaded(level)) continue;
-
-            // 1. Evaluate event-driven pending breach bound to this specific charge
+            // 3. Evaluate event-driven pending breach bound to this specific charge
             if (charge.pendingBreach != null) {
                 BlockPos breachPos = charge.pendingBreach;
                 long breachTime = charge.pendingBreachTime;
@@ -248,7 +271,7 @@ public final class CharcoalMoundData extends SavedData {
                 }
             }
 
-            // 2. Periodic integrity and deadline checks
+            // 4. Periodic integrity and deadline checks
             if (!isPeriodicTick) continue;
 
             if (charge.phase == Phase.WAITING_FOR_SEAL) {
@@ -488,6 +511,7 @@ public final class CharcoalMoundData extends SavedData {
         private long deadline;
         private net.minecraft.core.BlockPos pendingBreach;
         private long pendingBreachTime;
+        private net.minecraft.core.BlockPos pendingSeal;
 
         private Charge(Set<BlockPos> logs, BlockPos opening, Phase phase, long deadline) {
             this(logs, opening, phase, deadline, null, 0L);
