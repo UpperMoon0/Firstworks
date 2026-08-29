@@ -4,8 +4,10 @@ import com.nstut.firstworks.content.barrel.BarrelBlock;
 import com.nstut.firstworks.content.barrel.BarrelBlockEntity;
 import com.nstut.firstworks.content.brick_mold.BrickMoldBlock;
 import com.nstut.firstworks.content.brick_mold.BrickMoldBlockEntity;
+import com.nstut.firstworks.content.charcoal.CharcoalPileBlock;
 import com.nstut.firstworks.content.loom.LoomBlock;
 import com.nstut.firstworks.content.loom.LoomBlockEntity;
+import net.minecraft.world.level.block.Block;
 import snownee.jade.api.IWailaClientRegistration;
 import snownee.jade.api.IWailaCommonRegistration;
 import snownee.jade.api.IWailaPlugin;
@@ -18,6 +20,7 @@ public final class FirstworksJadePlugin implements IWailaPlugin {
         registration.registerBlockDataProvider(BarrelProgressProvider.INSTANCE, BarrelBlockEntity.class);
         registration.registerBlockDataProvider(LoomProgressProvider.INSTANCE, LoomBlockEntity.class);
         registration.registerBlockDataProvider(BrickMoldProgressProvider.INSTANCE, BrickMoldBlockEntity.class);
+        registration.registerBlockDataProvider(CharcoalMoundProvider.INSTANCE, Block.class);
     }
 
     @Override
@@ -25,5 +28,7 @@ public final class FirstworksJadePlugin implements IWailaPlugin {
         registration.registerBlockComponent(BarrelProgressProvider.INSTANCE, BarrelBlock.class);
         registration.registerBlockComponent(LoomProgressProvider.INSTANCE, LoomBlock.class);
         registration.registerBlockComponent(BrickMoldProgressProvider.INSTANCE, BrickMoldBlock.class);
+        registration.registerBlockComponent(CharcoalMoundProvider.INSTANCE, Block.class);
+        registration.registerBlockComponent(CharcoalPileProvider.INSTANCE, CharcoalPileBlock.class);
     }
 }

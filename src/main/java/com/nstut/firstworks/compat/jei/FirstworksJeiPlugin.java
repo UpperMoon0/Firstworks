@@ -77,8 +77,22 @@ public final class FirstworksJeiPlugin implements IModPlugin {
                 Component.translatable("jei.firstworks.plant_fibre.obtain"));
         registration.addIngredientInfo(ModItems.RAW_FLEECE.get(),
                 Component.translatable("jei.firstworks.raw_fleece.use"));
-        registration.addIngredientInfo(net.minecraft.world.item.Items.CHARCOAL,
-                Component.translatable("jei.firstworks.charcoal_mound.use"));
+
+        int minLogs = com.nstut.firstworks.FirstworksConfig.CHARCOAL_MIN_LOGS.get();
+        int maxLogs = com.nstut.firstworks.FirstworksConfig.CHARCOAL_MAX_LOGS.get();
+        int sealSec = com.nstut.firstworks.FirstworksConfig.CHARCOAL_SEAL_WINDOW.get() / 20;
+        int durationSec = com.nstut.firstworks.FirstworksConfig.CHARCOAL_CARBONIZE_DURATION.get() / 20;
+        String durationStr = durationSec >= 60 && durationSec % 60 == 0
+                ? (durationSec / 60) + " minutes"
+                : (durationSec >= 60 ? (durationSec / 60) + "m " + (durationSec % 60) + "s" : durationSec + " seconds");
+        int normalYieldPct = (int) Math.round(com.nstut.firstworks.FirstworksConfig.CHARCOAL_NORMAL_YIELD.get() * 100.0);
+        int breachedYieldPct = (int) Math.round(com.nstut.firstworks.FirstworksConfig.CHARCOAL_BREACHED_YIELD.get() * 100.0);
+        Component moundInfo = Component.translatable("jei.firstworks.charcoal_mound.info",
+                minLogs, maxLogs, sealSec, durationStr, normalYieldPct, breachedYieldPct);
+
+        registration.addIngredientInfo(net.minecraft.world.item.Items.CHARCOAL, moundInfo);
+        registration.addIngredientInfo(ModBlocks.CHARCOAL_PILE.get().asItem(), moundInfo);
+
         if (Minecraft.getInstance().level == null) return;
         var recipes = Minecraft.getInstance().level.getRecipeManager()
                 .getAllRecipesFor(ModRecipes.BARREL_PROCESSING_TYPE.get())

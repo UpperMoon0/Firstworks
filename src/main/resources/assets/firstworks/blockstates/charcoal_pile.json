@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "amount=1": {
+      "model": "firstworks:block/charcoal_pile_1"
+    },
+    "amount=2": {
+      "model": "firstworks:block/charcoal_pile_2"
+    },
+    "amount=3": {
+      "model": "firstworks:block/charcoal_pile_3"
+    },
+    "amount=4": {
+      "model": "firstworks:block/charcoal_pile_4"
+    }
+  }
+}

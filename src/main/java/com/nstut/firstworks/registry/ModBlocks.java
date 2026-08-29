@@ -5,6 +5,7 @@ import com.nstut.firstworks.content.StandingTorchBlock;
 import com.nstut.firstworks.content.basket.BasketBlock;
 import com.nstut.firstworks.content.barrel.BarrelBlock;
 import com.nstut.firstworks.content.brick_mold.BrickMoldBlock;
+import com.nstut.firstworks.content.charcoal.CharcoalPileBlock;
 import com.nstut.firstworks.content.loom.LoomBlock;
 import com.nstut.firstworks.content.mortar.MortarBlock;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -39,6 +40,12 @@ public final class ModBlocks {
             () -> new BasketBlock(Block.Properties.ofFullCopy(Blocks.BAMBOO_PLANKS).noOcclusion()));
     public static final DeferredHolder<Block, MortarBlock> MORTAR_AND_PESTLE = BLOCKS.register("mortar_and_pestle",
             () -> new MortarBlock(Block.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, CharcoalPileBlock> CHARCOAL_PILE = BLOCKS.register("charcoal_pile",
+            () -> new CharcoalPileBlock(Block.Properties.of()
+                    .strength(0.5F)
+                    .sound(SoundType.STONE)
+                    .noOcclusion()
+                    .pushReaction(PushReaction.DESTROY)));
     public static final DeferredHolder<Block, LiquidBlock> TANNIN_SOLUTION = BLOCKS.register("tannin_solution",
             () -> new LiquidBlock(ModFluids.TANNIN_SOLUTION.get(), Block.Properties.of()
                     .mapColor(net.minecraft.world.level.material.MapColor.WATER)

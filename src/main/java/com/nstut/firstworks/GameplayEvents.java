@@ -253,13 +253,7 @@ public final class GameplayEvents {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onBlockBreak(BlockEvent.BreakEvent event) {
         if (event.isCanceled() || !(event.getLevel() instanceof ServerLevel level)) return;
-        CharcoalMoundData moundData = CharcoalMoundData.get(level);
-        if (moundData.isReadyLog(event.getPos())) {
-            event.setCanceled(true);
-            moundData.onReadyLogBroken(level, event.getPos());
-            return;
-        }
-        moundData.onBlockBroken(level, event.getPos());
+        CharcoalMoundData.get(level).onBlockBroken(level, event.getPos());
     }
 
     private static boolean hasSilkTouch(ServerLevel level, ItemStack stack) {

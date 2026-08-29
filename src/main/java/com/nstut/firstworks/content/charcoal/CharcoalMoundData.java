@@ -1,5 +1,6 @@
 package com.nstut.firstworks.content.charcoal;
 
+import com.nstut.firstworks.registry.ModBlocks;
 import com.nstut.firstworks.registry.ModTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,16 +14,17 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
-import net.minecraft.world.Containers;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.saveddata.SavedData;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -33,6 +35,7 @@ public final class CharcoalMoundData extends SavedData {
     private static final String DATA_NAME = "firstworks_charcoal_mounds";
 
     private final List<Charge> charges = new ArrayList<>();
+    private final Map<BlockPos, Charge> chargeByLog = new HashMap<>();
 
     public static CharcoalMoundData get(ServerLevel level) {
         return level.getDataStorage().computeIfAbsent(
@@ -62,8 +65,12 @@ public final class CharcoalMoundData extends SavedData {
             return IgnitionResult.failure(Component.translatable("message.firstworks.charcoal.unsealed"));
         }
 
-        charges.add(new Charge(logs, opening, Phase.WAITING_FOR_SEAL,
-                level.getGameTime() + sealWindow));
+        Charge charge = new Charge(logs, opening, Phase.WAITING_FOR_SEAL,
+                level.getGameTime() + sealWindow);
+        charges.add(charge);
+        for (BlockPos log : charge.logs) {
+            chargeByLog.put(log, charge);
+        }
         setDirty();
         level.playSound(null, ignitionLog, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 0.8F, 0.7F);
         return IgnitionResult.success(Component.translatable("message.firstworks.charcoal.seal_opening"));
@@ -77,6 +84,19 @@ public final class CharcoalMoundData extends SavedData {
         BlockPos opening = ignitionLog.relative(exposedFace);
         if (logs.contains(opening) || level.getBlockState(opening).is(ModTags.CHARCOAL_SEALANTS)) return false;
         return isShellValid(level, logs, opening, true);
+    }
+
+    public Optional<MoundStatus> getStatusAt(BlockPos pos, long gameTime) {
+        Charge charge = chargeByLog.get(pos);
+        if (charge == null) return Optional.empty();
+        long remainingTicks = Math.max(0L, charge.deadline - gameTime);
+        float normalYield = com.nstut.firstworks.FirstworksConfig.CHARCOAL_NORMAL_YIELD.get().floatValue();
+        int expectedYield = Mth.floor(charge.logs.size() * normalYield);
+        return Optional.of(new MoundStatus(charge.phase, charge.logs.size(), remainingTicks, expectedYield));
+    }
+
+    public Optional<MoundStatus> getStatusAt(ServerLevel level, BlockPos pos) {
+        return getStatusAt(pos, level.getGameTime());
     }
 
     public void tick(ServerLevel level) {
@@ -107,21 +127,18 @@ public final class CharcoalMoundData extends SavedData {
                 if (blockActuallyDestroyed) {
                     if (charge.phase == Phase.WAITING_FOR_SEAL) {
                         if (isLog || !breachPos.equals(charge.opening)) {
+                            removeChargeFromIndex(charge);
                             iterator.remove();
                             changed = true;
                             continue;
                         }
                     } else if (charge.phase == Phase.CARBONIZING) {
                         if (breachTime >= charge.deadline) {
-                            finish(level, charge, normalYield, breachPos);
+                            materializeCharcoal(level, charge, normalYield);
                         } else {
-                            finish(level, charge, breachedYield, breachPos);
+                            materializeCharcoal(level, charge, breachedYield);
                         }
-                        iterator.remove();
-                        changed = true;
-                        continue;
-                    } else if (charge.phase == Phase.READY) {
-                        finish(level, charge, normalYield, breachPos);
+                        removeChargeFromIndex(charge);
                         iterator.remove();
                         changed = true;
                         continue;
@@ -139,6 +156,7 @@ public final class CharcoalMoundData extends SavedData {
             if (charge.phase == Phase.WAITING_FOR_SEAL) {
                 if (!charge.logsIntact(level)
                         || !isShellValid(level, charge.logs, charge.opening, true)) {
+                    removeChargeFromIndex(charge);
                     iterator.remove();
                     changed = true;
                     continue;
@@ -150,6 +168,7 @@ public final class CharcoalMoundData extends SavedData {
                             SoundSource.BLOCKS, 0.55F, 0.65F);
                     changed = true;
                 } else if (level.getGameTime() >= charge.deadline) {
+                    removeChargeFromIndex(charge);
                     iterator.remove();
                     changed = true;
                     continue;
@@ -160,58 +179,21 @@ public final class CharcoalMoundData extends SavedData {
 
             if (charge.phase == Phase.CARBONIZING) {
                 if (level.getGameTime() >= charge.deadline) {
-                    charge.phase = Phase.READY;
+                    materializeCharcoal(level, charge, normalYield);
+                    removeChargeFromIndex(charge);
+                    iterator.remove();
                     changed = true;
-                    level.playSound(null, charge.opening, SoundEvents.FIRE_EXTINGUISH,
-                            SoundSource.BLOCKS, 0.7F, 0.8F);
                 } else if (!charge.logsIntact(level) || !isShellValid(level, charge.logs, charge.opening, false)) {
-                    finish(level, charge, breachedYield, findBreach(level, charge));
+                    materializeCharcoal(level, charge, breachedYield);
+                    removeChargeFromIndex(charge);
                     iterator.remove();
                     changed = true;
                 } else {
                     smoke(level, charge.opening, 1);
                 }
-                continue;
-            }
-
-            if (charge.phase == Phase.READY) {
-                if (!charge.logsIntact(level) || !isShellValid(level, charge.logs, charge.opening, false)) {
-                    finish(level, charge, normalYield, findBreach(level, charge));
-                    iterator.remove();
-                    changed = true;
-                }
             }
         }
         if (changed) setDirty();
-    }
-
-    public boolean isReadyLog(BlockPos pos) {
-        for (Charge charge : charges) {
-            if (charge.phase == Phase.READY && charge.logs.contains(pos)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public void onReadyLogBroken(ServerLevel level, BlockPos pos) {
-        if (charges.isEmpty()) return;
-        Iterator<Charge> iterator = charges.iterator();
-        float normalYield = com.nstut.firstworks.FirstworksConfig.CHARCOAL_NORMAL_YIELD.get().floatValue();
-        while (iterator.hasNext()) {
-            Charge charge = iterator.next();
-            if (charge.phase == Phase.READY && charge.logs.contains(pos)) {
-                if (charge.isLoaded(level)) {
-                    finish(level, charge, normalYield, pos);
-                    iterator.remove();
-                } else {
-                    charge.pendingBreach = pos.immutable();
-                    charge.pendingBreachTime = level.getGameTime();
-                }
-                setDirty();
-                return;
-            }
-        }
     }
 
     public void onBlockBroken(ServerLevel level, BlockPos pos) {
@@ -230,6 +212,21 @@ public final class CharcoalMoundData extends SavedData {
             }
         }
         if (changed) setDirty();
+    }
+
+    private void removeChargeFromIndex(Charge charge) {
+        for (BlockPos log : charge.logs) {
+            chargeByLog.remove(log);
+        }
+    }
+
+    private void rebuildLogIndex() {
+        chargeByLog.clear();
+        for (Charge charge : charges) {
+            for (BlockPos log : charge.logs) {
+                chargeByLog.put(log, charge);
+            }
+        }
     }
 
     private static Set<BlockPos> discoverLogs(ServerLevel level, BlockPos start) {
@@ -260,42 +257,32 @@ public final class CharcoalMoundData extends SavedData {
         return true;
     }
 
-    private static BlockPos findBreach(ServerLevel level, Charge charge) {
-        for (BlockPos log : charge.logs) {
-            for (Direction direction : Direction.values()) {
-                BlockPos neighbor = log.relative(direction);
-                if (!charge.logs.contains(neighbor) && !level.getBlockState(neighbor).is(ModTags.CHARCOAL_SEALANTS)) {
-                    return neighbor;
-                }
-            }
-        }
-        return charge.opening;
-    }
-
-    private static void finish(ServerLevel level, Charge charge, float yield, BlockPos breachedAt) {
+    private static void materializeCharcoal(ServerLevel level, Charge charge, float yield) {
         int consumed = 0;
         for (BlockPos pos : charge.logs) {
             if (!level.getBlockState(pos).is(ModTags.CHARCOAL_WOODS)) continue;
             level.removeBlock(pos, false);
             consumed++;
         }
-        int output = Mth.floor(consumed * yield);
-        if (output > 0) {
-            BlockPos drop = breachedAt;
-            for (int i = 0; i < 4; i++) {
-                if (level.getBlockState(drop).getCollisionShape(level, drop).isEmpty()) break;
-                drop = drop.above();
-            }
-            if (!level.getBlockState(drop).getCollisionShape(level, drop).isEmpty()) {
-                drop = charge.opening.above();
-            }
-            while (output > 0) {
-                int stackSize = Math.min(output, Items.CHARCOAL.getDefaultMaxStackSize());
-                Containers.dropItemStack(level, drop.getX() + 0.5, drop.getY() + 0.5, drop.getZ() + 0.5,
-                        new ItemStack(Items.CHARCOAL, stackSize));
-                output -= stackSize;
+        int totalCharcoal = Mth.floor(consumed * yield);
+        if (totalCharcoal > 0) {
+            // Sort bottom-up deterministically: Y ascending, then X ascending, then Z ascending
+            List<BlockPos> sortedPositions = charge.logs.stream()
+                    .sorted(Comparator.<BlockPos>comparingInt(pos -> pos.getY())
+                            .thenComparingInt(pos -> pos.getX())
+                            .thenComparingInt(pos -> pos.getZ()))
+                    .toList();
+
+            int remaining = totalCharcoal;
+            for (BlockPos pos : sortedPositions) {
+                if (remaining <= 0) break;
+                int placeAmount = Math.min(remaining, 4);
+                level.setBlock(pos, ModBlocks.CHARCOAL_PILE.get().defaultBlockState()
+                        .setValue(CharcoalPileBlock.AMOUNT, placeAmount), 3);
+                remaining -= placeAmount;
             }
         }
+        level.playSound(null, charge.opening, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.7F, 0.8F);
         level.playSound(null, charge.opening, SoundEvents.WOOD_BREAK, SoundSource.BLOCKS, 0.8F, 0.75F);
     }
 
@@ -341,8 +328,12 @@ public final class CharcoalMoundData extends SavedData {
             }
             BlockPos pendingBreach = entry.contains("PendingBreach") ? BlockPos.of(entry.getLong("PendingBreach")) : null;
             long pendingBreachTime = entry.getLong("PendingBreachTime");
-            data.charges.add(new Charge(logs, BlockPos.of(entry.getLong("Opening")),
-                    phase, entry.getLong("Deadline"), pendingBreach, pendingBreachTime));
+            Charge charge = new Charge(logs, BlockPos.of(entry.getLong("Opening")),
+                    phase, entry.getLong("Deadline"), pendingBreach, pendingBreachTime);
+            data.charges.add(charge);
+            for (BlockPos log : charge.logs) {
+                data.chargeByLog.put(log, charge);
+            }
         }
         return data;
     }
@@ -352,7 +343,14 @@ public final class CharcoalMoundData extends SavedData {
         static IgnitionResult failure(Component message) { return new IgnitionResult(false, message); }
     }
 
-    private enum Phase { WAITING_FOR_SEAL, CARBONIZING, READY }
+    public record MoundStatus(
+            Phase phase,
+            int logCount,
+            long remainingTicks,
+            int expectedYield
+    ) {}
+
+    public enum Phase { WAITING_FOR_SEAL, CARBONIZING }
 
     private static final class Charge {
         private final Set<BlockPos> logs;
