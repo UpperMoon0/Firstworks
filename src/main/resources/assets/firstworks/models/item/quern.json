@@ -1,4 +1,4 @@
-﻿{
+{
   "parent": "minecraft:block/block",
   "textures": {
     "particle": "minecraft:block/stone",
@@ -62,9 +62,35 @@
       }
     },
     {
-      "comment": "Lower bedstone base",
-      "from": [2, 2, 2],
-      "to": [14, 6, 14],
+      "comment": "Octagonal bedstone cross NS",
+      "from": [4.5, 2, 1.5],
+      "to": [11.5, 6, 14.5],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Octagonal bedstone cross EW",
+      "from": [1.5, 2, 4.5],
+      "to": [14.5, 6, 11.5],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Octagonal bedstone diagonal",
+      "from": [3, 2, 3],
+      "to": [13, 6, 13],
       "faces": {
         "down":  { "texture": "#stone" },
         "up":    { "texture": "#stone" },
@@ -76,8 +102,8 @@
     },
     {
       "comment": "Andesite rim north",
-      "from": [1, 2, 14],
-      "to": [15, 6.5, 15],
+      "from": [4, 2, 14.5],
+      "to": [12, 6.5, 15.5],
       "faces": {
         "up":    { "texture": "#andesite" },
         "north": { "texture": "#andesite" },
@@ -88,8 +114,8 @@
     },
     {
       "comment": "Andesite rim south",
-      "from": [1, 2, 1],
-      "to": [15, 6.5, 2],
+      "from": [4, 2, 0.5],
+      "to": [12, 6.5, 1.5],
       "faces": {
         "up":    { "texture": "#andesite" },
         "north": { "texture": "#andesite" },
@@ -100,28 +126,32 @@
     },
     {
       "comment": "Andesite rim west",
-      "from": [1, 2, 2],
-      "to": [2, 6.5, 14],
+      "from": [0.5, 2, 4],
+      "to": [1.5, 6.5, 12],
       "faces": {
         "up":    { "texture": "#andesite" },
+        "north": { "texture": "#andesite" },
+        "south": { "texture": "#andesite" },
         "west":  { "texture": "#andesite" },
         "east":  { "texture": "#andesite" }
       }
     },
     {
       "comment": "Andesite rim east",
-      "from": [14, 2, 2],
-      "to": [15, 6.5, 14],
+      "from": [14.5, 2, 4],
+      "to": [15.5, 6.5, 12],
       "faces": {
         "up":    { "texture": "#andesite" },
+        "north": { "texture": "#andesite" },
+        "south": { "texture": "#andesite" },
         "west":  { "texture": "#andesite" },
         "east":  { "texture": "#andesite" }
       }
     },
     {
-      "comment": "Upper runner stone north",
-      "from": [2.5, 6, 8.5],
-      "to": [13.5, 8.5, 13.5],
+      "comment": "Upper octagonal runner NS",
+      "from": [5, 6, 9.5],
+      "to": [11, 8.5, 14],
       "faces": {
         "down":  { "texture": "#stone" },
         "up":    { "texture": "#stone" },
@@ -132,9 +162,9 @@
       }
     },
     {
-      "comment": "Upper runner stone south",
-      "from": [2.5, 6, 2.5],
-      "to": [13.5, 8.5, 7.5],
+      "comment": "Upper octagonal runner south",
+      "from": [5, 6, 2],
+      "to": [11, 8.5, 6.5],
       "faces": {
         "down":  { "texture": "#stone" },
         "up":    { "texture": "#stone" },
@@ -145,9 +175,9 @@
       }
     },
     {
-      "comment": "Upper runner stone west",
-      "from": [2.5, 6, 7.5],
-      "to": [6.5, 8.5, 8.5],
+      "comment": "Upper octagonal runner west",
+      "from": [2, 6, 5],
+      "to": [6.5, 8.5, 11],
       "faces": {
         "down":  { "texture": "#stone" },
         "up":    { "texture": "#stone" },
@@ -158,9 +188,9 @@
       }
     },
     {
-      "comment": "Upper runner stone east",
-      "from": [9.5, 6, 7.5],
-      "to": [13.5, 8.5, 8.5],
+      "comment": "Upper octagonal runner east",
+      "from": [9.5, 6, 5],
+      "to": [14, 8.5, 11],
       "faces": {
         "down":  { "texture": "#stone" },
         "up":    { "texture": "#stone" },
@@ -171,9 +201,22 @@
       }
     },
     {
-      "comment": "Vertical wooden hand peg crank",
+      "comment": "Upper octagonal runner diagonal",
+      "from": [3.5, 6, 3.5],
+      "to": [12.5, 8.5, 12.5],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Vertical wooden hand crank peg",
       "from": [11, 8.5, 7.25],
-      "to": [12.5, 12, 8.75],
+      "to": [12.5, 12.5, 8.75],
       "faces": {
         "up":    { "texture": "#log" },
         "down":  { "texture": "#log" },

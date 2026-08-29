@@ -1,4 +1,4 @@
-﻿{
+{
   "parent": "minecraft:block/block",
   "textures": {
     "particle": "minecraft:block/stone",
@@ -8,9 +8,9 @@
   },
   "elements": [
     {
-      "comment": "Upper runner stone north half",
-      "from": [2.5, 6, 8.5],
-      "to": [13.5, 8.5, 13.5],
+      "comment": "Upper octagonal runner north sector",
+      "from": [5, 6, 9.5],
+      "to": [11, 8.5, 14],
       "faces": {
         "down":  { "texture": "#stone" },
         "up":    { "texture": "#stone" },
@@ -21,9 +21,9 @@
       }
     },
     {
-      "comment": "Upper runner stone south half",
-      "from": [2.5, 6, 2.5],
-      "to": [13.5, 8.5, 7.5],
+      "comment": "Upper octagonal runner south sector",
+      "from": [5, 6, 2],
+      "to": [11, 8.5, 6.5],
       "faces": {
         "down":  { "texture": "#stone" },
         "up":    { "texture": "#stone" },
@@ -34,9 +34,9 @@
       }
     },
     {
-      "comment": "Upper runner stone west collar",
-      "from": [2.5, 6, 7.5],
-      "to": [6.5, 8.5, 8.5],
+      "comment": "Upper octagonal runner west sector",
+      "from": [2, 6, 5],
+      "to": [6.5, 8.5, 11],
       "faces": {
         "down":  { "texture": "#stone" },
         "up":    { "texture": "#stone" },
@@ -47,9 +47,9 @@
       }
     },
     {
-      "comment": "Upper runner stone east collar",
-      "from": [9.5, 6, 7.5],
-      "to": [13.5, 8.5, 8.5],
+      "comment": "Upper octagonal runner east sector",
+      "from": [9.5, 6, 5],
+      "to": [14, 8.5, 11],
       "faces": {
         "down":  { "texture": "#stone" },
         "up":    { "texture": "#stone" },
@@ -60,9 +60,22 @@
       }
     },
     {
-      "comment": "Vertical wooden hand peg crank",
+      "comment": "Upper octagonal runner diagonal corners",
+      "from": [3.5, 6, 3.5],
+      "to": [12.5, 8.5, 12.5],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Vertical wooden hand crank peg",
       "from": [11, 8.5, 7.25],
-      "to": [12.5, 12, 8.75],
+      "to": [12.5, 12.5, 8.75],
       "faces": {
         "up":    { "texture": "#log" },
         "down":  { "texture": "#log" },

@@ -62,7 +62,7 @@ Load one clay ball into a Wooden Brick Mold and press twice with an empty hand t
 
 Build charcoal mounds from connected logs surrounded by configurable sealant blocks. Ignite, seal, and wait for the mound to finish; open it to reveal its charcoal yield. Place the Mortar & Pestle workstation, insert a grindable item, and use an empty hand to start its animated grinding process.
 
-Bulk processing advances through two tactile stone workstations. Work a Saddle Quern stroke by stroke, then upgrade it with Copper Fasteners into a continuously rotating Rotary Quern. Both show their contents and motion in-world and use the same datapack-driven grinding recipes.
+Bulk processing expands with the **Quern** (`firstworks:quern`). Load complete batches of grain, minerals, or pigments into the octagonal millstone, then crank the upper runner stone with an empty hand (+5 work per turn) or hook it up to external animal or mechanical rotational power for continuous milling. Mill wheat into Flour, knead it with water into Wheat Dough, and bake it over a campfire or furnace into Bread.
 
 ## Made for survival and modpacks
 

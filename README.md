@@ -41,10 +41,12 @@ Looking to configure recipes, custom wood types, KubeJS events, animal drop prof
 ### 🥣 Mortar & Pestle
 - Place on any surface, add grindable materials (Raw Ochre, Charcoal, Bone), and right-click to grind. Features an animated in-world pestle.
 
-### 🪨 Saddle & Rotary Querns
-- **Saddle Quern**: Load a bulk batch and work the upper stone by hand through visible grinding strokes.
-- **Rotary Quern**: Upgrade the Saddle Quern with Copper Fasteners, engage its crank, and process the same recipes continuously at higher throughput.
-- Both expose item automation and provide dedicated Jade, JEI, datapack, and KubeJS integration.
+### 🪨 Quern Workstation
+- **Bulk Milling**: Load grain, minerals, or pigments into the central feed eye of the octagonal millstone.
+- **Manual Cranking**: Right-click with an empty hand to turn the wooden crank peg (+5 work per crank) with tactile sounds, particles, and smooth stone rotation.
+- **Continuous Automation**: Supports external rotational power (animal sweeps, horse power, or kinetic systems) via the `QuernDriveable` contract.
+- **Flour & Dough**: Mill wheat into Flour, mix with water into Wheat Dough, and bake over campfires, smokers, or furnaces into Bread.
+- **Automation Ready**: Top face accepts input ingredients, bottom face extracts finished products. Compatible with Jade, JEI, datapacks, and KubeJS.
 
 ### 🔪 Primitive Knives, Cordage & Tools
 - **Flint & Bone Knives**: Used for guaranteed plant fibre harvesting from grass, hide scraping, and early crafting.

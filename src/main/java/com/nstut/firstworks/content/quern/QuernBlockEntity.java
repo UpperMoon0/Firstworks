@@ -19,11 +19,12 @@ import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 
-public final class QuernBlockEntity extends BlockEntity {
+public final class QuernBlockEntity extends BlockEntity implements QuernDriveable {
     private ItemStack input = ItemStack.EMPTY, output = ItemStack.EMPTY;
     private int progress;
     private boolean rotating;
     private float rotation;
+    private float clientPrevRotation, clientRotation, rotationTarget;
     private final IItemHandler inputHandler = new QuernItemHandler(true, false);
     private final IItemHandler outputHandler = new QuernItemHandler(false, true);
     private final IItemHandler combinedHandler = new QuernItemHandler(true, true);
@@ -33,18 +34,28 @@ public final class QuernBlockEntity extends BlockEntity {
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, QuernBlockEntity quern) {
-        if (!quern.rotating) return;
         if (level.isClientSide) {
-            quern.rotation = (quern.rotation + 9F) % 360F;
+            quern.clientPrevRotation = quern.clientRotation;
+            if (quern.rotating) {
+                quern.clientRotation = (quern.clientRotation + 9F) % 360F;
+                quern.rotationTarget = quern.clientRotation;
+            } else if (quern.clientRotation != quern.rotationTarget) {
+                float diff = quern.rotationTarget - quern.clientRotation;
+                float step = Math.min(Math.abs(diff), 9F) * Math.signum(diff);
+                quern.clientRotation += step;
+            }
             return;
         }
+        if (!quern.rotating) return;
         Optional<RecipeHolder<QuernGrindingRecipe>> holder = quern.recipe();
         if (holder.isEmpty() || !quern.output.isEmpty()
-                || quern.input.getCount() < holder.get().value().inputCount()) {
+                || quern.input.getCount() < holder.get().value().inputCount()
+                || !quern.tryBegin(holder.get())) {
             quern.stop();
             return;
         }
         quern.rotation = (quern.rotation + 9F) % 360F;
+        quern.rotationTarget = quern.rotation;
         quern.progress++;
         if (quern.progress % 12 == 0) {
             level.playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, .3F, .65F);
@@ -60,19 +71,29 @@ public final class QuernBlockEntity extends BlockEntity {
         }
     }
 
+    private boolean tryBegin(RecipeHolder<QuernGrindingRecipe> holder) {
+        if (progress != 0) {
+            return true;
+        }
+        if (level instanceof ServerLevel server && OptionalIntegrations.fireQuernGrindingStarting(
+                server, this, holder.id(), holder.value(), input.copy(), holder.value().result())) {
+            return false;
+        }
+        return true;
+    }
+
     public boolean work(Player player) {
         Optional<RecipeHolder<QuernGrindingRecipe>> holder = recipe();
         if (holder.isEmpty() || !output.isEmpty()
                 || input.getCount() < holder.get().value().inputCount()) {
             return false;
         }
-        boolean beginning = progress == 0;
-        if (beginning && level instanceof ServerLevel server && OptionalIntegrations.fireQuernGrindingStarting(
-                server, this, holder.get().id(), holder.get().value(), input.copy(), holder.get().value().result())) {
+        if (!tryBegin(holder.get())) {
             return false;
         }
         progress += 5;
         rotation = (rotation + 45F) % 360F;
+        rotationTarget += 45F;
         level.playSound(null, worldPosition, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, .38F, .72F + level.random.nextFloat() * .1F);
         if (level instanceof ServerLevel sl) {
             sl.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, input.copyWithCount(1)),
@@ -156,16 +177,40 @@ public final class QuernBlockEntity extends BlockEntity {
         sync();
     }
 
+    @Override
+    public boolean canDrive() {
+        return recipe().isPresent() && output.isEmpty() && input.getCount() >= recipe().get().value().inputCount();
+    }
+
+    @Override
+    public boolean isDriven() {
+        return rotating;
+    }
+
+    @Override
+    public void setDriven(boolean driven) {
+        if (this.rotating != driven) {
+            this.rotating = driven;
+            sync();
+        }
+    }
+
     public void setRotating(boolean rotating) {
-        this.rotating = rotating;
-        sync();
+        setDriven(rotating);
     }
 
     public ItemStack getInput() { return input; }
     public ItemStack getOutput() { return output; }
     public int getProgress() { return progress; }
     public boolean isRotating() { return rotating; }
-    public float getRotation(float partial) { return rotation + (rotating ? 9F * partial : 0F); }
+
+    public float getRotation(float partial) {
+        if (level != null && level.isClientSide) {
+            return net.minecraft.util.Mth.lerp(partial, clientPrevRotation, clientRotation);
+        }
+        return rotation;
+    }
+
     public int requiredWork() {
         return recipe().map(r -> r.value().work()).orElse(0);
     }
@@ -199,6 +244,11 @@ public final class QuernBlockEntity extends BlockEntity {
         progress = tag.getInt("Progress");
         rotating = tag.getBoolean("Rotating");
         rotation = tag.getFloat("Rotation");
+        if (level != null && level.isClientSide) {
+            rotationTarget = rotation;
+            clientRotation = rotation;
+            clientPrevRotation = rotation;
+        }
     }
 
     @Override
