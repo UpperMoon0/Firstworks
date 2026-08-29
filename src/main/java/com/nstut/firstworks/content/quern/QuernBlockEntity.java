@@ -23,8 +23,8 @@ import java.util.Optional;
 public final class QuernBlockEntity extends BlockEntity {
     private ItemStack input = ItemStack.EMPTY, output = ItemStack.EMPTY;
     private int progress;
-    private float rotation;
-    private float clientPrevRotation, clientRotation, rotationTarget;
+    private long rotationSteps;
+    private double clientPrevRotation, clientRotation, rotationTarget;
     private boolean clientInitialized;
     private final IItemHandler inputHandler = new QuernItemHandler(true, false);
     private final IItemHandler outputHandler = new QuernItemHandler(false, true);
@@ -36,16 +36,16 @@ public final class QuernBlockEntity extends BlockEntity {
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, QuernBlockEntity quern) {
         quern.clientPrevRotation = quern.clientRotation;
-        if (quern.clientRotation != quern.rotationTarget) {
-            float diff = quern.rotationTarget - quern.clientRotation;
-            while (diff < -180F) diff += 360F;
-            while (diff > 180F) diff -= 360F;
-            if (Math.abs(diff) < 1F) {
+        if (quern.clientRotation < quern.rotationTarget) {
+            double diff = quern.rotationTarget - quern.clientRotation;
+            if (diff < 1D) {
                 quern.clientRotation = quern.rotationTarget;
             } else {
-                float step = Math.min(Math.abs(diff), 9F) * Math.signum(diff);
-                quern.clientRotation = (quern.clientRotation + step + 360F) % 360F;
+                quern.clientRotation += Math.min(diff, 9D);
             }
+        } else if (quern.clientRotation > quern.rotationTarget) {
+            quern.clientRotation = quern.rotationTarget;
+            quern.clientPrevRotation = quern.rotationTarget;
         }
     }
 
@@ -71,7 +71,7 @@ public final class QuernBlockEntity extends BlockEntity {
         }
         int workAmount = FirstworksConfig.QUERN_MANUAL_WORK_PER_CRANK.get();
         progress += workAmount;
-        rotation = (rotation + 45F) % 360F;
+        rotationSteps++;
         level.playSound(null, worldPosition, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, .38F, .72F + level.random.nextFloat() * .1F);
         if (level instanceof ServerLevel sl) {
             sl.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, input.copyWithCount(1)),
@@ -152,14 +152,10 @@ public final class QuernBlockEntity extends BlockEntity {
     public int getProgress() { return progress; }
     public float getRotation(float partial) {
         if (level != null && level.isClientSide) {
-            float prev = clientPrevRotation;
-            float cur = clientRotation;
-            float diff = cur - prev;
-            while (diff < -180F) diff += 360F;
-            while (diff > 180F) diff -= 360F;
-            return prev + diff * partial;
+            double interpolated = clientPrevRotation + (clientRotation - clientPrevRotation) * partial;
+            return (float) (interpolated % 360D);
         }
-        return rotation;
+        return Math.floorMod(rotationSteps, 8L) * 45F;
     }
 
     public int requiredWork() {
@@ -183,7 +179,7 @@ public final class QuernBlockEntity extends BlockEntity {
         if (!input.isEmpty()) tag.put("Input", input.save(regs));
         if (!output.isEmpty()) tag.put("Output", output.save(regs));
         tag.putInt("Progress", progress);
-        tag.putFloat("Rotation", rotation);
+        tag.putLong("RotationSteps", rotationSteps);
     }
 
     @Override
@@ -192,12 +188,14 @@ public final class QuernBlockEntity extends BlockEntity {
         input = ItemStack.parseOptional(regs, tag.getCompound("Input"));
         output = ItemStack.parseOptional(regs, tag.getCompound("Output"));
         progress = tag.getInt("Progress");
-        rotation = tag.getFloat("Rotation");
+        rotationSteps = tag.contains("RotationSteps")
+                ? tag.getLong("RotationSteps")
+                : Math.round(tag.getFloat("Rotation") / 45F);
         if (level != null && level.isClientSide) {
-            rotationTarget = rotation;
+            rotationTarget = rotationSteps * 45D;
             if (!clientInitialized) {
-                clientRotation = rotation;
-                clientPrevRotation = rotation;
+                clientRotation = rotationTarget;
+                clientPrevRotation = rotationTarget;
                 clientInitialized = true;
             }
         }

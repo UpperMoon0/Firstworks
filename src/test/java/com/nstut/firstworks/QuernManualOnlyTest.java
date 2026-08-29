@@ -36,4 +36,14 @@ public class QuernManualOnlyTest {
         assertTrue(config.contains("quernManualWorkPerCrank"));
         assertFalse(config.contains("quernDefaultDrivenWorkPerTick"));
     }
+
+    @Test
+    public void crankAnimationUsesMonotonicForwardSteps() throws Exception {
+        String entity = Files.readString(QUERN_PACKAGE.resolve("QuernBlockEntity.java"));
+        assertTrue(entity.contains("rotationSteps++"));
+        assertTrue(entity.contains("putLong(\"RotationSteps\", rotationSteps)"));
+        assertTrue(entity.contains("rotationTarget = rotationSteps * 45D"));
+        assertFalse(entity.contains("while (diff"), "Animation must not select a shortest path that can reverse");
+        assertFalse(entity.contains("rotation = (rotation + 45F) % 360F"));
+    }
 }
