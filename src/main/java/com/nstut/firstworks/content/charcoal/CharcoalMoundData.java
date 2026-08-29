@@ -106,7 +106,7 @@ public final class CharcoalMoundData extends SavedData {
 
                 if (blockActuallyDestroyed) {
                     if (charge.phase == Phase.WAITING_FOR_SEAL) {
-                        if (isLog) {
+                        if (isLog || !breachPos.equals(charge.opening)) {
                             iterator.remove();
                             changed = true;
                             continue;
@@ -137,15 +137,19 @@ public final class CharcoalMoundData extends SavedData {
             if (!isPeriodicTick) continue;
 
             if (charge.phase == Phase.WAITING_FOR_SEAL) {
+                if (!charge.logsIntact(level)
+                        || !isShellValid(level, charge.logs, charge.opening, true)) {
+                    iterator.remove();
+                    changed = true;
+                    continue;
+                }
                 if (level.getBlockState(charge.opening).is(ModTags.CHARCOAL_SEALANTS)) {
                     charge.phase = Phase.CARBONIZING;
                     charge.deadline = level.getGameTime() + carbonizationTicks;
                     level.playSound(null, charge.opening, SoundEvents.FIRE_EXTINGUISH,
                             SoundSource.BLOCKS, 0.55F, 0.65F);
                     changed = true;
-                } else if (!charge.logsIntact(level)
-                        || !isShellValid(level, charge.logs, charge.opening, true)
-                        || level.getGameTime() >= charge.deadline) {
+                } else if (level.getGameTime() >= charge.deadline) {
                     iterator.remove();
                     changed = true;
                     continue;
