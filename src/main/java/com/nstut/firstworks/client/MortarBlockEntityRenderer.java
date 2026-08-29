@@ -66,30 +66,64 @@ public final class MortarBlockEntityRenderer implements BlockEntityRenderer<Mort
     private static void renderCuboid(PoseStack poseStack, VertexConsumer vertices, TextureAtlasSprite sprite,
             float minX, float minY, float minZ, float maxX, float maxY, float maxZ,
             int light, int overlay) {
-        face(poseStack, vertices, sprite, minX, minY, minZ, maxX, minY, minZ, maxX, minY, maxZ, minX, minY, maxZ,
+        float sizeX = (maxX - minX) * 16.0F;
+        float sizeY = (maxY - minY) * 16.0F;
+        float sizeZ = (maxZ - minZ) * 16.0F;
+
+        // Center the texture sampling on the 16x16 sprite
+        float u0_xz = (16.0F - sizeX) / 2.0F;
+        float u1_xz = u0_xz + sizeX;
+        float v0_xz = (16.0F - sizeZ) / 2.0F;
+        float v1_xz = v0_xz + sizeZ;
+
+        float u0_side = (16.0F - sizeX) / 2.0F;
+        float u1_side = u0_side + sizeX;
+        float v0_side = (16.0F - sizeY) / 2.0F;
+        float v1_side = v0_side + sizeY;
+
+        // Bottom face (y-)
+        face(poseStack, vertices, sprite,
+                minX, minY, minZ, maxX, minY, minZ, maxX, minY, maxZ, minX, minY, maxZ,
+                u0_xz, v0_xz, u1_xz, v1_xz,
                 0, -1, 0, light, overlay);
-        face(poseStack, vertices, sprite, minX, maxY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ, minX, maxY, minZ,
+        // Top face (y+)
+        face(poseStack, vertices, sprite,
+                minX, maxY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ, minX, maxY, minZ,
+                u0_xz, v0_xz, u1_xz, v1_xz,
                 0, 1, 0, light, overlay);
-        face(poseStack, vertices, sprite, maxX, minY, minZ, minX, minY, minZ, minX, maxY, minZ, maxX, maxY, minZ,
+        // North face (z-)
+        face(poseStack, vertices, sprite,
+                maxX, minY, minZ, minX, minY, minZ, minX, maxY, minZ, maxX, maxY, minZ,
+                u0_side, v0_side, u1_side, v1_side,
                 0, 0, -1, light, overlay);
-        face(poseStack, vertices, sprite, minX, minY, maxZ, maxX, minY, maxZ, maxX, maxY, maxZ, minX, maxY, maxZ,
+        // South face (z+)
+        face(poseStack, vertices, sprite,
+                minX, minY, maxZ, maxX, minY, maxZ, maxX, maxY, maxZ, minX, maxY, maxZ,
+                u0_side, v0_side, u1_side, v1_side,
                 0, 0, 1, light, overlay);
-        face(poseStack, vertices, sprite, minX, minY, minZ, minX, minY, maxZ, minX, maxY, maxZ, minX, maxY, minZ,
+        // West face (x-)
+        face(poseStack, vertices, sprite,
+                minX, minY, minZ, minX, minY, maxZ, minX, maxY, maxZ, minX, maxY, minZ,
+                u0_side, v0_side, u1_side, v1_side,
                 -1, 0, 0, light, overlay);
-        face(poseStack, vertices, sprite, maxX, minY, maxZ, maxX, minY, minZ, maxX, maxY, minZ, maxX, maxY, maxZ,
+        // East face (x+)
+        face(poseStack, vertices, sprite,
+                maxX, minY, maxZ, maxX, minY, minZ, maxX, maxY, minZ, maxX, maxY, maxZ,
+                u0_side, v0_side, u1_side, v1_side,
                 1, 0, 0, light, overlay);
     }
 
     private static void face(PoseStack poseStack, VertexConsumer vertices, TextureAtlasSprite sprite,
             float x1, float y1, float z1, float x2, float y2, float z2,
             float x3, float y3, float z3, float x4, float y4, float z4,
+            float u0, float v0, float u1, float v1,
             float nx, float ny, float nz, int light, int overlay) {
         PoseStack.Pose pose = poseStack.last();
         Matrix4f matrix = pose.pose();
-        vertex(vertices, matrix, pose, x1, y1, z1, sprite.getU0(), sprite.getV1(), nx, ny, nz, light, overlay);
-        vertex(vertices, matrix, pose, x2, y2, z2, sprite.getU1(), sprite.getV1(), nx, ny, nz, light, overlay);
-        vertex(vertices, matrix, pose, x3, y3, z3, sprite.getU1(), sprite.getV0(), nx, ny, nz, light, overlay);
-        vertex(vertices, matrix, pose, x4, y4, z4, sprite.getU0(), sprite.getV0(), nx, ny, nz, light, overlay);
+        vertex(vertices, matrix, pose, x1, y1, z1, sprite.getU(u0), sprite.getV(v1), nx, ny, nz, light, overlay);
+        vertex(vertices, matrix, pose, x2, y2, z2, sprite.getU(u1), sprite.getV(v1), nx, ny, nz, light, overlay);
+        vertex(vertices, matrix, pose, x3, y3, z3, sprite.getU(u1), sprite.getV(v0), nx, ny, nz, light, overlay);
+        vertex(vertices, matrix, pose, x4, y4, z4, sprite.getU(u0), sprite.getV(v0), nx, ny, nz, light, overlay);
     }
 
     private static void vertex(VertexConsumer vertices, Matrix4f matrix, PoseStack.Pose pose,
