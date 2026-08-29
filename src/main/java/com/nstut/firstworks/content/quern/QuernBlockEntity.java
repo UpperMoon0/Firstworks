@@ -203,17 +203,16 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
 
     @Override
     public void setDriveRate(int workPerTick) {
+        if (level != null && level.isClientSide) {
+            return;
+        }
+
         int clamped = Math.max(0, workPerTick);
         if (this.driveRate != clamped) {
             this.driveRate = clamped;
             this.rotating = clamped > 0;
             sync();
         }
-    }
-
-    @Override
-    public void setDriven(boolean driven) {
-        setDriveRate(driven ? FirstworksConfig.QUERN_DEFAULT_DRIVEN_WORK_PER_TICK.get() : 0);
     }
 
     public void setRotating(boolean rotating) {
@@ -258,8 +257,6 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
         if (!input.isEmpty()) tag.put("Input", input.save(regs));
         if (!output.isEmpty()) tag.put("Output", output.save(regs));
         tag.putInt("Progress", progress);
-        tag.putBoolean("Rotating", rotating);
-        tag.putInt("DriveRate", driveRate);
         tag.putFloat("Rotation", rotation);
     }
 
@@ -269,10 +266,12 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
         input = ItemStack.parseOptional(regs, tag.getCompound("Input"));
         output = ItemStack.parseOptional(regs, tag.getCompound("Output"));
         progress = tag.getInt("Progress");
-        rotating = tag.getBoolean("Rotating");
-        driveRate = tag.getInt("DriveRate");
+        rotating = false;
+        driveRate = 0;
         rotation = tag.getFloat("Rotation");
         if (level != null && level.isClientSide) {
+            rotating = tag.getBoolean("ClientRotating");
+            driveRate = tag.getInt("ClientDriveRate");
             rotationTarget = rotation;
             if (!clientInitialized) {
                 clientRotation = rotation;
@@ -286,6 +285,8 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
     public CompoundTag getUpdateTag(HolderLookup.Provider regs) {
         CompoundTag t = new CompoundTag();
         saveAdditional(t, regs);
+        t.putBoolean("ClientRotating", rotating);
+        t.putInt("ClientDriveRate", driveRate);
         return t;
     }
 

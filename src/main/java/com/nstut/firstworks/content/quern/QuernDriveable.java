@@ -1,5 +1,7 @@
 package com.nstut.firstworks.content.quern;
 
+import com.nstut.firstworks.FirstworksConfig;
+
 /**
  * Public interface for workstations that can receive external continuous rotational drive,
  * such as animal sweeps (Create Horse Power), water wheels, or kinetic power systems.
@@ -35,6 +37,6 @@ public interface QuernDriveable {
      * @param driven true to engage continuous rotation, false to disengage.
      */
     default void setDriven(boolean driven) {
-        setDriveRate(driven ? 1 : 0);
+        setDriveRate(driven ? FirstworksConfig.QUERN_DEFAULT_DRIVEN_WORK_PER_TICK.get() : 0);
     }
 }

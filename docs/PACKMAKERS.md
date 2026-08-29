@@ -80,9 +80,9 @@ Firstworks participates in the `c` (Common Tags) interoperability namespace so t
 | Tag | Shipped Default Items | Purpose |
 | :--- | :--- | :--- |
 | `#c:flours` | `firstworks:flour` | Any ground-grain flour accepted by flour consumers. |
-| `#c:flours/wheat` | `firstworks:flour` | Wheat flour accepted by dough recipes and vanilla Bread/Cake/Cookie overrides. |
+| `#c:flours/wheat` | `firstworks:flour` | Wheat flour accepted by dough recipes and the vanilla Cake override. |
 | `#c:doughs` | `firstworks:dough` | Any raw dough accepted by dough consumers. |
-| `#c:doughs/wheat` | `firstworks:dough` | Wheat dough accepted by Firstworks bread cooking recipes. |
+| `#c:doughs/wheat` | `firstworks:dough` | Wheat dough accepted by Firstworks bread cooking recipes and the vanilla Bread/Cookie overrides. |
 
 **Intended rule:** third-party mods and datapacks that add their own flour or wheat dough should add those items to these common tags rather than hardcoding `firstworks:flour` / `firstworks:dough` into replacement recipes. Firstworks recipes and overrides match by tag, so tagged foreign items work automatically (e.g. a rice flour mod adds its item to `#c:flours`, a modpack reroutes a mod's wheat dough through `#c:doughs/wheat` to bake with Firstworks bread recipes).
 
@@ -467,15 +467,15 @@ FirstworksEvents.quernGrindingCompleted(event => {
 
 Firstworks rewrites vanilla wheat-food progression and adds its own dough pipeline. Target these exact recipe IDs when rerouting or removing routes:
 
-**Vanilla recipe overrides** (shipped under `data/minecraft/recipe/`; these replace the vanilla files, using `#c:flours/wheat` instead of wheat):
-- `minecraft:bread`
-- `minecraft:cookie`
-- `minecraft:cake`
+**Vanilla recipe overrides** (shipped under `data/minecraft/recipe/`; these replace the vanilla files):
+- `minecraft:bread` — 3× `#c:doughs/wheat`
+- `minecraft:cookie` — `#c:doughs/wheat` + cocoa beans
+- `minecraft:cake` — 3× `#c:flours/wheat` + milk buckets + sugar + egg
 
 **Firstworks dough recipes** (`data/firstworks/recipe/`):
 - `firstworks:dough_from_water_bucket` — 3× `#c:flours/wheat` + water bucket → 3 dough
 - `firstworks:dough_from_clay_water` — 3× `#c:flours/wheat` + `firstworks:water_clay_bucket` → 3 dough
-- `firstworks:dough_from_water_bottle` — `#c:flours/wheat` + water bottle (loose water-bottle component matching; other mods' water bottles match unless `strict`)
+- `firstworks:dough_from_water_bottle` — `#c:flours/wheat` + `minecraft:potion` whose potion contents are water. `strict: false` permits additional components on that Minecraft potion item; it does not match arbitrary modded water-bottle items.
 
 **Bread cooking recipes** (input is `#c:doughs/wheat`, so tagged foreign wheat dough bakes too):
 - `firstworks:bread_from_campfire_dough`
@@ -506,7 +506,9 @@ public interface QuernDriveable {
     void setDriveRate(int workPerTick);                  // engage/adjust/disconnect
 
     default boolean isDriven() { return getDriveRate() > 0; }
-    default void setDriven(boolean driven) { setDriveRate(driven ? 1 : 0); }
+    default void setDriven(boolean driven) {
+        setDriveRate(driven ? FirstworksConfig.QUERN_DEFAULT_DRIVEN_WORK_PER_TICK.get() : 0);
+    }
 }
 ```
 
@@ -524,11 +526,11 @@ if (level.getBlockEntity(pos) instanceof QuernDriveable quern) {
 
 - **Drive updates happen server-side.** Rates set on the client are ignored; engage drives from your server tick or server-side interaction handlers.
 - **`0` work/tick means disconnected.** The quern stops rotating but preserves accumulated progress on the loaded batch, so re-engaging resumes where it left off.
-- **External providers must stop the drive when detached or unloaded** — call `setDriveRate(0)` when your power source moves away, breaks, or its chunk unloads. A quern left at a nonzero rate with no provider is a pack bug, not a Firstworks state.
+- **External providers must stop the drive when detached or unloaded** — call `setDriveRate(0)` when your power source moves away, breaks, or its chunk unloads.
 - **`canDrive()` indicates whether a valid complete batch is present.** A drive applied while `canDrive()` is `false` is accepted but does no work; the quern disengages itself (`stop()`) if the active recipe becomes invalid, the batch disappears, or the output slot is blocked.
 - **Recipe `work` determines required processing effort.** Progress accumulates as `rate × ticks`; the batch completes when accumulated progress reaches `recipe.work`. Rates above the remaining work simply finish sooner the same tick.
 - **Manual and external progress share one accumulator.** A half-cranked batch can be finished by an external drive and vice versa.
-- **Persistence:** `driveRate`, progress, and rotation survive chunk unload/reload; however, the stored rate is *not* re-applied automatically — your provider should re-engage on its own load if it still powers the quern.
+- **Persistence:** progress and visual rotation survive chunk unload/reload, but active external drive does not. The Quern reloads stopped at `0` work/tick; your provider must confirm it is still attached and reapply `setDriveRate(rate)` on its own load.
 
 **Recommended rate semantics** (conventions, not enforced): `1` = basic animal drive, `2` = stronger/faster animal, `4` = mechanical system. Alternatively compute the rate yourself — the balance equation is simply `recipe.work ÷ rate = ticks`. `setDriven(true)` uses `quernDefaultDrivenWorkPerTick` (default 1) for backward compatibility.
 
@@ -578,8 +580,8 @@ if (level.getBlockEntity(pos) instanceof QuernDriveable quern) {
 
 ## 12. Migration Notes (0.0.11 → 0.0.12)
 
-1. **Quern Recipe Schema Unified**: The split Saddle/Rotary querns are now a single Quern block, and `firstworks:quern_grinding` recipes replace `saddle_strokes` and `rotary_duration` with one source-agnostic `work` field (default `60`). Convert existing recipes: `saddle_strokes × 5` ≈ `work` (manual strokes at the default 5 work/crank), or keep rotary timing with `work = rotary_duration` at a 1 work/tick drive. A drive rate of 1 work/tick reproduces the old rotary durations exactly.
+1. **Quern Introduced**: `firstworks:quern` and the `firstworks:quern_grinding` recipe type are new in 0.0.12. During development, the planned Saddle Quern and Rotary Quern were consolidated into this single workstation before release, so no released-world migration from those IDs is required. Recipes use one source-agnostic `work` field (default `60`) shared by manual and external power.
 2. **Flour/Dough Common Tags**: `firstworks:flour` is now tagged `#c:flours` + `#c:flours/wheat` and `firstworks:dough` is tagged `#c:doughs` + `#c:doughs/wheat`. Recipe-matching is tag-based, so foreign flour/dough items can join progression by editing tags only.
-3. **Vanilla Food Overrides**: `minecraft:bread`, `minecraft:cookie`, and `minecraft:cake` are replaced under `data/minecraft/recipe/` and now require `#c:flours/wheat` instead of wheat. Wheat → flour → dough → bread is the new progression (see [Food Recipe Overrides & Interop IDs](#7-food-recipe-overrides--interop-ids)). Packs that want vanilla behavior should delete these three override files or remove the routes with KubeJS.
+3. **Vanilla Food Overrides**: `minecraft:bread` and `minecraft:cookie` now require `#c:doughs/wheat`; `minecraft:cake` requires `#c:flours/wheat`. Wheat → flour → dough → bread/cookies is the new progression (see [Food Recipe Overrides & Interop IDs](#7-food-recipe-overrides--interop-ids)). Packs that want vanilla behavior should delete these three override files or remove the routes with KubeJS.
 4. **QuernDriveable API is Rate-Based**: `setDriven(boolean)`/`isDriven()` remain for compatibility, but the primary contract is now `getDriveRate()`/`setDriveRate(int)`. `setDriven(true)` engages at `quernDefaultDrivenWorkPerTick` (default 1), matching previous 1 work/tick behavior. Addons driving with hard-coded `1` continue to work unchanged.
-5. **New Config Options**: `quernManualWorkPerCrank` (default 5) and `quernDefaultDrivenWorkPerTick` (default 1) in `firstworks-server.toml`. Defaults reproduce 0.0.11 behavior (12 cranks per wheat batch; 60 ticks / 3 seconds driven).
+5. **New Config Options**: `quernManualWorkPerCrank` (default 5) and `quernDefaultDrivenWorkPerTick` (default 1) in `firstworks-server.toml`. At the defaults, a 60-work wheat batch takes 12 manual cranks or 60 driven ticks (3 seconds).
