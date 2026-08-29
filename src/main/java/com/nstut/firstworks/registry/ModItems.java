@@ -47,7 +47,8 @@ public final class ModItems {
     public static final DeferredHolder<Item, Item> CLAY_BUCKET = ITEMS.register("clay_bucket",
             () -> new ClayBucketItem(Fluids.EMPTY, new Item.Properties().stacksTo(1)));
     public static final DeferredHolder<Item, Item> WATER_CLAY_BUCKET = ITEMS.register("water_clay_bucket",
-            () -> new ClayBucketItem(Fluids.WATER, new Item.Properties().stacksTo(1)));
+            () -> new ClayBucketItem(Fluids.WATER,
+                    new Item.Properties().craftRemainder(CLAY_BUCKET.get()).stacksTo(1)));
     public static final DeferredHolder<Item, Item> TANNIN_CLAY_BUCKET = ITEMS.register("tannin_clay_bucket",
             () -> new ClayBucketItem(ModFluids.TANNIN_SOLUTION.get(),
                     new Item.Properties().craftRemainder(CLAY_BUCKET.get()).stacksTo(1)));

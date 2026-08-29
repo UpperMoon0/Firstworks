@@ -25,6 +25,7 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
     private boolean rotating;
     private float rotation;
     private float clientPrevRotation, clientRotation, rotationTarget;
+    private boolean clientInitialized;
     private final IItemHandler inputHandler = new QuernItemHandler(true, false);
     private final IItemHandler outputHandler = new QuernItemHandler(false, true);
     private final IItemHandler combinedHandler = new QuernItemHandler(true, true);
@@ -41,8 +42,14 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
                 quern.rotationTarget = quern.clientRotation;
             } else if (quern.clientRotation != quern.rotationTarget) {
                 float diff = quern.rotationTarget - quern.clientRotation;
-                float step = Math.min(Math.abs(diff), 9F) * Math.signum(diff);
-                quern.clientRotation += step;
+                while (diff < -180F) diff += 360F;
+                while (diff > 180F) diff -= 360F;
+                if (Math.abs(diff) < 1.0F) {
+                    quern.clientRotation = quern.rotationTarget;
+                } else {
+                    float step = Math.min(Math.abs(diff), 9F) * Math.signum(diff);
+                    quern.clientRotation = (quern.clientRotation + step + 360F) % 360F;
+                }
             }
             return;
         }
@@ -179,7 +186,8 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
 
     @Override
     public boolean canDrive() {
-        return recipe().isPresent() && output.isEmpty() && input.getCount() >= recipe().get().value().inputCount();
+        var r = recipe();
+        return r.isPresent() && output.isEmpty() && input.getCount() >= r.get().value().inputCount();
     }
 
     @Override
@@ -206,7 +214,12 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
 
     public float getRotation(float partial) {
         if (level != null && level.isClientSide) {
-            return net.minecraft.util.Mth.lerp(partial, clientPrevRotation, clientRotation);
+            float prev = clientPrevRotation;
+            float cur = clientRotation;
+            float diff = cur - prev;
+            while (diff < -180F) diff += 360F;
+            while (diff > 180F) diff -= 360F;
+            return prev + diff * partial;
         }
         return rotation;
     }
@@ -246,8 +259,11 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
         rotation = tag.getFloat("Rotation");
         if (level != null && level.isClientSide) {
             rotationTarget = rotation;
-            clientRotation = rotation;
-            clientPrevRotation = rotation;
+            if (!clientInitialized) {
+                clientRotation = rotation;
+                clientPrevRotation = rotation;
+                clientInitialized = true;
+            }
         }
     }
 
