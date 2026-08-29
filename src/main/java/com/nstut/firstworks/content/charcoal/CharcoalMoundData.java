@@ -30,11 +30,12 @@ import java.util.Set;
  * remain ordinary world blocks; no log or sealant receives a block entity.
  */
 public final class CharcoalMoundData extends SavedData {
-    public static final int MIN_LOGS = 4;
-    public static final int SEAL_WINDOW_TICKS = 1_200;
     private static final String DATA_NAME = "firstworks_charcoal_mounds";
 
     private final List<Charge> charges = new ArrayList<>();
+    private final List<PendingBreach> pendingBreaches = new ArrayList<>();
+
+    public record PendingBreach(BlockPos pos, long gameTime) {}
 
     public static CharcoalMoundData get(ServerLevel level) {
         return level.getDataStorage().computeIfAbsent(
@@ -43,9 +44,11 @@ public final class CharcoalMoundData extends SavedData {
 
     public IgnitionResult ignite(ServerLevel level, BlockPos ignitionLog, Direction exposedFace) {
         Set<BlockPos> logs = discoverLogs(level, ignitionLog);
+        int minLogs = com.nstut.firstworks.FirstworksConfig.CHARCOAL_MIN_LOGS.get();
         int maxLogs = com.nstut.firstworks.FirstworksConfig.CHARCOAL_MAX_LOGS.get();
-        if (logs.size() < MIN_LOGS) {
-            return IgnitionResult.failure(Component.translatable("message.firstworks.charcoal.too_small", MIN_LOGS));
+        int sealWindow = com.nstut.firstworks.FirstworksConfig.CHARCOAL_SEAL_WINDOW.get();
+        if (logs.size() < minLogs) {
+            return IgnitionResult.failure(Component.translatable("message.firstworks.charcoal.too_small", minLogs));
         }
         if (logs.size() > maxLogs) {
             return IgnitionResult.failure(Component.translatable("message.firstworks.charcoal.too_large", maxLogs));
@@ -63,7 +66,7 @@ public final class CharcoalMoundData extends SavedData {
         }
 
         charges.add(new Charge(logs, opening, Phase.WAITING_FOR_SEAL,
-                level.getGameTime() + SEAL_WINDOW_TICKS));
+                level.getGameTime() + sealWindow));
         setDirty();
         level.playSound(null, ignitionLog, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 0.8F, 0.7F);
         return IgnitionResult.success(Component.translatable("message.firstworks.charcoal.seal_opening"));
@@ -71,20 +74,66 @@ public final class CharcoalMoundData extends SavedData {
 
     public static boolean canIgnite(ServerLevel level, BlockPos ignitionLog, Direction exposedFace) {
         Set<BlockPos> logs = discoverLogs(level, ignitionLog);
+        int minLogs = com.nstut.firstworks.FirstworksConfig.CHARCOAL_MIN_LOGS.get();
         int maxLogs = com.nstut.firstworks.FirstworksConfig.CHARCOAL_MAX_LOGS.get();
-        if (logs.size() < MIN_LOGS || logs.size() > maxLogs) return false;
+        if (logs.size() < minLogs || logs.size() > maxLogs) return false;
         BlockPos opening = ignitionLog.relative(exposedFace);
         if (logs.contains(opening) || level.getBlockState(opening).is(ModTags.CHARCOAL_SEALANTS)) return false;
         return isShellValid(level, logs, opening, true);
     }
 
     public void tick(ServerLevel level) {
-        if (level.getGameTime() % 20L != 0L || charges.isEmpty()) return;
-        Iterator<Charge> iterator = charges.iterator();
         boolean changed = false;
         float normalYield = com.nstut.firstworks.FirstworksConfig.CHARCOAL_NORMAL_YIELD.get().floatValue();
         float breachedYield = com.nstut.firstworks.FirstworksConfig.CHARCOAL_BREACHED_YIELD.get().floatValue();
         int carbonizationTicks = com.nstut.firstworks.FirstworksConfig.CHARCOAL_CARBONIZE_DURATION.get();
+
+        if (!pendingBreaches.isEmpty()) {
+            Iterator<PendingBreach> breachIterator = pendingBreaches.iterator();
+            while (breachIterator.hasNext()) {
+                PendingBreach pending = breachIterator.next();
+                Iterator<Charge> chargeIterator = charges.iterator();
+                boolean handled = false;
+                while (chargeIterator.hasNext()) {
+                    Charge charge = chargeIterator.next();
+                    if (!charge.isLoaded(level)) continue;
+                    if (!charge.logs.contains(pending.pos) && !charge.isShellNeighbor(pending.pos)) continue;
+
+                    if (charge.phase == Phase.WAITING_FOR_SEAL) {
+                        if (charge.logs.contains(pending.pos)) {
+                            chargeIterator.remove();
+                            changed = true;
+                            handled = true;
+                        }
+                    } else if (charge.phase == Phase.CARBONIZING) {
+                        if (pending.gameTime >= charge.deadline) {
+                            finish(level, charge, normalYield, pending.pos);
+                        } else {
+                            finish(level, charge, breachedYield, pending.pos);
+                        }
+                        chargeIterator.remove();
+                        changed = true;
+                        handled = true;
+                    } else if (charge.phase == Phase.READY) {
+                        finish(level, charge, normalYield, pending.pos);
+                        chargeIterator.remove();
+                        changed = true;
+                        handled = true;
+                    }
+                }
+                if (handled || level.getGameTime() - pending.gameTime > 100L) {
+                    breachIterator.remove();
+                    changed = true;
+                }
+            }
+        }
+
+        if (level.getGameTime() % 20L != 0L || charges.isEmpty()) {
+            if (changed) setDirty();
+            return;
+        }
+
+        Iterator<Charge> iterator = charges.iterator();
         while (iterator.hasNext()) {
             Charge charge = iterator.next();
             if (!charge.isLoaded(level)) continue;
@@ -135,38 +184,8 @@ public final class CharcoalMoundData extends SavedData {
     }
 
     public void onBlockBroken(ServerLevel level, BlockPos pos) {
-        if (charges.isEmpty()) return;
-        Iterator<Charge> iterator = charges.iterator();
-        boolean changed = false;
-        float normalYield = com.nstut.firstworks.FirstworksConfig.CHARCOAL_NORMAL_YIELD.get().floatValue();
-        float breachedYield = com.nstut.firstworks.FirstworksConfig.CHARCOAL_BREACHED_YIELD.get().floatValue();
-        while (iterator.hasNext()) {
-            Charge charge = iterator.next();
-            if (!charge.isLoaded(level)) continue;
-            if (!charge.logs.contains(pos) && !charge.isShellNeighbor(pos)) continue;
-
-            if (charge.phase == Phase.WAITING_FOR_SEAL) {
-                if (charge.logs.contains(pos)) {
-                    iterator.remove();
-                    changed = true;
-                }
-            } else if (charge.phase == Phase.CARBONIZING) {
-                if (level.getGameTime() >= charge.deadline) {
-                    finish(level, charge, normalYield, pos);
-                    iterator.remove();
-                    changed = true;
-                } else {
-                    finish(level, charge, breachedYield, pos);
-                    iterator.remove();
-                    changed = true;
-                }
-            } else if (charge.phase == Phase.READY) {
-                finish(level, charge, normalYield, pos);
-                iterator.remove();
-                changed = true;
-            }
-        }
-        if (changed) setDirty();
+        pendingBreaches.add(new PendingBreach(pos.immutable(), level.getGameTime()));
+        setDirty();
     }
 
     private static Set<BlockPos> discoverLogs(ServerLevel level, BlockPos start) {
@@ -254,6 +273,15 @@ public final class CharcoalMoundData extends SavedData {
             list.add(entry);
         }
         tag.put("Charges", list);
+
+        ListTag breachesList = new ListTag();
+        for (PendingBreach breach : pendingBreaches) {
+            CompoundTag breachEntry = new CompoundTag();
+            breachEntry.putLong("Pos", breach.pos.asLong());
+            breachEntry.putLong("GameTime", breach.gameTime);
+            breachesList.add(breachEntry);
+        }
+        tag.put("PendingBreaches", breachesList);
         return tag;
     }
 
@@ -274,6 +302,11 @@ public final class CharcoalMoundData extends SavedData {
             }
             data.charges.add(new Charge(logs, BlockPos.of(entry.getLong("Opening")),
                     phase, entry.getLong("Deadline")));
+        }
+        ListTag breachesList = tag.getList("PendingBreaches", Tag.TAG_COMPOUND);
+        for (int i = 0; i < breachesList.size(); i++) {
+            CompoundTag breachEntry = breachesList.getCompound(i);
+            data.pendingBreaches.add(new PendingBreach(BlockPos.of(breachEntry.getLong("Pos")), breachEntry.getLong("GameTime")));
         }
         return data;
     }

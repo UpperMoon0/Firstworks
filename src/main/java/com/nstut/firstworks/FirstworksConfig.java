@@ -58,9 +58,17 @@ public final class FirstworksConfig {
             .comment("Ticks required for an earthen charcoal mound to carbonize (default: 6000 ticks / 5 minutes).")
             .defineInRange("charcoalCarbonizeDuration", 6000, 20, 72000);
 
+    public static final ModConfigSpec.IntValue CHARCOAL_MIN_LOGS = BUILDER
+            .comment("Minimum number of connected logs required for a valid charcoal mound.")
+            .defineInRange("charcoalMinLogs", 4, 4, 64);
+
     public static final ModConfigSpec.IntValue CHARCOAL_MAX_LOGS = BUILDER
             .comment("Maximum number of connected logs permitted in a single charcoal mound.")
             .defineInRange("charcoalMaxLogs", 64, 4, 256);
+
+    public static final ModConfigSpec.IntValue CHARCOAL_SEAL_WINDOW = BUILDER
+            .comment("Ticks allowed to seal the opening after ignition before the charge fails (default: 1200 ticks / 60 seconds).")
+            .defineInRange("charcoalSealWindow", 1200, 20, 6000);
 
     public static final ModConfigSpec.DoubleValue CHARCOAL_NORMAL_YIELD = BUILDER
             .comment("Charcoal yield multiplier when the mound carbonizes without being breached.")
@@ -75,6 +83,12 @@ public final class FirstworksConfig {
                     "Default: 0.30",
                     "Range: 0.0 ~ 1.0")
             .defineInRange("plantFibreHandChance", 0.30D, 0.0D, 1.0D);
+
+    public static final ModConfigSpec.DoubleValue RAW_OCHRE_GATHER_CHANCE = BUILDER
+            .comment("Chance (0.0 to 1.0) to gather Raw Ochre from ochre sources without a primitive knife.",
+                    "Default: 0.20",
+                    "Range: 0.0 ~ 1.0")
+            .defineInRange("rawOchreGatherChance", 0.20D, 0.0D, 1.0D);
 
     public static final ModConfigSpec SPEC = BUILDER.build();
 

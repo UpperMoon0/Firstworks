@@ -186,11 +186,20 @@ public class BarrelBlockEntity extends BlockEntity {
 
     private static int RECIPE_VERSION = 0;
     private int localRecipeVersion = -1;
+    private Boolean cachedSealed = null;
     private Process cachedProcess = null;
     private boolean processDirty = true;
 
     public static void invalidateAllBarrels() {
         RECIPE_VERSION++;
+    }
+
+    public void onLidChanged(boolean sealed) {
+        processCancelled = false;
+        progress = 0;
+        cachedSealed = sealed;
+        invalidateProcess();
+        setChangedAndSync();
     }
 
     public void invalidateProcess() {
@@ -201,6 +210,11 @@ public class BarrelBlockEntity extends BlockEntity {
     private Process currentProcess() {
         if (localRecipeVersion != RECIPE_VERSION) {
             localRecipeVersion = RECIPE_VERSION;
+            processDirty = true;
+        }
+        boolean sealed = getBlockState().getValue(BarrelBlock.SEALED);
+        if (cachedSealed == null || cachedSealed != sealed) {
+            cachedSealed = sealed;
             processDirty = true;
         }
         if (ingredient.isEmpty() || level == null || inputTank.isEmpty() || processCancelled || !output.isEmpty()) {

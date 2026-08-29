@@ -30,12 +30,18 @@ public record BarrelRecipe(Ingredient ingredient, int inputCount, FluidIngredien
     public static final ResourceLocation NO_FLUID = ResourceLocation.withDefaultNamespace("empty");
 
     public record FluidIngredient(Either<ResourceLocation, TagKey<Fluid>> target) {
-        public static final Codec<FluidIngredient> CODEC = Codec.STRING.xmap(
+        public static final Codec<FluidIngredient> CODEC = Codec.STRING.comapFlatMap(
                 str -> {
-                    if (str.startsWith("#")) {
-                        return new FluidIngredient(Either.right(TagKey.create(Registries.FLUID, ResourceLocation.parse(str.substring(1)))));
+                    try {
+                        if (str.startsWith("#")) {
+                            ResourceLocation loc = ResourceLocation.parse(str.substring(1));
+                            return com.mojang.serialization.DataResult.success(new FluidIngredient(Either.right(TagKey.create(Registries.FLUID, loc))));
+                        }
+                        ResourceLocation loc = ResourceLocation.parse(str);
+                        return com.mojang.serialization.DataResult.success(new FluidIngredient(Either.left(loc)));
+                    } catch (Exception e) {
+                        return com.mojang.serialization.DataResult.error(() -> "Invalid fluid or fluid tag location in barrel recipe: '" + str + "': " + e.getMessage());
                     }
-                    return new FluidIngredient(Either.left(ResourceLocation.parse(str)));
                 },
                 ing -> ing.target.map(ResourceLocation::toString, tag -> "#" + tag.location())
         );

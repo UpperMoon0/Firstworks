@@ -100,11 +100,13 @@ public class BarrelBlock extends BaseEntityBlock {
         if (powered) {
             boolean sealed = !state.getValue(SEALED);
             updated = updated.setValue(SEALED, sealed);
-            if (!sealed && level.getBlockEntity(pos) instanceof BarrelBlockEntity barrel) {
-                barrel.cancelProcess();
+            level.setBlock(pos, updated, 3);
+            if (level.getBlockEntity(pos) instanceof BarrelBlockEntity barrel) {
+                barrel.onLidChanged(sealed);
             }
             level.playSound(null, pos, sealed ? SoundEvents.WOODEN_TRAPDOOR_CLOSE : SoundEvents.WOODEN_TRAPDOOR_OPEN,
                     SoundSource.BLOCKS, 0.8F, 0.9F);
+            return;
         }
         level.setBlock(pos, updated, 3);
     }
@@ -254,7 +256,7 @@ public class BarrelBlock extends BaseEntityBlock {
         if (!level.isClientSide) {
             boolean sealed = !state.getValue(SEALED);
             level.setBlock(pos, state.setValue(SEALED, sealed), 3);
-            if (!sealed) barrel.cancelProcess();
+            barrel.onLidChanged(sealed);
             level.playSound(null, pos, sealed ? SoundEvents.WOODEN_TRAPDOOR_CLOSE : SoundEvents.WOODEN_TRAPDOOR_OPEN,
                     SoundSource.BLOCKS, 0.8F, 0.9F);
         }

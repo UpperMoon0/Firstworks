@@ -244,7 +244,8 @@ public final class GameplayEvents {
         if (hasSilkTouch(level, tool)) return;
 
         boolean guaranteed = tool.is(ModTags.PRIMITIVE_KNIVES);
-        if (guaranteed || level.getRandom().nextFloat() < 0.20F) {
+        double chance = FirstworksConfig.RAW_OCHRE_GATHER_CHANCE.get();
+        if (guaranteed || level.getRandom().nextDouble() < chance) {
             Block.popResource(level, event.getPos(), new ItemStack(ModItems.RAW_OCHRE.get(), 1));
         }
     }
