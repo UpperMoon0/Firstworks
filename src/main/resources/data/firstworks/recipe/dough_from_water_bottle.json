@@ -6,7 +6,15 @@
       "tag": "c:flours/wheat"
     },
     {
-      "item": "minecraft:potion"
+      "type": "neoforge:data_component_ingredient",
+      "ingredient": {
+        "item": "minecraft:potion"
+      },
+      "components": {
+        "minecraft:potion_contents": {
+          "potion": "minecraft:water"
+        }
+      }
     }
   ],
   "result": {

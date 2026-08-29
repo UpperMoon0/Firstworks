@@ -2,6 +2,7 @@ package com.nstut.firstworks;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.nstut.firstworks.registry.ModItems;
 import org.junit.jupiter.api.Test;
 
 import java.io.FileReader;
@@ -59,6 +60,19 @@ public class FoodProgressionRecipeTest {
         assertTrue(Files.exists(wheatFloursTag) && Files.readString(wheatFloursTag).contains("firstworks:flour"));
         assertTrue(Files.exists(doughsTag) && Files.readString(doughsTag).contains("firstworks:dough"));
         assertTrue(Files.exists(wheatDoughsTag) && Files.readString(wheatDoughsTag).contains("firstworks:dough"));
+    }
+
+    @Test
+    public void testWaterBottleDoughRecipeSpecificallyMatchesWater() throws Exception {
+        Path path = Path.of("src/main/resources/data/firstworks/recipe/dough_from_water_bottle.json");
+        assertTrue(Files.exists(path), "dough_from_water_bottle.json must exist");
+        try (FileReader reader = new FileReader(path.toFile())) {
+            JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
+            String raw = json.toString();
+            assertTrue(raw.contains("neoforge:data_component_ingredient"), "Must use DataComponentIngredient");
+            assertTrue(raw.contains("minecraft:water"), "Must specifically match water potion contents");
+            assertTrue(raw.contains("minecraft:potion_contents"), "Must check potion_contents component");
+        }
     }
 
     @Test
