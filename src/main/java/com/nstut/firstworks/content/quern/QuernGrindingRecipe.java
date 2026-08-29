@@ -37,7 +37,7 @@ public record QuernGrindingRecipe(Ingredient ingredient, int inputCount, ItemSta
                 Codec.intRange(1, 64).optionalFieldOf("input_count", 1).forGetter(QuernGrindingRecipe::inputCount),
                 ItemStack.CODEC.fieldOf("result").forGetter(QuernGrindingRecipe::result),
                 Codec.intRange(1, 256).optionalFieldOf("saddle_strokes", 8).forGetter(QuernGrindingRecipe::saddleStrokes),
-                Codec.intRange(1, 72000).optionalFieldOf("rotary_duration", 80).forGetter(QuernGrindingRecipe::rotaryDuration)
+                Codec.intRange(1, 72000).optionalFieldOf("rotary_duration", 60).forGetter(QuernGrindingRecipe::rotaryDuration)
         ).apply(i, QuernGrindingRecipe::new));
         private static final StreamCodec<RegistryFriendlyByteBuf, QuernGrindingRecipe> STREAM_CODEC = StreamCodec.of(
                 (b, r) -> { Ingredient.CONTENTS_STREAM_CODEC.encode(b, r.ingredient); b.writeVarInt(r.inputCount);
