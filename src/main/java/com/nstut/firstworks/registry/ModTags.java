@@ -45,8 +45,6 @@ public final class ModTags {
             Registries.BLOCK, Firstworks.id("plant_fibre_sources"));
     public static final TagKey<Block> DOUBLE_PLANT_FIBRE_SOURCES = TagKey.create(
             Registries.BLOCK, Firstworks.id("double_plant_fibre_sources"));
-    public static final TagKey<net.minecraft.world.level.material.Fluid> CLAY_BUCKET_FLUIDS = TagKey.create(
-            Registries.FLUID, Firstworks.id("clay_bucket_fluids"));
 
     private ModTags() {}
 }

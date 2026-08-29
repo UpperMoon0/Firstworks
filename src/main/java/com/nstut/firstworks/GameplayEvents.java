@@ -249,6 +249,12 @@ public final class GameplayEvents {
         }
     }
 
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onBlockBreak(BlockEvent.BreakEvent event) {
+        if (event.isCanceled() || !(event.getLevel() instanceof ServerLevel level)) return;
+        CharcoalMoundData.get(level).onBlockBroken(level, event.getPos());
+    }
+
     private static boolean hasSilkTouch(ServerLevel level, ItemStack stack) {
         if (stack.isEmpty()) return false;
         return level.registryAccess().lookup(net.minecraft.core.registries.Registries.ENCHANTMENT)

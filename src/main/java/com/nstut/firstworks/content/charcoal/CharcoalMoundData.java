@@ -108,16 +108,16 @@ public final class CharcoalMoundData extends SavedData {
             }
 
             if (charge.phase == Phase.CARBONIZING) {
-                if (!charge.logsIntact(level) || !isShellValid(level, charge.logs, charge.opening, false)) {
-                    finish(level, charge, breachedYield, findBreach(level, charge));
-                    iterator.remove();
-                    changed = true;
-                } else if (level.getGameTime() >= charge.deadline) {
+                if (level.getGameTime() >= charge.deadline) {
                     // Completion is durable: leave the mound sealed until the player opens it.
                     charge.phase = Phase.READY;
                     changed = true;
                     level.playSound(null, charge.opening, SoundEvents.FIRE_EXTINGUISH,
                             SoundSource.BLOCKS, 0.7F, 0.8F);
+                } else if (!charge.logsIntact(level) || !isShellValid(level, charge.logs, charge.opening, false)) {
+                    finish(level, charge, breachedYield, findBreach(level, charge));
+                    iterator.remove();
+                    changed = true;
                 } else {
                     smoke(level, charge.opening, 1);
                 }
@@ -127,6 +127,41 @@ public final class CharcoalMoundData extends SavedData {
             // READY mounds reveal their charcoal only when the shell/opening is breached.
             if (!charge.logsIntact(level) || !isShellValid(level, charge.logs, charge.opening, false)) {
                 finish(level, charge, normalYield, findBreach(level, charge));
+                iterator.remove();
+                changed = true;
+            }
+        }
+        if (changed) setDirty();
+    }
+
+    public void onBlockBroken(ServerLevel level, BlockPos pos) {
+        if (charges.isEmpty()) return;
+        Iterator<Charge> iterator = charges.iterator();
+        boolean changed = false;
+        float normalYield = com.nstut.firstworks.FirstworksConfig.CHARCOAL_NORMAL_YIELD.get().floatValue();
+        float breachedYield = com.nstut.firstworks.FirstworksConfig.CHARCOAL_BREACHED_YIELD.get().floatValue();
+        while (iterator.hasNext()) {
+            Charge charge = iterator.next();
+            if (!charge.isLoaded(level)) continue;
+            if (!charge.logs.contains(pos) && !charge.isShellNeighbor(pos)) continue;
+
+            if (charge.phase == Phase.WAITING_FOR_SEAL) {
+                if (charge.logs.contains(pos)) {
+                    iterator.remove();
+                    changed = true;
+                }
+            } else if (charge.phase == Phase.CARBONIZING) {
+                if (level.getGameTime() >= charge.deadline) {
+                    finish(level, charge, normalYield, pos);
+                    iterator.remove();
+                    changed = true;
+                } else {
+                    finish(level, charge, breachedYield, pos);
+                    iterator.remove();
+                    changed = true;
+                }
+            } else if (charge.phase == Phase.READY) {
+                finish(level, charge, normalYield, pos);
                 iterator.remove();
                 changed = true;
             }
@@ -283,6 +318,16 @@ public final class CharcoalMoundData extends SavedData {
 
         private boolean logsIntact(ServerLevel level) {
             return logs.stream().allMatch(pos -> level.getBlockState(pos).is(ModTags.CHARCOAL_WOODS));
+        }
+
+        private boolean isShellNeighbor(BlockPos pos) {
+            if (pos.equals(opening)) return true;
+            for (BlockPos log : logs) {
+                if (Math.abs(log.getX() - pos.getX()) + Math.abs(log.getY() - pos.getY()) + Math.abs(log.getZ() - pos.getZ()) == 1) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }
