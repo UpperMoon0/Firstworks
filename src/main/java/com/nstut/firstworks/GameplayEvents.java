@@ -38,22 +38,40 @@ public final class GameplayEvents {
         ItemStack tool = event.getEntity().getItemInHand(event.getHand());
         if (!tool.is(ModTags.CHARCOAL_IGNITERS)) return;
         if (!event.getLevel().getBlockState(event.getPos()).is(ModTags.CHARCOAL_WOODS)) return;
+        if (!(event.getLevel() instanceof ServerLevel level) || event.getFace() == null) return;
 
-        // Only claim the interaction when this log is a viable mound probe.
-        // Ordinary trees must retain vanilla flint-and-steel/fire-starter behavior.
-        if (!(event.getLevel() instanceof ServerLevel level) || event.getFace() == null
-                || !CharcoalMoundData.canIgnite(level, event.getPos(), event.getFace())) return;
+        CharcoalMoundData moundData = CharcoalMoundData.get(level);
+        CharcoalMoundData.IgnitionProbe probe = moundData.probe(level, event.getPos(), event.getFace());
+        if (!probe.isMoundCandidate()) return;
 
         event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide));
         event.setCanceled(true);
 
-        CharcoalMoundData.IgnitionResult result = CharcoalMoundData.get(level)
-                .ignite(level, event.getPos(), event.getFace());
-        event.getEntity().displayClientMessage(result.message(), true);
-        if (!result.success() || event.getEntity().hasInfiniteMaterials()) return;
-        EquipmentSlot slot = event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND
-                ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
-        tool.hurtAndBreak(1, event.getEntity(), slot);
+        if (!probe.isValid()) {
+            if (probe.failureReason() != null) {
+                event.getEntity().displayClientMessage(probe.failureReason(), true);
+            }
+            return;
+        }
+
+        CharcoalMoundData.IgnitionResult result = moundData.igniteFromProbe(level, probe);
+        if (!result.isSuccessful()) {
+            if (result.message() != null) {
+                event.getEntity().displayClientMessage(result.message(), true);
+            }
+            return;
+        }
+        if (!event.getEntity().hasInfiniteMaterials()) {
+            EquipmentSlot slot = event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND
+                    ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
+            tool.hurtAndBreak(1, event.getEntity(), slot);
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onBlockPlaced(BlockEvent.EntityPlaceEvent event) {
+        if (event.isCanceled() || !(event.getLevel() instanceof ServerLevel level)) return;
+        CharcoalMoundData.get(level).onBlockPlaced(level, event.getPos());
     }
 
     @SubscribeEvent
@@ -253,13 +271,7 @@ public final class GameplayEvents {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onBlockBreak(BlockEvent.BreakEvent event) {
         if (event.isCanceled() || !(event.getLevel() instanceof ServerLevel level)) return;
-        CharcoalMoundData moundData = CharcoalMoundData.get(level);
-        if (moundData.isReadyLog(event.getPos())) {
-            event.setCanceled(true);
-            moundData.onReadyLogBroken(level, event.getPos());
-            return;
-        }
-        moundData.onBlockBroken(level, event.getPos());
+        CharcoalMoundData.get(level).onBlockBroken(level, event.getPos());
     }
 
     private static boolean hasSilkTouch(ServerLevel level, ItemStack stack) {

@@ -66,6 +66,8 @@ public final class ModItems {
     public static final DeferredHolder<Item, Item> COPPER_FASTENERS = simple("copper_fasteners");
     public static final DeferredHolder<Item, Item> MORTAR_AND_PESTLE = ITEMS.register("mortar_and_pestle",
             () -> new BlockItem(ModBlocks.MORTAR_AND_PESTLE.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> CHARCOAL_PILE = ITEMS.register("charcoal_pile",
+            () -> new BlockItem(ModBlocks.CHARCOAL_PILE.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> CHARCOAL_POWDER = simple("charcoal_powder");
     public static final DeferredHolder<Item, Item> RAW_OCHRE = simple("raw_ochre");
     public static final DeferredHolder<Item, Item> GROUND_OCHRE = simple("ground_ochre");
@@ -112,8 +114,6 @@ public final class ModItems {
                 () -> new BlockItem(block.get(), new Item.Properties()))));
         return items;
     }
-
-
 
     private static Map<String, DeferredHolder<Item, Item>> registerLoomItems() {
         Map<String, DeferredHolder<Item, Item>> items = new LinkedHashMap<>();

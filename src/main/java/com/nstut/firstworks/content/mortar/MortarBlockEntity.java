@@ -141,6 +141,8 @@ public final class MortarBlockEntity extends BlockEntity {
     public ItemStack getInput() { return input; }
     public ItemStack getOutput() { return output; }
     public boolean isGrinding() { return grinding; }
+    public long getFinishGameTime() { return finishGameTime; }
+    public Optional<RecipeHolder<MortarGrindingRecipe>> getActiveRecipe() { return findRecipeForIngredient(input); }
     public IItemHandler getItemHandler(@Nullable Direction side) { return itemHandler; }
 
     private void setChangedAndSync() {
