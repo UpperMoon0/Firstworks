@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
@@ -58,9 +59,20 @@ public final class MortarBlockEntityRenderer implements BlockEntityRenderer<Mort
         poseStack.mulPose(Axis.YP.rotationDegrees(facingRotation));
         poseStack.mulPose(Axis.ZP.rotationDegrees(27.0F + stroke * 13.0F));
         renderCuboid(poseStack, buffers.getBuffer(Sheets.solidBlockSheet()), stone,
-                -0.065F, -0.30F, -0.065F, 0.065F, 0.30F, 0.065F,
+                -0.09375F, -0.3125F, -0.09375F,
+                 0.09375F,  0.3125F,  0.09375F,
                 packedLight, packedOverlay);
         poseStack.popPose();
+    }
+
+    private static float spriteU(TextureAtlasSprite sprite, float texel) {
+        float t = Mth.clamp(texel / 16.0F, 0.0F, 1.0F);
+        return Mth.lerp(t, sprite.getU0(), sprite.getU1());
+    }
+
+    private static float spriteV(TextureAtlasSprite sprite, float texel) {
+        float t = Mth.clamp(texel / 16.0F, 0.0F, 1.0F);
+        return Mth.lerp(t, sprite.getV0(), sprite.getV1());
     }
 
     private static void renderCuboid(PoseStack poseStack, VertexConsumer vertices, TextureAtlasSprite sprite,
@@ -121,10 +133,10 @@ public final class MortarBlockEntityRenderer implements BlockEntityRenderer<Mort
             float nx, float ny, float nz, int light, int overlay) {
         PoseStack.Pose pose = poseStack.last();
         Matrix4f matrix = pose.pose();
-        vertex(vertices, matrix, pose, x1, y1, z1, sprite.getU(u0), sprite.getV(v1), nx, ny, nz, light, overlay);
-        vertex(vertices, matrix, pose, x2, y2, z2, sprite.getU(u1), sprite.getV(v1), nx, ny, nz, light, overlay);
-        vertex(vertices, matrix, pose, x3, y3, z3, sprite.getU(u1), sprite.getV(v0), nx, ny, nz, light, overlay);
-        vertex(vertices, matrix, pose, x4, y4, z4, sprite.getU(u0), sprite.getV(v0), nx, ny, nz, light, overlay);
+        vertex(vertices, matrix, pose, x1, y1, z1, spriteU(sprite, u0), spriteV(sprite, v1), nx, ny, nz, light, overlay);
+        vertex(vertices, matrix, pose, x2, y2, z2, spriteU(sprite, u1), spriteV(sprite, v1), nx, ny, nz, light, overlay);
+        vertex(vertices, matrix, pose, x3, y3, z3, spriteU(sprite, u1), spriteV(sprite, v0), nx, ny, nz, light, overlay);
+        vertex(vertices, matrix, pose, x4, y4, z4, spriteU(sprite, u0), spriteV(sprite, v0), nx, ny, nz, light, overlay);
     }
 
     private static void vertex(VertexConsumer vertices, Matrix4f matrix, PoseStack.Pose pose,
