@@ -72,7 +72,6 @@ public final class ModItems {
     public static final DeferredHolder<Item, Item> RAW_OCHRE = simple("raw_ochre");
     public static final DeferredHolder<Item, Item> GROUND_OCHRE = simple("ground_ochre");
     public static final DeferredHolder<Item, Item> FLOUR = simple("flour");
-    public static final DeferredHolder<Item, Item> DOUGH = simple("dough");
     public static final DeferredHolder<Item, Item> QUERN = ITEMS.register("quern",
             () -> new BlockItem(ModBlocks.QUERN.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> TANNIN_SOLUTION_BUCKET = ITEMS.register("tannin_solution_bucket",
