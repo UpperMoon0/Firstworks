@@ -11,14 +11,30 @@ public interface QuernDriveable {
     boolean canDrive();
 
     /**
-     * @return true if the quern is currently engaged in continuous driven rotation.
+     * @return the work progress added per tick from external drive (0 if not driven).
      */
-    boolean isDriven();
+    int getDriveRate();
 
     /**
-     * Sets whether external rotational drive is applied to this quern.
+     * Sets the external continuous drive rate applied to this quern.
+     *
+     * @param workPerTick work progress added per tick (0 to stop/disconnect).
+     */
+    void setDriveRate(int workPerTick);
+
+    /**
+     * @return true if the quern is currently engaged in continuous driven rotation.
+     */
+    default boolean isDriven() {
+        return getDriveRate() > 0;
+    }
+
+    /**
+     * Sets whether external rotational drive is applied to this quern using default rate.
      *
      * @param driven true to engage continuous rotation, false to disengage.
      */
-    void setDriven(boolean driven);
+    default void setDriven(boolean driven) {
+        setDriveRate(driven ? 1 : 0);
+    }
 }

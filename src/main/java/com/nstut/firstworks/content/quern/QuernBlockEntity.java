@@ -1,5 +1,6 @@
 package com.nstut.firstworks.content.quern;
 
+import com.nstut.firstworks.FirstworksConfig;
 import com.nstut.firstworks.registry.*;
 import com.nstut.firstworks.compat.OptionalIntegrations;
 import net.minecraft.core.*;
@@ -23,6 +24,7 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
     private ItemStack input = ItemStack.EMPTY, output = ItemStack.EMPTY;
     private int progress;
     private boolean rotating;
+    private int driveRate;
     private float rotation;
     private float clientPrevRotation, clientRotation, rotationTarget;
     private boolean clientInitialized;
@@ -53,7 +55,7 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
             }
             return;
         }
-        if (!quern.rotating) return;
+        if (!quern.rotating || quern.driveRate <= 0) return;
         Optional<RecipeHolder<QuernGrindingRecipe>> holder = quern.recipe();
         if (holder.isEmpty() || !quern.output.isEmpty()
                 || quern.input.getCount() < holder.get().value().inputCount()
@@ -63,7 +65,7 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
         }
         quern.rotation = (quern.rotation + 9F) % 360F;
         quern.rotationTarget = quern.rotation;
-        quern.progress++;
+        quern.progress += quern.driveRate;
         if (quern.progress % 12 == 0) {
             level.playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, .3F, .65F);
             if (level instanceof ServerLevel sl) {
@@ -98,7 +100,8 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
         if (!tryBegin(holder.get())) {
             return false;
         }
-        progress += 5;
+        int workAmount = FirstworksConfig.QUERN_MANUAL_WORK_PER_CRANK.get();
+        progress += workAmount;
         rotation = (rotation + 45F) % 360F;
         rotationTarget += 45F;
         level.playSound(null, worldPosition, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, .38F, .72F + level.random.nextFloat() * .1F);
@@ -122,6 +125,7 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
         output = recipe.result().copy();
         progress = 0;
         rotating = false;
+        driveRate = 0;
         if (level instanceof ServerLevel server) {
             OptionalIntegrations.fireQuernGrindingCompleted(server, this, holder.id(), recipe, consumed, output);
         }
@@ -176,10 +180,12 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
     private void reset() {
         progress = 0;
         rotating = false;
+        driveRate = 0;
     }
 
     private void stop() {
         rotating = false;
+        driveRate = 0;
         progress = 0;
         sync();
     }
@@ -191,16 +197,23 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
     }
 
     @Override
-    public boolean isDriven() {
-        return rotating;
+    public int getDriveRate() {
+        return driveRate;
+    }
+
+    @Override
+    public void setDriveRate(int workPerTick) {
+        int clamped = Math.max(0, workPerTick);
+        if (this.driveRate != clamped) {
+            this.driveRate = clamped;
+            this.rotating = clamped > 0;
+            sync();
+        }
     }
 
     @Override
     public void setDriven(boolean driven) {
-        if (this.rotating != driven) {
-            this.rotating = driven;
-            sync();
-        }
+        setDriveRate(driven ? FirstworksConfig.QUERN_DEFAULT_DRIVEN_WORK_PER_TICK.get() : 0);
     }
 
     public void setRotating(boolean rotating) {
@@ -246,6 +259,7 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
         if (!output.isEmpty()) tag.put("Output", output.save(regs));
         tag.putInt("Progress", progress);
         tag.putBoolean("Rotating", rotating);
+        tag.putInt("DriveRate", driveRate);
         tag.putFloat("Rotation", rotation);
     }
 
@@ -256,6 +270,7 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
         output = ItemStack.parseOptional(regs, tag.getCompound("Output"));
         progress = tag.getInt("Progress");
         rotating = tag.getBoolean("Rotating");
+        driveRate = tag.getInt("DriveRate");
         rotation = tag.getFloat("Rotation");
         if (level != null && level.isClientSide) {
             rotationTarget = rotation;
