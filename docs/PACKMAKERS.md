@@ -14,9 +14,12 @@ This document is the authoritative technical reference for modpack developers an
    - [Custom Recipe Registration via KubeJS](#kubejs-recipe-registration)
    - [Event Handlers & Payload Fields](#kubejs-event-handlers--payload-fields)
 6. [Automation Capabilities & Sided Behavior](#6-automation-capabilities--sided-behavior)
-7. [In-World Charcoal Mound System](#7-in-world-charcoal-mound-system)
-8. [Jade & JEI Integration](#8-jade--jei-integration)
-9. [Migration Notes (0.0.10 → 0.0.11)](#9-migration-notes-0010--0011)
+7. [Food Recipe Overrides & Interop IDs](#7-food-recipe-overrides--interop-ids)
+8. [QuernDriveable External Drive API (Java)](#8-querndriveable-external-drive-api-java)
+9. [In-World Charcoal Mound System](#9-in-world-charcoal-mound-system)
+10. [Jade & JEI Integration](#10-jade--jei-integration)
+11. [Migration Notes (0.0.10 → 0.0.11)](#11-migration-notes-0010--0011)
+12. [Migration Notes (0.0.11 → 0.0.12)](#12-migration-notes-0011--0012)
 
 ---
 
@@ -48,6 +51,8 @@ Starting in **0.0.11**, Firstworks registers all gameplay options as a **`SERVER
 | `charcoalBreachedYield` | Double | `0.25` | `0.0 – 1.0` | Charcoal multiplier if mound is breached during carbonization (default: 25% yield). |
 | `plantFibreHandChance` | Double | `0.30` | `0.0 – 1.0` | Chance to gather Plant Fibre with an empty hand or non-knife tool (default: 30%). |
 | `rawOchreGatherChance` | Double | `0.20` | `0.0 – 1.0` | Chance to gather Raw Ochre without a primitive knife (default: 20%). |
+| `quernManualWorkPerCrank` | Integer | `5` | `1 – 100` | Work progress added per manual empty-hand crank of the Quern. |
+| `quernDefaultDrivenWorkPerTick` | Integer | `1` | `1 – 100` | Work progress per tick applied when an external drive engages the Quern through `setDriven(true)` without an explicit rate. |
 
 ---
 
@@ -67,6 +72,19 @@ Firstworks exposes data-driven tags for extensible pack integration. Below are t
 | `#firstworks:tree_bark` | `firstworks:tree_bark` | Stripped bark items used for brewing tannin solution in barrels. |
 | `#firstworks:barrels` | All barrel item variants | Item classification for barrel workstations. |
 | `#firstworks:looms` | All loom item variants | Item classification for loom workstations. |
+
+### Common NeoForge Tags (`data/c/tags/item/`)
+
+Firstworks participates in the `c` (Common Tags) interoperability namespace so third-party flours and doughs plug into Firstworks progression without recipe edits:
+
+| Tag | Shipped Default Items | Purpose |
+| :--- | :--- | :--- |
+| `#c:flours` | `firstworks:flour` | Any ground-grain flour accepted by flour consumers. |
+| `#c:flours/wheat` | `firstworks:flour` | Wheat flour accepted by dough recipes and vanilla Bread/Cake/Cookie overrides. |
+| `#c:doughs` | `firstworks:dough` | Any raw dough accepted by dough consumers. |
+| `#c:doughs/wheat` | `firstworks:dough` | Wheat dough accepted by Firstworks bread cooking recipes. |
+
+**Intended rule:** third-party mods and datapacks that add their own flour or wheat dough should add those items to these common tags rather than hardcoding `firstworks:flour` / `firstworks:dough` into replacement recipes. Firstworks recipes and overrides match by tag, so tagged foreign items work automatically (e.g. a rice flour mod adds its item to `#c:flours`, a modpack reroutes a mod's wheat dough through `#c:doughs/wheat` to bake with Firstworks bread recipes).
 
 ### Block Tags (`data/firstworks/tags/block/`)
 
@@ -192,6 +210,37 @@ In-world grinding workstation.
 }
 ```
 
+### 6. Quern Grinding (`firstworks:quern_grinding`)
+Single-block grinding workstation with manual and externally driven operation.
+`data/firstworks/recipe/quern_wheat_flour.json`:
+```json
+{
+  "type": "firstworks:quern_grinding",
+  "ingredient": { "item": "minecraft:wheat" },
+  "input_count": 4,
+  "result": { "id": "firstworks:flour", "count": 4 },
+  "work": 60
+}
+```
+
+| Field | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `ingredient` | Ingredient | *(required)* | Input item matcher, matched independently of batch size. |
+| `input_count` | Int `1–64` | `1` | Batch size consumed per completion. Items are inserted one at a time until the batch is full. |
+| `result` | Item Stack | *(required)* | Output produced when the batch completes. |
+| `work` | Int `1–72000` | `60` | Total processing effort required per batch. |
+
+**Work-based throughput model.** Recipe `work` is source-agnostic; labor sources contribute progress at their own rates:
+
+```
+recipe.work ÷ labor source work rate = processing effort/time
+```
+
+- **Manual cranking** (right-click, empty hand): adds `quernManualWorkPerCrank` work per crank. Wheat at defaults: 60 work ÷ 5/crank = 12 cranks.
+- **External drive**: adds the drive rate per tick (see [QuernDriveable External Drive API](#8-querndriveable-external-drive-api-java)). An animal wheel at 1 work/tick finishes wheat in 60 ticks (3 seconds); a stronger mechanical drive at 3 work/tick finishes in 1 second.
+
+**Ingredient Exclusivity:** because the quern matches ingredients independently of stack size to allow incremental 1-by-1 loading, quern recipes must define mutually exclusive ingredient sets (never register multiple quern recipes with overlapping ingredient matchers).
+
 ---
 
 ## 5. KubeJS Integration
@@ -265,6 +314,18 @@ ServerEvents.recipes(event => {
     result: { id: 'firstworks:ground_ochre', count: 2 },
     duration: 48
   }).id('custom:grind_ochre')
+
+  // 6. Quern Grinding
+  event.custom({
+    type: 'firstworks:quern_grinding',
+    ingredient: { item: 'minecraft:wheat' },
+    input_count: 4,
+    result: {
+      id: 'firstworks:flour',
+      count: 4
+    },
+    work: 60
+  }).id('example:wheat_flour')
 })
 ```
 
@@ -353,6 +414,26 @@ FirstworksEvents.mortarGrindingStarting(event => {
 FirstworksEvents.mortarGrindingCompleted(event => {
   console.info(`Mortar ground ${event.result} at ${event.pos}`)
 })
+
+// 6. Quern Grinding
+FirstworksEvents.quernGrindingStarting(event => {
+  // Guaranteed properties:
+  // event.level     (ServerLevel)
+  // event.pos       (BlockPos)
+  // event.quern     (QuernBlockEntity)
+  // event.recipeId  (ResourceLocation)
+  // event.recipe    (QuernGrindingRecipe)
+  // event.input     (ItemStack copy)
+  // event.result    (ItemStack copy)
+  // event.cancel()
+  //
+  // Fires for BOTH operation modes: the first manual crank of a batch and
+  // the moment an external drive engages a complete batch (e.g. an animal
+  // or mechanical wheel starting to rotate the quern).
+})
+FirstworksEvents.quernGrindingCompleted(event => {
+  console.info(`Quern completed ${event.recipeId} at ${event.pos}`)
+})
 ```
 
 ---
@@ -382,29 +463,78 @@ FirstworksEvents.mortarGrindingCompleted(event => {
 
 ---
 
-## Quern Grinding
+## 7. Food Recipe Overrides & Interop IDs
 
-Use `firstworks:quern_grinding` for bulk milling and grinding recipes:
+Firstworks rewrites vanilla wheat-food progression and adds its own dough pipeline. Target these exact recipe IDs when rerouting or removing routes:
 
-```json
-{
-  "type": "firstworks:quern_grinding",
-  "ingredient": { "item": "minecraft:wheat" },
-  "input_count": 4,
-  "result": { "id": "firstworks:flour", "count": 4 },
-  "work": 60
-}
+**Vanilla recipe overrides** (shipped under `data/minecraft/recipe/`; these replace the vanilla files, using `#c:flours/wheat` instead of wheat):
+- `minecraft:bread`
+- `minecraft:cookie`
+- `minecraft:cake`
+
+**Firstworks dough recipes** (`data/firstworks/recipe/`):
+- `firstworks:dough_from_water_bucket` — 3× `#c:flours/wheat` + water bucket → 3 dough
+- `firstworks:dough_from_clay_water` — 3× `#c:flours/wheat` + `firstworks:water_clay_bucket` → 3 dough
+- `firstworks:dough_from_water_bottle` — `#c:flours/wheat` + water bottle (loose water-bottle component matching; other mods' water bottles match unless `strict`)
+
+**Bread cooking recipes** (input is `#c:doughs/wheat`, so tagged foreign wheat dough bakes too):
+- `firstworks:bread_from_campfire_dough`
+- `firstworks:bread_from_smelting_dough`
+- `firstworks:bread_from_smoking_dough`
+
+**Packmaker pattern** — when another mod owns dough production, remove its conflicting route rather than Firstworks' outputs:
+
+```js
+ServerEvents.recipes(event => {
+    // Example: another mod owns dough production.
+    event.remove({ id: 'somefoodmod:wheat_dough_from_water' })
+})
 ```
 
-- **Manual Cranking**: Right-clicking the quern provides manual labor (+5 work units per crank).
-- **Automation / Driven Power**: Continuous rotation provides steady work progress (1 work unit per tick).
-- **Ingredient Exclusivity**: Because the quern matches ingredients independently of stack size to allow incremental 1-by-1 loading, quern recipes should define mutually exclusive ingredient sets (avoid registering multiple recipes with overlapping ingredient matchers).
-
-KubeJS exposes cancellable `quernGrindingStarting` and observational `quernGrindingCompleted` events.
+Because all Firstworks routes match by common tag (`#c:flours/wheat`, `#c:doughs/wheat`), adding your own flour or dough items to those tags is usually enough — no recipe removal required. See [Common NeoForge Tags](#common-neoforge-tags-datactagsitem).
 
 ---
 
-## 7. In-World Charcoal Mound System
+## 8. QuernDriveable External Drive API (Java)
+
+`com.nstut.firstworks.content.quern.QuernDriveable` is the public contract for addons that externally rotate a Quern (animal wheels, wind gimmicks, mechanical power, CHP-CE integrations, etc.):
+
+```java
+public interface QuernDriveable {
+    boolean canDrive();                                  // complete batch present?
+    int getDriveRate();                                  // current work/tick (0 = disconnected)
+    void setDriveRate(int workPerTick);                  // engage/adjust/disconnect
+
+    default boolean isDriven() { return getDriveRate() > 0; }
+    default void setDriven(boolean driven) { setDriveRate(driven ? 1 : 0); }
+}
+```
+
+Usage:
+
+```java
+if (level.getBlockEntity(pos) instanceof QuernDriveable quern) {
+    if (quern.canDrive()) {
+        quern.setDriveRate(1);
+    }
+}
+```
+
+**Lifecycle semantics:**
+
+- **Drive updates happen server-side.** Rates set on the client are ignored; engage drives from your server tick or server-side interaction handlers.
+- **`0` work/tick means disconnected.** The quern stops rotating but preserves accumulated progress on the loaded batch, so re-engaging resumes where it left off.
+- **External providers must stop the drive when detached or unloaded** — call `setDriveRate(0)` when your power source moves away, breaks, or its chunk unloads. A quern left at a nonzero rate with no provider is a pack bug, not a Firstworks state.
+- **`canDrive()` indicates whether a valid complete batch is present.** A drive applied while `canDrive()` is `false` is accepted but does no work; the quern disengages itself (`stop()`) if the active recipe becomes invalid, the batch disappears, or the output slot is blocked.
+- **Recipe `work` determines required processing effort.** Progress accumulates as `rate × ticks`; the batch completes when accumulated progress reaches `recipe.work`. Rates above the remaining work simply finish sooner the same tick.
+- **Manual and external progress share one accumulator.** A half-cranked batch can be finished by an external drive and vice versa.
+- **Persistence:** `driveRate`, progress, and rotation survive chunk unload/reload; however, the stored rate is *not* re-applied automatically — your provider should re-engage on its own load if it still powers the quern.
+
+**Recommended rate semantics** (conventions, not enforced): `1` = basic animal drive, `2` = stronger/faster animal, `4` = mechanical system. Alternatively compute the rate yourself — the balance equation is simply `recipe.work ÷ rate = ticks`. `setDriven(true)` uses `quernDefaultDrivenWorkPerTick` (default 1) for backward compatibility.
+
+---
+
+## 9. In-World Charcoal Mound System
 
 - **Construction**: `charcoalMinLogs`–`charcoalMaxLogs` connected fuel blocks (`#firstworks:charcoal_woods`; defaults to 4–64 logs), encased in an airtight shell (`#firstworks:charcoal_sealants`; defaults to dirt, grass, mud, clay) leaving 1 exposed face open for ignition.
 - **Candidate Detection**: Calculates shell coverage ($\ge 50\%$). Ordinary standing trees ($< 10\%$ coverage) are ignored and pass through to vanilla flint-and-steel behavior.
@@ -423,22 +553,33 @@ KubeJS exposes cancellable `quernGrindingStarting` and observational `quernGrind
 
 ---
 
-## 8. Jade & JEI Integration
+## 10. Jade & JEI Integration
 
 - **Jade Tooltips**:
   - **Barrel**: Recipe progress, time remaining, output preview, input/output fluid stores.
   - **Loom**: Loaded threads, stroke progress, output preview.
   - **Brick Mold**: Loaded ingredient, press progress bar.
   - **Mortar & Pestle**: Empty status, loaded materials, grinding progress bar with seconds remaining, output ready alert.
+  - **Quern**: Loaded batch, work progress bar, completed output alert.
   - **Charcoal Mound**: Active log count, seal countdown progress bar, carbonization progress bar, remaining time, and expected yield (resolving through the visible sealant shell).
   - **Charcoal Pile**: Stored charcoal count.
 - **JEI Categories**:
-  - Barrel Processing, Hand Spinning, Loom Weaving, Brick Molding, Mortar Grinding, and dynamic Charcoal Mound Information guide.
+  - Barrel Processing, Hand Spinning, Loom Weaving, Brick Molding, Mortar Grinding, **Quern Grinding**, and dynamic Charcoal Mound Information guide.
 
 ---
 
-## 9. Migration Notes (0.0.10 → 0.0.11)
+## 11. Migration Notes (0.0.10 → 0.0.11)
 
 1. **Config Path Changed**: Move customizations from `config/firstworks-common.toml` to `defaultconfigs/firstworks-server.toml` (for modpacks) or `saves/<world>/serverconfig/firstworks-server.toml` (for existing worlds).
 2. **Charcoal Piles in World**: Charcoal mounds now materialize physical `firstworks:charcoal_pile` blocks in the world upon completion instead of dropping item entities on uncover.
 3. **Legacy Mound Migration**: Existing worlds with completed `"READY"` mounds automatically deserialize as `Phase.LEGACY_READY` and safely convert to physical charcoal piles when chunks load.
+
+---
+
+## 12. Migration Notes (0.0.11 → 0.0.12)
+
+1. **Quern Recipe Schema Unified**: The split Saddle/Rotary querns are now a single Quern block, and `firstworks:quern_grinding` recipes replace `saddle_strokes` and `rotary_duration` with one source-agnostic `work` field (default `60`). Convert existing recipes: `saddle_strokes × 5` ≈ `work` (manual strokes at the default 5 work/crank), or keep rotary timing with `work = rotary_duration` at a 1 work/tick drive. A drive rate of 1 work/tick reproduces the old rotary durations exactly.
+2. **Flour/Dough Common Tags**: `firstworks:flour` is now tagged `#c:flours` + `#c:flours/wheat` and `firstworks:dough` is tagged `#c:doughs` + `#c:doughs/wheat`. Recipe-matching is tag-based, so foreign flour/dough items can join progression by editing tags only.
+3. **Vanilla Food Overrides**: `minecraft:bread`, `minecraft:cookie`, and `minecraft:cake` are replaced under `data/minecraft/recipe/` and now require `#c:flours/wheat` instead of wheat. Wheat → flour → dough → bread is the new progression (see [Food Recipe Overrides & Interop IDs](#7-food-recipe-overrides--interop-ids)). Packs that want vanilla behavior should delete these three override files or remove the routes with KubeJS.
+4. **QuernDriveable API is Rate-Based**: `setDriven(boolean)`/`isDriven()` remain for compatibility, but the primary contract is now `getDriveRate()`/`setDriveRate(int)`. `setDriven(true)` engages at `quernDefaultDrivenWorkPerTick` (default 1), matching previous 1 work/tick behavior. Addons driving with hard-coded `1` continue to work unchanged.
+5. **New Config Options**: `quernManualWorkPerCrank` (default 5) and `quernDefaultDrivenWorkPerTick` (default 1) in `firstworks-server.toml`. Defaults reproduce 0.0.11 behavior (12 cranks per wheat batch; 60 ticks / 3 seconds driven).
