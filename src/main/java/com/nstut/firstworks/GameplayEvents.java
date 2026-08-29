@@ -49,11 +49,17 @@ public final class GameplayEvents {
 
         CharcoalMoundData.IgnitionResult result = CharcoalMoundData.get(level)
                 .ignite(level, event.getPos(), event.getFace());
-        event.getEntity().displayClientMessage(result.message(), true);
-        if (!result.success() || event.getEntity().hasInfiniteMaterials()) return;
-        EquipmentSlot slot = event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND
-                ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
-        tool.hurtAndBreak(1, event.getEntity(), slot);
+        if (!result.isSuccessful()) {
+            if (result.message() != null) {
+                event.getEntity().displayClientMessage(result.message(), true);
+            }
+            return;
+        }
+        if (!event.getEntity().hasInfiniteMaterials()) {
+            EquipmentSlot slot = event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND
+                    ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
+            tool.hurtAndBreak(1, event.getEntity(), slot);
+        }
     }
 
     @SubscribeEvent

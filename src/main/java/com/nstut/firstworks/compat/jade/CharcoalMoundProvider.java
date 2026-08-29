@@ -57,10 +57,15 @@ public enum CharcoalMoundProvider implements IBlockComponentProvider, IServerDat
         String timeFormatted = "%d:%02d".formatted(secondsLeft / 60, secondsLeft % 60);
 
         if ("WAITING_FOR_SEAL".equals(phaseName)) {
+            float progress = Mth.clamp((float) remainingTicks / totalTicks, 0.0F, 1.0F);
             tooltip.add(Component.translatable("jade.firstworks.charcoal_mound.waiting_seal")
                     .withStyle(ChatFormatting.YELLOW));
-            tooltip.add(Component.translatable("jade.firstworks.charcoal_mound.seal_within", timeFormatted)
-                    .withStyle(ChatFormatting.WHITE));
+            tooltip.add(IElementHelper.get().progress(
+                    progress,
+                    Component.translatable("jade.firstworks.charcoal_mound.remaining", timeFormatted)
+                            .withStyle(ChatFormatting.WHITE),
+                    IElementHelper.get().progressStyle().color(0xFF8B4513, 0xFFD2691E).textColor(0xFFFFFFFF),
+                    BoxStyle.getTransparent(), false).size(new Vec2(140, 12)));
         } else if ("CARBONIZING".equals(phaseName)) {
             int expectedYield = data.getInt("MoundExpectedYield");
             float progress = Mth.clamp(1.0F - (float) remainingTicks / totalTicks, 0.0F, 1.0F);

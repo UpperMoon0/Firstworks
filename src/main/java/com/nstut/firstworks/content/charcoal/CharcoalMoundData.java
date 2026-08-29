@@ -72,8 +72,18 @@ public final class CharcoalMoundData extends SavedData {
             chargeByLog.put(log, charge);
         }
         setDirty();
-        level.playSound(null, ignitionLog, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 0.8F, 0.7F);
-        return IgnitionResult.success(Component.translatable("message.firstworks.charcoal.seal_opening"));
+
+        // Diegetic feedback: firecharge sound + visible flame and smoke burst from opening
+        level.playSound(null, ignitionLog, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 0.85F, 0.7F);
+        level.playSound(null, opening, SoundEvents.FIRE_AMBIENT, SoundSource.BLOCKS, 0.7F, 0.9F);
+        level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE,
+                opening.getX() + 0.5, opening.getY() + 0.5, opening.getZ() + 0.5,
+                10, 0.15, 0.15, 0.15, 0.02);
+        level.sendParticles(ParticleTypes.FLAME,
+                opening.getX() + 0.5, opening.getY() + 0.35, opening.getZ() + 0.5,
+                6, 0.12, 0.12, 0.12, 0.015);
+
+        return IgnitionResult.success();
     }
 
     public static boolean canIgnite(ServerLevel level, BlockPos ignitionLog, Direction exposedFace) {
@@ -133,6 +143,16 @@ public final class CharcoalMoundData extends SavedData {
                             continue;
                         }
                     } else if (charge.phase == Phase.CARBONIZING) {
+                        // Dramatic breach feedback
+                        level.playSound(null, breachPos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 1.0F, 0.5F);
+                        level.playSound(null, breachPos, SoundEvents.GENERIC_EXTINGUISH_FIRE, SoundSource.BLOCKS, 0.8F, 0.6F);
+                        level.sendParticles(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE,
+                                breachPos.getX() + 0.5, breachPos.getY() + 0.8, breachPos.getZ() + 0.5,
+                                12, 0.25, 0.25, 0.25, 0.04);
+                        level.sendParticles(ParticleTypes.SMOKE,
+                                breachPos.getX() + 0.5, breachPos.getY() + 0.5, breachPos.getZ() + 0.5,
+                                16, 0.35, 0.35, 0.35, 0.02);
+
                         if (breachTime >= charge.deadline) {
                             materializeCharcoal(level, charge, normalYield);
                         } else {
@@ -164,16 +184,29 @@ public final class CharcoalMoundData extends SavedData {
                 if (level.getBlockState(charge.opening).is(ModTags.CHARCOAL_SEALANTS)) {
                     charge.phase = Phase.CARBONIZING;
                     charge.deadline = level.getGameTime() + carbonizationTicks;
-                    level.playSound(null, charge.opening, SoundEvents.FIRE_EXTINGUISH,
-                            SoundSource.BLOCKS, 0.55F, 0.65F);
+                    // Muffled "whumpf" dirt thud + extinguish
+                    level.playSound(null, charge.opening, SoundEvents.GENERIC_EXTINGUISH_FIRE,
+                            SoundSource.BLOCKS, 0.75F, 0.6F);
+                    level.playSound(null, charge.opening, SoundEvents.GRAVEL_PLACE,
+                            SoundSource.BLOCKS, 0.8F, 0.65F);
                     changed = true;
                 } else if (level.getGameTime() >= charge.deadline) {
                     removeChargeFromIndex(charge);
                     iterator.remove();
                     changed = true;
                     continue;
+                } else {
+                    // Active fire and smoke escaping from opening while waiting for seal
+                    level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE,
+                            charge.opening.getX() + 0.5, charge.opening.getY() + 0.6, charge.opening.getZ() + 0.5,
+                            3, 0.12, 0.1, 0.12, 0.01);
+                    level.sendParticles(ParticleTypes.SMALL_FLAME,
+                            charge.opening.getX() + 0.5, charge.opening.getY() + 0.35, charge.opening.getZ() + 0.5,
+                            1, 0.08, 0.08, 0.08, 0.005);
+                    if (level.getGameTime() % 40L == 0L) {
+                        level.playSound(null, charge.opening, SoundEvents.CAMPFIRE_CRACKLE, SoundSource.BLOCKS, 0.35F, 0.9F);
+                    }
                 }
-                smoke(level, charge.opening, 2);
                 continue;
             }
 
@@ -189,7 +222,21 @@ public final class CharcoalMoundData extends SavedData {
                     iterator.remove();
                     changed = true;
                 } else {
-                    smoke(level, charge.opening, 1);
+                    // Thin smoke leaking through random exterior sealant blocks
+                    for (BlockPos log : charge.logs) {
+                        if (level.random.nextFloat() < 0.25F) {
+                            BlockPos above = log.above();
+                            while (charge.logs.contains(above)) above = above.above();
+                            level.sendParticles(ParticleTypes.SMOKE,
+                                    above.getX() + 0.2 + level.random.nextDouble() * 0.6,
+                                    above.getY() + 1.02,
+                                    above.getZ() + 0.2 + level.random.nextDouble() * 0.6,
+                                    1, 0.02, 0.02, 0.02, 0.005);
+                        }
+                    }
+                    if (level.getGameTime() % 60L == 0L) {
+                        level.playSound(null, charge.opening, SoundEvents.CAMPFIRE_CRACKLE, SoundSource.BLOCKS, 0.12F, 0.6F);
+                    }
                 }
             }
         }
@@ -280,16 +327,15 @@ public final class CharcoalMoundData extends SavedData {
                 level.setBlock(pos, ModBlocks.CHARCOAL_PILE.get().defaultBlockState()
                         .setValue(CharcoalPileBlock.AMOUNT, placeAmount), 3);
                 remaining -= placeAmount;
+
+                // Ash/charcoal dust burst
+                level.sendParticles(ParticleTypes.ASH,
+                        pos.getX() + 0.5, pos.getY() + 0.4, pos.getZ() + 0.5,
+                        3, 0.2, 0.2, 0.2, 0.01);
             }
         }
         level.playSound(null, charge.opening, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.7F, 0.8F);
         level.playSound(null, charge.opening, SoundEvents.WOOD_BREAK, SoundSource.BLOCKS, 0.8F, 0.75F);
-    }
-
-    private static void smoke(ServerLevel level, BlockPos opening, int count) {
-        level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE,
-                opening.getX() + 0.5, opening.getY() + 1.05, opening.getZ() + 0.5,
-                count, 0.12, 0.04, 0.12, 0.005);
     }
 
     @Override
@@ -338,9 +384,9 @@ public final class CharcoalMoundData extends SavedData {
         return data;
     }
 
-    public record IgnitionResult(boolean success, Component message) {
-        static IgnitionResult success(Component message) { return new IgnitionResult(true, message); }
-        static IgnitionResult failure(Component message) { return new IgnitionResult(false, message); }
+    public record IgnitionResult(boolean isSuccessful, @org.jetbrains.annotations.Nullable Component message) {
+        public static IgnitionResult success() { return new IgnitionResult(true, null); }
+        public static IgnitionResult failure(Component message) { return new IgnitionResult(false, message); }
     }
 
     public record MoundStatus(
