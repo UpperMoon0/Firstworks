@@ -62,7 +62,7 @@ Load one clay ball into a Wooden Brick Mold and press twice with an empty hand t
 
 Build charcoal mounds from connected logs surrounded by configurable sealant blocks. Ignite, seal, and wait for the mound to finish; open it to reveal its charcoal yield. Place the Mortar & Pestle workstation, insert a grindable item, and use an empty hand to start its animated grinding process.
 
-Bulk processing expands with the **Quern** (`firstworks:quern`). Load complete batches of grain, minerals, or pigments into the octagonal millstone, then crank the upper runner stone with an empty hand (+5 work per turn) or hook it up to external animal or mechanical rotational power for continuous milling. In Firstworks, wheat is a crop while Flour is a food ingredient: mill grain into Flour (`#c:flours/wheat`) to bake Bread, Cake, and Cookies, while whole wheat remains dedicated to animal feed, breeding, and agriculture.
+Bulk processing expands with the **Quern** (`firstworks:quern`). Load complete batches of grain, minerals, or pigments into the octagonal millstone, then crank the upper runner stone with an empty hand (+5 work per turn) or hook it up to external animal or mechanical rotational power for continuous milling. Mill grain into Flour (`#c:flours/wheat`), knead it with any water vessel into Wheat Dough (`#c:doughs/wheat`), and bake it over a campfire, smoker, or furnace into Bread, or craft Cookies. Whole wheat remains dedicated to animal feed, breeding, and agriculture.
 
 ## Made for survival and modpacks
 

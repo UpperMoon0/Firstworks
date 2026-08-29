@@ -138,6 +138,7 @@
   "jei.firstworks.duration": "Time: %s s",
   "block.firstworks.quern": "Quern",
   "item.firstworks.flour": "Flour",
+  "item.firstworks.dough": "Wheat Dough",
   "jei.firstworks.quern_grinding": "Quern Grinding",
   "jei.firstworks.quern.work": "Required Work: %s",
   "jade.firstworks.quern.empty": "Empty - add a grindable batch",

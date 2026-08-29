@@ -45,7 +45,7 @@ Looking to configure recipes, custom wood types, KubeJS events, animal drop prof
 - **Bulk Milling**: Load grain, minerals, or pigments into the central feed eye of the octagonal millstone.
 - **Manual Cranking**: Right-click with an empty hand to turn the wooden crank peg (+5 work per crank) with tactile sounds, particles, and smooth stone rotation.
 - **Continuous Automation**: Supports external rotational power (animal sweeps, horse power, or kinetic systems) via the `QuernDriveable` contract.
-- **Flour & Baking**: Wheat is a crop; Flour is a food ingredient. Mill wheat into Flour (`#c:flours/wheat`) to bake Bread, Cake, and Cookies, while whole wheat remains dedicated to animal feed, breeding, hay bales, and agriculture.
+- **Flour & Dough**: Mill wheat into Flour (`#c:flours/wheat`) in the Quern, knead with any water container (buckets, clay buckets, water bottles) into Wheat Dough (`#c:doughs/wheat`), and bake over campfires, smokers, or furnaces into Bread, or craft into Cookies. Cake uses flour with milk, sugar, and eggs.
 - **Automation Ready**: Top face accepts input ingredients, bottom face extracts finished products. Compatible with Jade, JEI, datapacks, and KubeJS.
 
 ### 🔪 Primitive Knives, Cordage & Tools

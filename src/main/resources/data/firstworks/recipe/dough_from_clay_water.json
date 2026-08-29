@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "tag": "c:flours/wheat"
+    },
+    {
+      "tag": "c:flours/wheat"
+    },
+    {
+      "tag": "c:flours/wheat"
+    },
+    {
+      "item": "firstworks:water_clay_bucket"
+    }
+  ],
+  "result": {
+    "count": 3,
+    "id": "firstworks:dough"
+  }
+}

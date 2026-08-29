@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "tag": "c:flours/wheat"
+    },
+    {
+      "item": "minecraft:potion"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "firstworks:dough"
+  }
+}
