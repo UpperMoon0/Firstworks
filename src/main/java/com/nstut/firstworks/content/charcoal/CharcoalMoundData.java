@@ -176,9 +176,11 @@ public final class CharcoalMoundData extends SavedData {
     public void onBlockPlaced(ServerLevel level, BlockPos pos) {
         if (charges.isEmpty()) return;
         boolean changed = false;
+        long time = level.getGameTime();
         for (Charge charge : charges) {
             if (charge.phase == Phase.WAITING_FOR_SEAL && charge.opening.equals(pos)) {
                 charge.pendingSeal = pos.immutable();
+                charge.pendingSealTime = time;
                 changed = true;
             }
         }
@@ -215,15 +217,21 @@ public final class CharcoalMoundData extends SavedData {
             // 2. Evaluate deferred 1-tick pending seal (immune to cancellation races)
             if (charge.pendingSeal != null && charge.phase == Phase.WAITING_FOR_SEAL) {
                 BlockPos sealPos = charge.pendingSeal;
+                long sealTime = charge.pendingSealTime;
                 charge.pendingSeal = null;
-                if (level.getBlockState(sealPos).is(ModTags.CHARCOAL_SEALANTS)) {
+                changed = true;
+
+                if (sealTime <= charge.deadline && level.getBlockState(sealPos).is(ModTags.CHARCOAL_SEALANTS)) {
                     charge.phase = Phase.CARBONIZING;
                     charge.deadline = level.getGameTime() + carbonizationTicks;
                     level.playSound(null, charge.opening, SoundEvents.GENERIC_EXTINGUISH_FIRE,
                             SoundSource.BLOCKS, 0.75F, 0.6F);
                     level.playSound(null, charge.opening, SoundEvents.GRAVEL_PLACE,
                             SoundSource.BLOCKS, 0.8F, 0.65F);
-                    changed = true;
+                } else if (level.getGameTime() >= charge.deadline) {
+                    removeChargeFromIndex(charge);
+                    iterator.remove();
+                    continue;
                 }
             }
 
@@ -275,6 +283,12 @@ public final class CharcoalMoundData extends SavedData {
             if (!isPeriodicTick) continue;
 
             if (charge.phase == Phase.WAITING_FOR_SEAL) {
+                if (level.getGameTime() >= charge.deadline) {
+                    removeChargeFromIndex(charge);
+                    iterator.remove();
+                    changed = true;
+                    continue;
+                }
                 if (!charge.logsIntact(level)
                         || !isShellValid(level, charge.logs, charge.opening, true)) {
                     removeChargeFromIndex(charge);
@@ -290,11 +304,6 @@ public final class CharcoalMoundData extends SavedData {
                     level.playSound(null, charge.opening, SoundEvents.GRAVEL_PLACE,
                             SoundSource.BLOCKS, 0.8F, 0.65F);
                     changed = true;
-                } else if (level.getGameTime() >= charge.deadline) {
-                    removeChargeFromIndex(charge);
-                    iterator.remove();
-                    changed = true;
-                    continue;
                 } else {
                     // Active fire and smoke escaping from opening while waiting for seal
                     level.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE,
@@ -406,19 +415,24 @@ public final class CharcoalMoundData extends SavedData {
     }
 
     private static void materializeCharcoal(ServerLevel level, Charge charge, float yield) {
-        int consumed = 0;
+        List<BlockPos> consumedPositions = new ArrayList<>();
         for (BlockPos pos : charge.logs) {
             if (!level.getBlockState(pos).is(ModTags.CHARCOAL_WOODS)) continue;
-            level.removeBlock(pos, false);
-            consumed++;
+            consumedPositions.add(pos.immutable());
         }
-        int totalCharcoal = Mth.floor(consumed * yield);
+
+        int totalCharcoal = Mth.floor(consumedPositions.size() * yield);
+
+        for (BlockPos pos : consumedPositions) {
+            level.removeBlock(pos, false);
+        }
+
         if (totalCharcoal > 0) {
             // Sort bottom-up deterministically: Y ascending, then X ascending, then Z ascending
-            List<BlockPos> sortedPositions = charge.logs.stream()
-                    .sorted(Comparator.<BlockPos>comparingInt(pos -> pos.getY())
-                            .thenComparingInt(pos -> pos.getX())
-                            .thenComparingInt(pos -> pos.getZ()))
+            List<BlockPos> sortedPositions = consumedPositions.stream()
+                    .sorted(Comparator.<BlockPos>comparingInt(BlockPos::getY)
+                            .thenComparingInt(BlockPos::getX)
+                            .thenComparingInt(BlockPos::getZ))
                     .toList();
 
             int remaining = totalCharcoal;
@@ -452,6 +466,10 @@ public final class CharcoalMoundData extends SavedData {
                 entry.putLong("PendingBreach", charge.pendingBreach.asLong());
                 entry.putLong("PendingBreachTime", charge.pendingBreachTime);
             }
+            if (charge.pendingSeal != null) {
+                entry.putLong("PendingSeal", charge.pendingSeal.asLong());
+                entry.putLong("PendingSealTime", charge.pendingSealTime);
+            }
             list.add(entry);
         }
         tag.put("Charges", list);
@@ -480,8 +498,11 @@ public final class CharcoalMoundData extends SavedData {
             }
             BlockPos pendingBreach = entry.contains("PendingBreach") ? BlockPos.of(entry.getLong("PendingBreach")) : null;
             long pendingBreachTime = entry.getLong("PendingBreachTime");
+            BlockPos pendingSeal = entry.contains("PendingSeal") ? BlockPos.of(entry.getLong("PendingSeal")) : null;
+            long pendingSealTime = entry.getLong("PendingSealTime");
             Charge charge = new Charge(logs, BlockPos.of(entry.getLong("Opening")),
-                    phase, entry.getLong("Deadline"), pendingBreach, pendingBreachTime);
+                    phase, entry.getLong("Deadline"), pendingBreach, pendingBreachTime,
+                    pendingSeal, pendingSealTime);
             data.charges.add(charge);
             for (BlockPos log : charge.logs) {
                 data.chargeByLog.put(log, charge);
@@ -512,19 +533,28 @@ public final class CharcoalMoundData extends SavedData {
         private net.minecraft.core.BlockPos pendingBreach;
         private long pendingBreachTime;
         private net.minecraft.core.BlockPos pendingSeal;
+        private long pendingSealTime;
 
         private Charge(Set<BlockPos> logs, BlockPos opening, Phase phase, long deadline) {
-            this(logs, opening, phase, deadline, null, 0L);
+            this(logs, opening, phase, deadline, null, 0L, null, 0L);
         }
 
         private Charge(Set<BlockPos> logs, BlockPos opening, Phase phase, long deadline,
                 net.minecraft.core.BlockPos pendingBreach, long pendingBreachTime) {
+            this(logs, opening, phase, deadline, pendingBreach, pendingBreachTime, null, 0L);
+        }
+
+        private Charge(Set<BlockPos> logs, BlockPos opening, Phase phase, long deadline,
+                net.minecraft.core.BlockPos pendingBreach, long pendingBreachTime,
+                net.minecraft.core.BlockPos pendingSeal, long pendingSealTime) {
             this.logs = Set.copyOf(logs);
             this.opening = opening.immutable();
             this.phase = phase;
             this.deadline = deadline;
             this.pendingBreach = pendingBreach != null ? pendingBreach.immutable() : null;
             this.pendingBreachTime = pendingBreachTime;
+            this.pendingSeal = pendingSeal != null ? pendingSeal.immutable() : null;
+            this.pendingSealTime = pendingSealTime;
         }
 
         private boolean containsOrNeighbors(BlockPos pos) {

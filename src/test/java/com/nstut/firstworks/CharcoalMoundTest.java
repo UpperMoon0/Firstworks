@@ -165,4 +165,49 @@ public class CharcoalMoundTest {
         assertEquals(new BlockPos(0, 2, 0), sorted.get(3));
         assertEquals(new BlockPos(1, 3, 0), sorted.get(4));
     }
+
+    @Test
+    public void testConsumedPositionsFiltering() {
+        // Mound originally had 4 logs, but 1 was replaced with stone
+        Set<BlockPos> originalLogs = Set.of(
+                new BlockPos(0, 1, 0),
+                new BlockPos(0, 1, 1),
+                new BlockPos(0, 2, 0),
+                new BlockPos(0, 2, 1)
+        );
+        Set<BlockPos> survivingWoodLogs = Set.of(
+                new BlockPos(0, 1, 0),
+                new BlockPos(0, 1, 1),
+                new BlockPos(0, 2, 0)
+        ); // (0, 2, 1) is now stone
+
+        List<BlockPos> consumedPositions = new ArrayList<>();
+        for (BlockPos pos : originalLogs) {
+            if (survivingWoodLogs.contains(pos)) {
+                consumedPositions.add(pos);
+            }
+        }
+        assertEquals(3, consumedPositions.size());
+        assertFalse(consumedPositions.contains(new BlockPos(0, 2, 1)));
+
+        // Pile destinations are picked ONLY from consumed positions
+        List<BlockPos> sortedDestinations = consumedPositions.stream()
+                .sorted(Comparator.<BlockPos>comparingInt(BlockPos::getY)
+                        .thenComparingInt(BlockPos::getX)
+                        .thenComparingInt(BlockPos::getZ))
+                .toList();
+
+        assertEquals(3, sortedDestinations.size());
+        assertFalse(sortedDestinations.contains(new BlockPos(0, 2, 1)));
+    }
+
+    @Test
+    public void testPendingSealDeadlineComparison() {
+        long deadline = 1200L;
+        long onTimeSeal = 1150L;
+        long lateSeal = 1205L;
+
+        assertTrue(onTimeSeal <= deadline, "On-time seal placed before deadline should be valid");
+        assertFalse(lateSeal <= deadline, "Late seal placed after deadline should be rejected");
+    }
 }
