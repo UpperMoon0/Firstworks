@@ -90,6 +90,9 @@ public final class CharcoalMoundData extends SavedData {
         Iterator<Charge> iterator = charges.iterator();
         while (iterator.hasNext()) {
             Charge charge = iterator.next();
+            boolean needsWork = (charge.pendingBreach != null || isPeriodicTick);
+            if (!needsWork) continue;
+
             if (!charge.isLoaded(level)) continue;
 
             // 1. Evaluate event-driven pending breach bound to this specific charge
@@ -194,8 +197,13 @@ public final class CharcoalMoundData extends SavedData {
         while (iterator.hasNext()) {
             Charge charge = iterator.next();
             if (charge.phase == Phase.READY && charge.logs.contains(pos)) {
-                finish(level, charge, normalYield, pos);
-                iterator.remove();
+                if (charge.isLoaded(level)) {
+                    finish(level, charge, normalYield, pos);
+                    iterator.remove();
+                } else {
+                    charge.pendingBreach = pos.immutable();
+                    charge.pendingBreachTime = level.getGameTime();
+                }
                 setDirty();
                 return;
             }
@@ -204,14 +212,20 @@ public final class CharcoalMoundData extends SavedData {
 
     public void onBlockBroken(ServerLevel level, BlockPos pos) {
         if (charges.isEmpty()) return;
+        boolean changed = false;
+        long time = level.getGameTime();
         for (Charge charge : charges) {
             if (charge.containsOrNeighbors(pos)) {
-                charge.pendingBreach = pos.immutable();
-                charge.pendingBreachTime = level.getGameTime();
-                setDirty();
-                return;
+                if (charge.pendingBreach == null) {
+                    charge.pendingBreach = pos.immutable();
+                    charge.pendingBreachTime = time;
+                    changed = true;
+                } else {
+                    charge.pendingBreachTime = Math.min(charge.pendingBreachTime, time);
+                }
             }
         }
+        if (changed) setDirty();
     }
 
     private static Set<BlockPos> discoverLogs(ServerLevel level, BlockPos start) {
@@ -386,8 +400,8 @@ public final class CharcoalMoundData extends SavedData {
 
         private boolean isShellNeighbor(BlockPos pos) {
             if (pos.equals(opening)) return true;
-            for (BlockPos log : logs) {
-                if (Math.abs(log.getX() - pos.getX()) + Math.abs(log.getY() - pos.getY()) + Math.abs(log.getZ() - pos.getZ()) == 1) {
+            for (Direction direction : Direction.values()) {
+                if (logs.contains(pos.relative(direction))) {
                     return true;
                 }
             }
