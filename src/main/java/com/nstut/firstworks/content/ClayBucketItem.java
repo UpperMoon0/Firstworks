@@ -15,7 +15,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
-/** A fragile, low-temperature bucket that deliberately accepts only water. */
+/** A fragile, low-temperature earthenware bucket that accepts only Water and Tannin Solution. */
 public final class ClayBucketItem extends BucketItem {
     public ClayBucketItem(Fluid content, Properties properties) {
         super(content, properties);

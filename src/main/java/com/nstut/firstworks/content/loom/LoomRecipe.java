@@ -36,9 +36,9 @@ public record LoomRecipe(Ingredient ingredient, int inputCount, ItemStack result
     public static final class Serializer implements RecipeSerializer<LoomRecipe> {
         private static final MapCodec<LoomRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Ingredient.CODEC.fieldOf("ingredient").forGetter(LoomRecipe::ingredient),
-                Codec.INT.optionalFieldOf("input_count", 1).forGetter(LoomRecipe::inputCount),
+                Codec.intRange(1, 64).optionalFieldOf("input_count", 1).forGetter(LoomRecipe::inputCount),
                 ItemStack.CODEC.fieldOf("result").forGetter(LoomRecipe::result),
-                Codec.INT.optionalFieldOf("strokes", 16).forGetter(LoomRecipe::strokes)
+                Codec.intRange(1, 64).optionalFieldOf("strokes", 16).forGetter(LoomRecipe::strokes)
         ).apply(instance, LoomRecipe::new));
         private static final StreamCodec<RegistryFriendlyByteBuf, LoomRecipe> STREAM_CODEC = StreamCodec.of(
                 (buffer, recipe) -> {

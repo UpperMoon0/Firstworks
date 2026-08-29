@@ -36,8 +36,8 @@ public record BrickMoldingRecipe(Ingredient ingredient, int inputCount, int pres
     public static final class Serializer implements RecipeSerializer<BrickMoldingRecipe> {
         private static final MapCodec<BrickMoldingRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Ingredient.CODEC.fieldOf("ingredient").forGetter(BrickMoldingRecipe::ingredient),
-                Codec.INT.optionalFieldOf("input_count", 1).forGetter(BrickMoldingRecipe::inputCount),
-                Codec.INT.optionalFieldOf("presses", 1).forGetter(BrickMoldingRecipe::presses),
+                Codec.intRange(1, 64).optionalFieldOf("input_count", 1).forGetter(BrickMoldingRecipe::inputCount),
+                Codec.intRange(1, 64).optionalFieldOf("presses", 1).forGetter(BrickMoldingRecipe::presses),
                 ItemStack.CODEC.fieldOf("result").forGetter(BrickMoldingRecipe::result)
         ).apply(instance, BrickMoldingRecipe::new));
         private static final StreamCodec<RegistryFriendlyByteBuf, BrickMoldingRecipe> STREAM_CODEC = StreamCodec.of(

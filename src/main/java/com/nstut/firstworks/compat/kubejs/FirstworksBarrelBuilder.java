@@ -15,6 +15,8 @@ public final class FirstworksBarrelBuilder extends FirstworksVariantBuilder {
 
     public FirstworksBarrelBuilder(ResourceLocation id) {
         super(id);
+        tagBlock(new ResourceLocation[]{Firstworks.id("barrels")});
+        tagItem(new ResourceLocation[]{Firstworks.id("barrels")});
     }
 
     void configure(ResourceLocation planks, ResourceLocation slab, ResourceLocation plankTexture,

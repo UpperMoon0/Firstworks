@@ -21,7 +21,7 @@ Fill a Barrel with buckets or bottles, add a material, and seal it to begin a va
 
 ## Fibre, cordage, and stronger tools
 
-Gather Plant Fibre from grass and ferns, twist emergency Crude Cordage, and ret better fibres in a Barrel. Hold a durable Hand Spindle with fibre in your offhand to spin it into Twine, complete with a rotating three-dimensional spindle, working sounds, and particles. Twine can be woven into Cloth or combined into Rope. Gathering by hand has a modest chance to produce fibre, while using a sword guarantees it. Primitive Bone and Flint tools offer early options before metalworking. Wooden, stone, bone, and flint tools need a simple binding, while iron, gold, and diamond tools call for proper Rope.
+Gather Plant Fibre from grass and ferns, twist emergency Crude Cordage, and ret better fibres in a Barrel. Hold a durable Hand Spindle with fibre in your offhand to spin it into Twine, complete with a rotating three-dimensional spindle, working sounds, and particles. Twine can be woven into Cloth or combined into Rope. Gathering by hand has a modest chance to produce fibre, while using a Bone or Flint Knife guarantees it. Primitive Bone and Flint tools offer early options before metalworking. Wooden, stone, bone, and flint tools need a simple binding, while iron, gold, and diamond tools call for proper Rope.
 
 Bind a vanilla torch, stick, and Crude Cordage or Rope into a **Standing Torch**—a rustic, 1.6-block tall floor-supported torch stand (light level 14) with flame and smoke particles. Flint, Plant Fibre, and either primitive binding also make a single-use **Fire Starter** that ignites or relights campfires before breaking after one use.
 
@@ -32,7 +32,7 @@ An early Clay Bucket bridges the gap before iron: shape it from clay, fire it on
 Animals drop **Raw Hide** instead of ready-made leather, and crafting 4 Rabbit Hides yields Raw Hide instead of finished leather. Producing leather demonstrates the full primitive workflow:
 
 1. Soak Raw Hide in water.
-2. Scrape the softened hide with a sword.
+2. Scrape the softened hide with a Bone or Flint Knife.
 3. Strip logs with an axe to gather Tree Bark.
 4. Brew bark and water into Tannin Solution inside a sealed Barrel.
 5. Tan the scraped hide in the solution.
@@ -58,7 +58,9 @@ Turn Twine or String into Cloth on a functional wooden Loom. Load thread directl
 
 ## Primitive masonry
 
-Load one clay ball into a single-cavity Wooden Brick Mold (featuring an integrated molding board base for reliable center interaction) and press twice with an empty hand. The material visibly spreads farther across the cavity after each press, ending as a fully packed clay-textured surface tinted from the recipe output. Collect the unfired brick and fire it over a campfire, then mix sand and water into Wet Mortar in a sealed Barrel to bind structural blocks. The Mold supports hopper loading, output extraction, empty-handed Create Deployers, and custom press counts through datapacks or KubeJS.
+Load one clay ball into a Wooden Brick Mold and press twice with an empty hand to form an unfired brick. Fire it over a campfire, then mix sand and water into Wet Mortar in a sealed Barrel. The mold supports hopper loading, output extraction, Create Deployers, and custom press counts through datapacks or KubeJS.
+
+Build charcoal mounds from connected logs surrounded by configurable sealant blocks. Ignite, seal, and wait for the mound to finish; open it to reveal its charcoal yield. Place the Mortar & Pestle workstation, insert a grindable item, and use an empty hand to start its animated grinding process.
 
 ## Made for survival and modpacks
 
@@ -66,8 +68,8 @@ Firstworks can stand alone as a tactile early-game mechanic or serve as the prim
 
 Optional integrations make the system easier to read without changing its in-world character:
 
-- **Jade** shows live Barrel status and Loom loading, weaving progress, and completed output.
-- **JEI** adds dedicated Barrel Processing, Hand Spinning, and Loom Weaving recipe categories.
+- **Jade** shows live Barrel, Loom, and Mortar & Pestle status.
+- **JEI** adds dedicated processing, spinning, weaving, brick-molding, and grinding categories.
 
 ## Credits
 

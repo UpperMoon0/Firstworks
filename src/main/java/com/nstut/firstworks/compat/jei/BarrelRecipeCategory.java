@@ -55,11 +55,20 @@ public final class BarrelRecipeCategory implements IRecipeCategory<BarrelRecipe>
             inputItem.addIngredients(recipe.ingredient());
         }
 
-        Fluid inputFluid = BuiltInRegistries.FLUID.get(recipe.fluid());
-        builder.addSlot(RecipeIngredientRole.INPUT, 27, 5)
+        IRecipeSlotBuilder fluidSlot = builder.addSlot(RecipeIngredientRole.INPUT, 27, 5)
                 .setStandardSlotBackground()
-                .setFluidRenderer(Math.max(1000, recipe.fluidAmount()), true, 16, 16)
-                .addFluidStack(inputFluid, recipe.fluidAmount());
+                .setFluidRenderer(Math.max(1000, recipe.fluidAmount()), true, 16, 16);
+
+        recipe.fluid().target().ifLeft(loc -> {
+            Fluid inputFluid = BuiltInRegistries.FLUID.get(loc);
+            fluidSlot.addFluidStack(inputFluid, recipe.fluidAmount());
+        }).ifRight(tag -> {
+            var tagLookup = BuiltInRegistries.FLUID.getTag(tag);
+            if (tagLookup.isPresent()) {
+                tagLookup.get().stream()
+                        .forEach(holder -> fluidSlot.addFluidStack(holder.value(), recipe.fluidAmount()));
+            }
+        });
 
         boolean hasOutputFluid = !recipe.outputFluid().equals(BarrelRecipe.NO_FLUID)
                 && recipe.outputFluidAmount() > 0;

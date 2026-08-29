@@ -8,6 +8,8 @@ import com.nstut.firstworks.content.loom.LoomRecipe;
 import com.nstut.firstworks.content.SpinningRecipe;
 import com.nstut.firstworks.content.brick_mold.BrickMoldBlockEntity;
 import com.nstut.firstworks.content.brick_mold.BrickMoldingRecipe;
+import com.nstut.firstworks.content.mortar.MortarBlockEntity;
+import com.nstut.firstworks.content.MortarGrindingRecipe;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -66,6 +68,16 @@ public final class OptionalIntegrations {
         if (KUBE_JS_LOADED) {
             KubeJSCompat.fireBrickMoldingCompleted(level, mold, recipeId, recipe, input, result);
         }
+    }
+
+    public static boolean fireMortarGrindingStarting(ServerLevel level, MortarBlockEntity mortar,
+            ResourceLocation recipeId, MortarGrindingRecipe recipe, ItemStack input, ItemStack result) {
+        return KUBE_JS_LOADED && KubeJSCompat.fireMortarGrindingStarting(level, mortar, recipeId, recipe, input, result);
+    }
+
+    public static void fireMortarGrindingCompleted(ServerLevel level, MortarBlockEntity mortar,
+            ResourceLocation recipeId, MortarGrindingRecipe recipe, ItemStack input, ItemStack result) {
+        if (KUBE_JS_LOADED) KubeJSCompat.fireMortarGrindingCompleted(level, mortar, recipeId, recipe, input, result);
     }
 
     private OptionalIntegrations() {}

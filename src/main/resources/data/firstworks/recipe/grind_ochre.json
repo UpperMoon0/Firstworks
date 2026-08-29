@@ -1,0 +1,6 @@
+{
+  "type": "firstworks:mortar_grinding",
+  "ingredient": { "item": "firstworks:raw_ochre" },
+  "result": { "id": "firstworks:ground_ochre", "count": 2 },
+  "duration": 48
+}

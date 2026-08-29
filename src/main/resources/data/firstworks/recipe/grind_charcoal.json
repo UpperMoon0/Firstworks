@@ -1,0 +1,6 @@
+{
+  "type": "firstworks:mortar_grinding",
+  "ingredient": { "item": "minecraft:charcoal" },
+  "result": { "id": "firstworks:charcoal_powder", "count": 2 },
+  "duration": 40
+}

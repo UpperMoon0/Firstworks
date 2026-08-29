@@ -3,10 +3,10 @@ package com.nstut.firstworks.content;
 import com.mojang.serialization.MapCodec;
 import com.nstut.firstworks.registry.ModItems;
 import com.nstut.firstworks.registry.ModRecipes;
+import com.nstut.firstworks.registry.ModTags;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;
@@ -19,7 +19,7 @@ public final class ScrapingRecipe extends ShapelessRecipe {
         super("", CraftingBookCategory.MISC, new ItemStack(ModItems.SCRAPED_HIDE.get()),
                 NonNullList.of(Ingredient.EMPTY,
                         Ingredient.of(ModItems.SOAKED_HIDE.get()),
-                        Ingredient.of(ItemTags.SWORDS)));
+                        Ingredient.of(ModTags.PRIMITIVE_KNIVES)));
     }
 
     @Override
@@ -27,14 +27,14 @@ public final class ScrapingRecipe extends ShapelessRecipe {
         NonNullList<ItemStack> remaining = NonNullList.withSize(input.size(), ItemStack.EMPTY);
         for (int slot = 0; slot < input.size(); slot++) {
             ItemStack stack = input.getItem(slot);
-            if (!stack.is(ItemTags.SWORDS)) continue;
-            ItemStack sword = stack.copyWithCount(1);
-            if (sword.isDamageableItem()) {
-                int damage = sword.getDamageValue() + 1;
-                if (damage >= sword.getMaxDamage()) continue;
-                sword.setDamageValue(damage);
+            if (!stack.is(ModTags.PRIMITIVE_KNIVES)) continue;
+            ItemStack knife = stack.copyWithCount(1);
+            if (knife.isDamageableItem()) {
+                int damage = knife.getDamageValue() + 1;
+                if (damage >= knife.getMaxDamage()) continue;
+                knife.setDamageValue(damage);
             }
-            remaining.set(slot, sword);
+            remaining.set(slot, knife);
         }
         return remaining;
     }

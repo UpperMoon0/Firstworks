@@ -61,6 +61,14 @@ public final class ModItems {
             () -> new ColoredFleeceItem(new Item.Properties()));
     public static final DeferredHolder<Item, Item> CLEAN_WOOL = ITEMS.register("clean_wool",
             () -> new ColoredFleeceItem(new Item.Properties()));
+    public static final DeferredHolder<Item, Item> BASKET = ITEMS.register("basket",
+            () -> new BlockItem(ModBlocks.BASKET.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> COPPER_FASTENERS = simple("copper_fasteners");
+    public static final DeferredHolder<Item, Item> MORTAR_AND_PESTLE = ITEMS.register("mortar_and_pestle",
+            () -> new BlockItem(ModBlocks.MORTAR_AND_PESTLE.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> CHARCOAL_POWDER = simple("charcoal_powder");
+    public static final DeferredHolder<Item, Item> RAW_OCHRE = simple("raw_ochre");
+    public static final DeferredHolder<Item, Item> GROUND_OCHRE = simple("ground_ochre");
     public static final DeferredHolder<Item, Item> TANNIN_SOLUTION_BUCKET = ITEMS.register("tannin_solution_bucket",
             () -> new TanninSolutionBucketItem(ModFluids.TANNIN_SOLUTION.get(),
                     new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
@@ -76,6 +84,8 @@ public final class ModItems {
             () -> new HoeItem(ModToolTiers.BONE, new Item.Properties().attributes(HoeItem.createAttributes(ModToolTiers.BONE, -1.0F, -2.0F))));
     public static final DeferredHolder<Item, Item> BONE_SWORD = ITEMS.register("bone_sword",
             () -> new SwordItem(ModToolTiers.BONE, new Item.Properties().attributes(SwordItem.createAttributes(ModToolTiers.BONE, 3, -2.4F))));
+    public static final DeferredHolder<Item, Item> BONE_KNIFE = ITEMS.register("bone_knife",
+            () -> new SwordItem(ModToolTiers.BONE, new Item.Properties().attributes(SwordItem.createAttributes(ModToolTiers.BONE, 1, -2.0F))));
 
     // Flint tools
     public static final DeferredHolder<Item, Item> FLINT_PICKAXE = ITEMS.register("flint_pickaxe",
@@ -88,6 +98,8 @@ public final class ModItems {
             () -> new HoeItem(ModToolTiers.FLINT, new Item.Properties().attributes(HoeItem.createAttributes(ModToolTiers.FLINT, -1.0F, -2.0F))));
     public static final DeferredHolder<Item, Item> FLINT_SWORD = ITEMS.register("flint_sword",
             () -> new SwordItem(ModToolTiers.FLINT, new Item.Properties().attributes(SwordItem.createAttributes(ModToolTiers.FLINT, 3, -2.4F))));
+    public static final DeferredHolder<Item, Item> FLINT_KNIFE = ITEMS.register("flint_knife",
+            () -> new SwordItem(ModToolTiers.FLINT, new Item.Properties().attributes(SwordItem.createAttributes(ModToolTiers.FLINT, 1, -1.8F))));
 
     public static final Map<String, DeferredHolder<Item, Item>> BARREL_ITEMS = registerBarrelItems();
     public static final DeferredHolder<Item, Item> BARREL = BARREL_ITEMS.get("barrel");

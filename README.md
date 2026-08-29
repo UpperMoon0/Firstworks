@@ -6,6 +6,54 @@ The included hide-tanning chain is the first complete use of this system, not it
 
 Firstworks has no dependency on Create or the Inventors modpack.
 
+## Data-driven animal materials
+
+Firstworks owns reusable raw-hide and animal-bone drops, supporting both fine-grained data-driven mob profiles and broad entity tags.
+
+### Priority and Precedence Order
+
+When a living entity dies, Firstworks evaluates drops in this strict order:
+1. **Exclusion tags (`#firstworks:no_*`)**: Highest priority packmaker veto. If an entity is tagged here, Firstworks will not modify its bone or hide drops under any circumstances.
+2. **Animal Material Profiles (`data/<namespace>/firstworks/animal_materials/<name>.json`)**: Fine-grained per-entity drop profiles configuring precise min/max bone and hide counts with Looting scaling.
+3. **Fallback Tags (`#firstworks:drops_bones`, `#firstworks:leather_drops_as_raw_hide`)**: Generic 1–2 drop rules for entities without custom profiles.
+4. **Unmodified Vanilla/Modded**: No Firstworks changes applied.
+
+### Animal Material Profile Schema
+
+Create JSON files under `data/<namespace>/firstworks/animal_materials/<name>.json`:
+
+```json
+{
+  "entity": "examplemod:large_deer",
+  "bones": {
+    "min": 3,
+    "max": 6,
+    "looting_bonus": 1
+  },
+  "hide": {
+    "min": 2,
+    "max": 4,
+    "looting_bonus": 1
+  }
+}
+```
+
+- `entity`: The entity type ID (e.g. `minecraft:cow`, `naturalist:elephant`).
+- `bones` *(optional)*: `min` (inclusive), `max` (inclusive), `looting_bonus` (extra rolled per Looting level).
+- `hide` *(optional)*: `min` (inclusive), `max` (inclusive), `looting_bonus`.
+- **Hide Normalization**: When a profile defines a `hide` drop, Firstworks automatically removes any existing `minecraft:leather` and modded raw hides matching `#firstworks:raw_hides` (such as `naturalist:hide`) before adding the profile-defined `firstworks:raw_hide` amount. This completely prevents duplicate hide drops when integrating third-party animal mods.
+
+### Tags
+
+- `#firstworks:drops_bones`
+- `#firstworks:no_bone_drops`
+- `#firstworks:leather_drops_as_raw_hide`
+- `#firstworks:no_raw_hide_drops`
+- `#firstworks:charcoal_igniters`
+- `#firstworks:ochre_sources`
+
+The default bone list contains vertebrate animals. Squid, glow squid, bees, allays, and undead horses are intentionally excluded. Bone drops and leather replacement can also be disabled independently in the common config.
+
 ## Primitive barrel processing
 
 - Craft a Barrel from matching planks and slabs. Every vanilla wood family has a variant.
@@ -14,13 +62,13 @@ Firstworks has no dependency on Create or the Inventors modpack.
 - See the stored item and fluid, including separate input and output fluid levels, without opening a menu.
 - Collect completed output before toggling the lid again.
 - Toggle the lid with a rising redstone pulse for simple early automation.
-- Open Barrels can optionally collect rainwater when `rainFillsBarrels` is enabled in `config/firstworks-common.toml` (disabled by default). Rain only fills the input side and never contaminates a non-water input or the output side. Because the Barrel now keeps separate input and output fluid stores that share one 4000 mB capacity, rain can leave any remainder (e.g. 317 mB) without breaking the exact fluid amounts Firstworks' recipes require; open a recipe from partial water by topping it up or starting from ingredients that only consume what they need. Collection is driven by Minecraft's precipitation ticks, so its effective rate scales with the `randomTickSpeed` game rule and is intentionally gradual.
+- Open Barrels collect rainwater by default; this can be disabled with `rainFillsBarrels` in `config/firstworks-common.toml`. Rain only fills the input side and never contaminates a non-water input or the output side. Because the Barrel now keeps separate input and output fluid stores that share one 4000 mB capacity, rain can leave any remainder (e.g. 317 mB) without breaking the exact fluid amounts Firstworks' recipes require; open a recipe from partial water by topping it up or starting from ingredients that only consume what they need. Collection is driven by Minecraft's precipitation ticks, so its effective rate scales with the `randomTickSpeed` game rule and is intentionally gradual.
 
 Opening a working Barrel cancels its current progress without consuming or ejecting the contents. Standard NeoForge item and fluid capabilities are exposed for modded automation with clean sided routing: items enter from above and finished items leave below; fluid fills the input store from above and drains finished output fluid from below; side access allows combined item insertion/extraction and fluid input filling with output-first drainage. Sealing the lid locks all automated item and fluid insertion and extraction until the Barrel is opened again.
 
 ## Built-in cordage and leatherworking
 
-Grass and ferns have a 30% chance to provide Plant Fibre when gathered normally; using any sword guarantees the fibre. Hand-twist it into Crude Cordage for primitive tools, then ret fibre in a water-filled Barrel. Craft early Bone and Flint tools (pickaxe, axe, shovel, hoe, sword) as accessible alternatives before metalworking. To spin fibre, hold the durable Hand Spindle in your main hand, place two Retted Fibre in your offhand, and hold use until they become two Twine. Releasing early cancels without consuming the fibre. Twine can then be woven into Cloth or combined into Rope. Wooden, stone, bone, and flint tools require primitive bindings; vanilla iron, gold, and diamond tools require Rope by default; netherite upgrades retain the bound diamond tool beneath them.
+Grass and ferns have a 30% chance to provide Plant Fibre when gathered normally; using a Bone or Flint Knife guarantees the fibre. Hand-twist it into Crude Cordage for primitive tools, then ret fibre in a water-filled Barrel. Craft early Bone and Flint tools (pickaxe, axe, shovel, hoe, sword, and knife) as accessible alternatives before metalworking. To spin fibre, hold the durable Hand Spindle in your main hand, place two Retted Fibre in your offhand, and hold use until they become two Twine. Releasing early cancels without consuming the fibre. Twine can then be woven into Cloth or combined into Rope. Wooden, stone, bone, and flint tools require primitive bindings; vanilla iron, gold, and diamond tools require Rope by default; netherite upgrades retain the bound diamond tool beneath them.
 
 Bind a vanilla torch, stick, and Crude Cordage or Rope into a **Standing Torch**—a rustic, floor-supported torch stand (light level 14) with flame and smoke particles and solid collision. Combine flint, Plant Fibre, and Crude Cordage or Rope into a single-use **Fire Starter** that ignites or relights campfires and fire targets before breaking after one use.
 
@@ -32,7 +80,7 @@ Firstworks uses the Barrel to turn leather into a physical early-game production
 
 1. Animals that normally drop leather drop Raw Hide instead, and crafting 4 Rabbit Hides yields Raw Hide instead of finished leather.
 2. Soak Raw Hides in water.
-3. Scrape each Soaked Hide with any sword, consuming one durability.
+3. Scrape each Soaked Hide with a Bone or Flint Knife, consuming one durability.
 4. Strip logs with an axe to collect one to three Tree Bark.
 5. Seal Tree Bark in water to brew Tannin Solution.
 6. Tan Scraped Hide in the solution.
@@ -53,6 +101,12 @@ This progression is controlled by `enableTextileProgression` in `config/firstwor
 Place one clay ball into the single-cavity Wooden Brick Mold (equipped with an integrated wooden molding board base for reliable center interaction), press it twice with an empty hand, and collect the unfired brick. Each press visibly spreads the material farther across the cavity until it becomes a fully compressed, clay-textured surface tinted from the recipe output. Fire unfired bricks over a campfire, then mix sand and water into Wet Mortar in a sealed Barrel to bind structural Brick Blocks. The Mold has no menu: hoppers can load material and remove completed output, and an empty-handed Create Deployer can automate each press.
 
 Brick-molding recipes are data-driven, appear in JEI, and can be added through KubeJS. The `enableMasonryProgression` option controls whether this chain replaces vanilla brick smelting and block crafting.
+
+## Charcoal and grinding
+
+Build a charcoal mound from four or more connected log blocks, surround it with blocks in `#firstworks:charcoal_sealants`, and ignite one exposed opening with a Fire Starter or flint and steel. Seal the opening and wait for carbonization; the completed mound persists through chunk unloading and yields charcoal when opened. Wood and sealant tags are data-driven for modpack expansion.
+
+Place the Mortar & Pestle as a workstation, insert a grindable item, and use an empty hand to start its visible pestle animation. Recipes are data-driven and support KubeJS and JEI.
 
 ## Datapacks and KubeJS
 
@@ -146,11 +200,19 @@ FirstworksEvents.brickMoldingStarting(event => {
 FirstworksEvents.brickMoldingCompleted(event => {
   console.info(`Molded ${event.result} at ${event.pos}`)
 })
+
+FirstworksEvents.mortarGrindingStarting(event => {
+  // event.cancel() prevents this grinding attempt.
+})
+
+FirstworksEvents.mortarGrindingCompleted(event => {
+  console.info(`Ground ${event.result} at ${event.pos}`)
+})
 ```
 
 ## Optional integrations
 
-- **Jade** shows live Barrel processing and Loom loading, stroke progress, cancellation, and both the stored input and output fluid levels (the top layer is whichever fluid is in the output store).
+- **Jade** shows live Barrel processing, Loom loading/weaving, and Mortar & Pestle grinding status.
 - **JEI** provides dedicated Barrel Processing, Hand Spinning, and Loom Weaving categories with their tools and wood variants registered as catalysts.
 
 ## Credits

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": ["F", "T", "S"],
+  "key": {
+    "F": { "item": "minecraft:flint" },
+    "T": { "tag": "firstworks:primitive_bindings" },
+    "S": { "item": "minecraft:stick" }
+  },
+  "result": { "id": "firstworks:flint_knife" }
+}
