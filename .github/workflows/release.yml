@@ -27,6 +27,21 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
+
+      - name: Build Firstworks
+        run: ./gradlew clean test build
+
       - name: Ensure Git tag exists
         id: ensure_tag
         shell: bash
@@ -49,21 +64,6 @@ jobs:
             git tag -a "$tag" -m "Firstworks ${mod_version}"
             git push origin "$tag"
           fi
-
-      - name: Setup Java 21
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Make Gradle executable
-        run: chmod +x ./gradlew
-
-      - name: Build Firstworks
-        run: ./gradlew clean test build
 
       - name: Read mod version and locate artifacts
         id: release_file
