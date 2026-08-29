@@ -8,6 +8,7 @@ import com.nstut.firstworks.content.basket.BasketBlockEntity;
 import com.nstut.firstworks.content.loom.LoomBlockEntity;
 import com.nstut.firstworks.content.loom.LoomBlock;
 import com.nstut.firstworks.content.mortar.MortarBlockEntity;
+import com.nstut.firstworks.content.quern.QuernBlockEntity;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -32,6 +33,9 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MortarBlockEntity>> MORTAR = TYPES.register(
             "mortar_and_pestle", () -> BlockEntityType.Builder.of(MortarBlockEntity::new,
                     ModBlocks.MORTAR_AND_PESTLE.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<QuernBlockEntity>> QUERN = TYPES.register(
+            "quern", () -> BlockEntityType.Builder.of(QuernBlockEntity::new,
+                    ModBlocks.QUERN.get()).build(null));
 
     public static void register(IEventBus bus) {
         TYPES.register(bus);
@@ -45,6 +49,7 @@ public final class ModBlockEntities {
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BRICK_MOLD.get(), (mold, side) -> mold.getItemHandler(side));
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BASKET.get(), (basket, side) -> basket.getItemHandler());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, MORTAR.get(), (mortar, side) -> mortar.getItemHandler(side));
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, QUERN.get(), (quern, side) -> quern.getItemHandler(side));
     }
 
     private ModBlockEntities() {}

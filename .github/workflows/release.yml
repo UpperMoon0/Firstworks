@@ -4,7 +4,15 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'gradle.properties'
+    tags:
+      - 'v*'
   workflow_dispatch:
+
+concurrency:
+  group: release-workflow
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -16,6 +24,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Java 21
         uses: actions/setup-java@v5
@@ -31,6 +41,29 @@ jobs:
 
       - name: Build Firstworks
         run: ./gradlew clean test build
+
+      - name: Ensure Git tag exists
+        id: ensure_tag
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mod_version="$(sed -n 's/^mod_version[[:space:]]*=[[:space:]]*//p' gradle.properties | head -n1 | tr -d '\r' | xargs)"
+          if [[ -z "$mod_version" ]]; then
+            echo "mod_version is missing from gradle.properties" >&2
+            exit 1
+          fi
+          tag="v${mod_version}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --tags origin "$tag" | grep -q .; then
+            echo "Tag $tag already exists."
+          else
+            echo "Creating tag $tag..."
+            git tag -a "$tag" -m "Firstworks ${mod_version}"
+            git push origin "$tag"
+          fi
 
       - name: Read mod version and locate artifacts
         id: release_file

@@ -1,0 +1,89 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "minecraft:block/stone",
+    "stone": "minecraft:block/stone",
+    "wood": "minecraft:block/oak_planks",
+    "log": "minecraft:block/oak_log"
+  },
+  "elements": [
+    {
+      "comment": "Upper octagonal runner north sector",
+      "from": [5, 6, 9.5],
+      "to": [11, 8.5, 14],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Upper octagonal runner south sector",
+      "from": [5, 6, 2],
+      "to": [11, 8.5, 6.5],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Upper octagonal runner west sector",
+      "from": [2, 6, 5],
+      "to": [6.5, 8.5, 11],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Upper octagonal runner east sector",
+      "from": [9.5, 6, 5],
+      "to": [14, 8.5, 11],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Upper octagonal runner diagonal corners",
+      "from": [3.5, 6, 3.5],
+      "to": [12.5, 8.5, 12.5],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Vertical wooden hand crank peg",
+      "from": [11, 8.5, 7.25],
+      "to": [12.5, 12.5, 8.75],
+      "faces": {
+        "up":    { "texture": "#log" },
+        "down":  { "texture": "#log" },
+        "north": { "texture": "#wood" },
+        "south": { "texture": "#wood" },
+        "west":  { "texture": "#wood" },
+        "east":  { "texture": "#wood" }
+      }
+    }
+  ]
+}

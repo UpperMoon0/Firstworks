@@ -41,6 +41,14 @@ Looking to configure recipes, custom wood types, KubeJS events, animal drop prof
 ### 🥣 Mortar & Pestle
 - Place on any surface, add grindable materials (Raw Ochre, Charcoal, Bone), and right-click to grind. Features an animated in-world pestle.
 
+### 🪨 Quern Workstation
+- **Bulk Milling**: Load grain, minerals, or pigments into the central feed eye of the octagonal millstone.
+- **Manual Cranking**: Right-click with an empty hand to turn the wooden crank peg (+5 work per crank by default, configurable) with tactile sounds, particles, and smooth stone rotation.
+- **Hand Operated**: The Quern is intentionally player-powered. Item insertion and output extraction can be automated, but processing itself cannot.
+- **Progression Role**: Mortar & Pestle handles precision grinding, the Quern provides manual bulk grinding, and mechanized mills belong to later technological progression.
+- **Flour & Dough**: Mill wheat into Flour (`#c:flours/wheat`) in the Quern, knead with water buckets, clay water buckets, or vanilla water bottles into Wheat Dough (`#c:doughs/wheat`), and bake over campfires, smokers, or furnaces into Bread, or craft into Cookies. Cake uses flour with milk, sugar, and eggs.
+- **Transfer Automation**: Top face accepts input ingredients and the bottom face extracts finished products. Compatible with Jade, JEI, datapacks, and KubeJS.
+
 ### 🔪 Primitive Knives, Cordage & Tools
 - **Flint & Bone Knives**: Used for guaranteed plant fibre harvesting from grass, hide scraping, and early crafting.
 - **Cordage & Bindings**: Hand-twist Plant Fibre into Crude Cordage. Wooden and stone tools require primitive bindings; metal and diamond tools require Rope.
@@ -58,8 +66,8 @@ Looking to configure recipes, custom wood types, KubeJS events, animal drop prof
 
 ## Integrations
 
-- **Jade**: Live in-world tooltips for Barrels, Looms, Brick Molds, Mortar & Pestle, Charcoal Mounds (with progress bars and remaining time visible through the outer shell), and Charcoal Piles.
-- **JEI**: Dedicated recipe categories for Barrel Processing, Hand Spinning, Loom Weaving, Brick Molding, Mortar Grinding, and dynamic Charcoal Mound Information.
+- **Jade**: Live in-world tooltips for Barrels, Looms, Brick Molds, Mortar & Pestle, Querns, Charcoal Mounds, and Charcoal Piles.
+- **JEI**: Dedicated categories for Barrel Processing, Hand Spinning, Loom Weaving, Brick Molding, Mortar Grinding, Quern Grinding, and dynamic Charcoal Mound Information.
 - **KubeJS**: Custom wood type registration (`Firstworks.registerWoodType`), recipe support via `event.custom({...})`, and event handlers for process start/completion.
 
 ---

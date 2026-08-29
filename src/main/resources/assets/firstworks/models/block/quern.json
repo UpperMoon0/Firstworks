@@ -1,0 +1,137 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "minecraft:block/stone",
+    "stone": "minecraft:block/stone",
+    "andesite": "minecraft:block/andesite",
+    "wood": "minecraft:block/oak_planks",
+    "log": "minecraft:block/oak_log"
+  },
+  "elements": [
+    {
+      "comment": "Wooden sleeper south",
+      "from": [1, 0, 2],
+      "to": [15, 2, 5],
+      "faces": {
+        "down":  { "texture": "#wood", "cullface": "down" },
+        "up":    { "texture": "#wood" },
+        "north": { "texture": "#wood" },
+        "south": { "texture": "#wood" },
+        "west":  { "texture": "#log" },
+        "east":  { "texture": "#log" }
+      }
+    },
+    {
+      "comment": "Wooden sleeper north",
+      "from": [1, 0, 11],
+      "to": [15, 2, 14],
+      "faces": {
+        "down":  { "texture": "#wood", "cullface": "down" },
+        "up":    { "texture": "#wood" },
+        "north": { "texture": "#wood" },
+        "south": { "texture": "#wood" },
+        "west":  { "texture": "#log" },
+        "east":  { "texture": "#log" }
+      }
+    },
+    {
+      "comment": "Octagonal bedstone north-south cross",
+      "from": [4.5, 2, 1.5],
+      "to": [11.5, 6, 14.5],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Octagonal bedstone east-west cross",
+      "from": [1.5, 2, 4.5],
+      "to": [14.5, 6, 11.5],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Octagonal bedstone diagonal filler",
+      "from": [3, 2, 3],
+      "to": [13, 6, 13],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Andesite catching rim north",
+      "from": [4, 2, 14.5],
+      "to": [12, 6.5, 15.5],
+      "faces": {
+        "up":    { "texture": "#andesite" },
+        "north": { "texture": "#andesite" },
+        "south": { "texture": "#andesite" },
+        "west":  { "texture": "#andesite" },
+        "east":  { "texture": "#andesite" }
+      }
+    },
+    {
+      "comment": "Andesite catching rim south",
+      "from": [4, 2, 0.5],
+      "to": [12, 6.5, 1.5],
+      "faces": {
+        "up":    { "texture": "#andesite" },
+        "north": { "texture": "#andesite" },
+        "south": { "texture": "#andesite" },
+        "west":  { "texture": "#andesite" },
+        "east":  { "texture": "#andesite" }
+      }
+    },
+    {
+      "comment": "Andesite catching rim west",
+      "from": [0.5, 2, 4],
+      "to": [1.5, 6.5, 12],
+      "faces": {
+        "up":    { "texture": "#andesite" },
+        "north": { "texture": "#andesite" },
+        "south": { "texture": "#andesite" },
+        "west":  { "texture": "#andesite" },
+        "east":  { "texture": "#andesite" }
+      }
+    },
+    {
+      "comment": "Andesite catching rim east",
+      "from": [14.5, 2, 4],
+      "to": [15.5, 6.5, 12],
+      "faces": {
+        "up":    { "texture": "#andesite" },
+        "north": { "texture": "#andesite" },
+        "south": { "texture": "#andesite" },
+        "west":  { "texture": "#andesite" },
+        "east":  { "texture": "#andesite" }
+      }
+    },
+    {
+      "comment": "Center wooden spindle",
+      "from": [7, 6, 7],
+      "to": [9, 10, 9],
+      "faces": {
+        "up":    { "texture": "#log" },
+        "north": { "texture": "#wood" },
+        "south": { "texture": "#wood" },
+        "west":  { "texture": "#wood" },
+        "east":  { "texture": "#wood" }
+      }
+    }
+  ]
+}

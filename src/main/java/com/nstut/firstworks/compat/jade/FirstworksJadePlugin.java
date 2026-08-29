@@ -9,6 +9,8 @@ import com.nstut.firstworks.content.loom.LoomBlock;
 import com.nstut.firstworks.content.loom.LoomBlockEntity;
 import com.nstut.firstworks.content.mortar.MortarBlock;
 import com.nstut.firstworks.content.mortar.MortarBlockEntity;
+import com.nstut.firstworks.content.quern.QuernBlock;
+import com.nstut.firstworks.content.quern.QuernBlockEntity;
 import net.minecraft.world.level.block.Block;
 import snownee.jade.api.IWailaClientRegistration;
 import snownee.jade.api.IWailaCommonRegistration;
@@ -24,6 +26,7 @@ public final class FirstworksJadePlugin implements IWailaPlugin {
         registration.registerBlockDataProvider(BrickMoldProgressProvider.INSTANCE, BrickMoldBlockEntity.class);
         registration.registerBlockDataProvider(MortarProgressProvider.INSTANCE, MortarBlockEntity.class);
         registration.registerBlockDataProvider(CharcoalMoundProvider.INSTANCE, Block.class);
+        registration.registerBlockDataProvider(QuernProgressProvider.INSTANCE, QuernBlockEntity.class);
     }
 
     @Override
@@ -34,5 +37,6 @@ public final class FirstworksJadePlugin implements IWailaPlugin {
         registration.registerBlockComponent(MortarProgressProvider.INSTANCE, MortarBlock.class);
         registration.registerBlockComponent(CharcoalMoundProvider.INSTANCE, Block.class);
         registration.registerBlockComponent(CharcoalPileProvider.INSTANCE, CharcoalPileBlock.class);
+        registration.registerBlockComponent(QuernProgressProvider.INSTANCE, QuernBlock.class);
     }
 }

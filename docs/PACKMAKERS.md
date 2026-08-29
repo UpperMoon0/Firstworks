@@ -14,9 +14,11 @@ This document is the authoritative technical reference for modpack developers an
    - [Custom Recipe Registration via KubeJS](#kubejs-recipe-registration)
    - [Event Handlers & Payload Fields](#kubejs-event-handlers--payload-fields)
 6. [Automation Capabilities & Sided Behavior](#6-automation-capabilities--sided-behavior)
-7. [In-World Charcoal Mound System](#7-in-world-charcoal-mound-system)
-8. [Jade & JEI Integration](#8-jade--jei-integration)
-9. [Migration Notes (0.0.10 → 0.0.11)](#9-migration-notes-0010--0011)
+7. [Food Recipe Overrides & Interop IDs](#7-food-recipe-overrides--interop-ids)
+8. [In-World Charcoal Mound System](#8-in-world-charcoal-mound-system)
+9. [Jade & JEI Integration](#9-jade--jei-integration)
+10. [Migration Notes (0.0.10 → 0.0.11)](#10-migration-notes-0010--0011)
+11. [Migration Notes (0.0.11 → 0.0.12)](#11-migration-notes-0011--0012)
 
 ---
 
@@ -48,6 +50,7 @@ Starting in **0.0.11**, Firstworks registers all gameplay options as a **`SERVER
 | `charcoalBreachedYield` | Double | `0.25` | `0.0 – 1.0` | Charcoal multiplier if mound is breached during carbonization (default: 25% yield). |
 | `plantFibreHandChance` | Double | `0.30` | `0.0 – 1.0` | Chance to gather Plant Fibre with an empty hand or non-knife tool (default: 30%). |
 | `rawOchreGatherChance` | Double | `0.20` | `0.0 – 1.0` | Chance to gather Raw Ochre without a primitive knife (default: 20%). |
+| `quernManualWorkPerCrank` | Integer | `5` | `1 – 100` | Work progress added per manual empty-hand crank of the Quern. |
 
 ---
 
@@ -67,6 +70,19 @@ Firstworks exposes data-driven tags for extensible pack integration. Below are t
 | `#firstworks:tree_bark` | `firstworks:tree_bark` | Stripped bark items used for brewing tannin solution in barrels. |
 | `#firstworks:barrels` | All barrel item variants | Item classification for barrel workstations. |
 | `#firstworks:looms` | All loom item variants | Item classification for loom workstations. |
+
+### Common NeoForge Tags (`data/c/tags/item/`)
+
+Firstworks participates in the `c` (Common Tags) interoperability namespace so third-party flours and doughs plug into Firstworks progression without recipe edits:
+
+| Tag | Shipped Default Items | Purpose |
+| :--- | :--- | :--- |
+| `#c:flours` | `firstworks:flour` | Any ground-grain flour accepted by flour consumers. |
+| `#c:flours/wheat` | `firstworks:flour` | Wheat flour accepted by dough recipes and the vanilla Cake override. |
+| `#c:doughs` | `firstworks:dough` | Any raw dough accepted by dough consumers. |
+| `#c:doughs/wheat` | `firstworks:dough` | Wheat dough accepted by Firstworks bread cooking recipes and the vanilla Bread/Cookie overrides. |
+
+**Intended rule:** third-party mods and datapacks that add their own flour or wheat dough should add those items to these common tags rather than hardcoding `firstworks:flour` / `firstworks:dough` into replacement recipes. Firstworks recipes and overrides match by tag, so tagged foreign items work automatically (e.g. a rice flour mod adds its item to `#c:flours`, a modpack reroutes a mod's wheat dough through `#c:doughs/wheat` to bake with Firstworks bread recipes).
 
 ### Block Tags (`data/firstworks/tags/block/`)
 
@@ -192,6 +208,38 @@ In-world grinding workstation.
 }
 ```
 
+### 6. Quern Grinding (`firstworks:quern_grinding`)
+Hand-operated bulk grinding workstation.
+`data/firstworks/recipe/quern_wheat_flour.json`:
+```json
+{
+  "type": "firstworks:quern_grinding",
+  "ingredient": { "item": "minecraft:wheat" },
+  "input_count": 4,
+  "result": { "id": "firstworks:flour", "count": 4 },
+  "work": 60
+}
+```
+
+| Field | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `ingredient` | Ingredient | *(required)* | Input item matcher, matched independently of batch size. |
+| `input_count` | Int `1–64` | `1` | Batch size consumed per completion. Items are inserted one at a time until the batch is full. |
+| `result` | Item Stack | *(required)* | Output produced when the batch completes. |
+| `work` | Int `1–72000` | `60` | Total processing effort required per batch. |
+
+**Work-based manual model.** Recipe `work` is the hand-labor required for one batch. The global config controls how much work each player crank contributes:
+
+```
+recipe.work ÷ quernManualWorkPerCrank = required player cranks
+```
+
+For the shipped Wheat recipe, `60 work ÷ 5 work per crank = 12 cranks` at the default config. Packs can change the labor rate without rewriting every recipe.
+
+The Quern is intentionally player-operated. Item transfer can be automated, but grinding cannot: hoppers and pipes may load a valid batch and extract its finished result, while a player must still turn the crank to provide every unit of processing work.
+
+**Ingredient Exclusivity:** because the quern matches ingredients independently of stack size to allow incremental 1-by-1 loading, quern recipes must define mutually exclusive ingredient sets (never register multiple quern recipes with overlapping ingredient matchers).
+
 ---
 
 ## 5. KubeJS Integration
@@ -265,6 +313,18 @@ ServerEvents.recipes(event => {
     result: { id: 'firstworks:ground_ochre', count: 2 },
     duration: 48
   }).id('custom:grind_ochre')
+
+  // 6. Quern Grinding
+  event.custom({
+    type: 'firstworks:quern_grinding',
+    ingredient: { item: 'minecraft:wheat' },
+    input_count: 4,
+    result: {
+      id: 'firstworks:flour',
+      count: 4
+    },
+    work: 60
+  }).id('example:wheat_flour')
 })
 ```
 
@@ -353,6 +413,25 @@ FirstworksEvents.mortarGrindingStarting(event => {
 FirstworksEvents.mortarGrindingCompleted(event => {
   console.info(`Mortar ground ${event.result} at ${event.pos}`)
 })
+
+// 6. Quern Grinding
+FirstworksEvents.quernGrindingStarting(event => {
+  // Guaranteed properties:
+  // event.level     (ServerLevel)
+  // event.pos       (BlockPos)
+  // event.quern     (QuernBlockEntity)
+  // event.recipeId  (ResourceLocation)
+  // event.recipe    (QuernGrindingRecipe)
+  // event.input     (ItemStack copy)
+  // event.result    (ItemStack copy)
+  // event.cancel()
+  //
+  // Fires on the first manual crank that begins a fresh batch. Cancelling
+  // prevents that crank from adding progress.
+})
+FirstworksEvents.quernGrindingCompleted(event => {
+  console.info(`Quern completed ${event.recipeId} at ${event.pos}`)
+})
 ```
 
 ---
@@ -374,11 +453,48 @@ FirstworksEvents.mortarGrindingCompleted(event => {
 - **Woven Basket (`firstworks:basket`)**:
   - 9-slot primitive storage container with full automation and hopper support.
 - **Mortar & Pestle (`firstworks:mortar_and_pestle`)**:
-  - Exposes standard NeoForge `IItemHandler` capability.
+  - Exposes standard NeoForge `IItemHandler` capability (extracts output only).
+- **Quern (`firstworks:quern`)**:
+  - **Top Face**: Inserts raw ingredients into input slot.
+  - **Bottom Face**: Extracts completed result from output slot (raw input cannot be extracted by automation).
+  - **Side Faces / Unsided**: Accepts input insertion and output extraction.
+  - **Processing**: Has no powered processing capability. Automated transfer does not advance work; only a player's empty-hand crank does.
 
 ---
 
-## 7. In-World Charcoal Mound System
+## 7. Food Recipe Overrides & Interop IDs
+
+Firstworks rewrites vanilla wheat-food progression and adds its own dough pipeline. Target these exact recipe IDs when rerouting or removing routes:
+
+**Vanilla recipe overrides** (shipped under `data/minecraft/recipe/`; these replace the vanilla files):
+- `minecraft:bread` — 3× `#c:doughs/wheat`
+- `minecraft:cookie` — `#c:doughs/wheat` + cocoa beans
+- `minecraft:cake` — 3× `#c:flours/wheat` + milk buckets + sugar + egg
+
+**Firstworks dough recipes** (`data/firstworks/recipe/`):
+- `firstworks:dough_from_water_bucket` — 3× `#c:flours/wheat` + water bucket → 3 dough
+- `firstworks:dough_from_clay_water` — 3× `#c:flours/wheat` + `firstworks:water_clay_bucket` → 3 dough
+- `firstworks:dough_from_water_bottle` — `#c:flours/wheat` + `minecraft:potion` whose potion contents are water. `strict: false` permits additional components on that Minecraft potion item; it does not match arbitrary modded water-bottle items.
+
+**Bread cooking recipes** (input is `#c:doughs/wheat`, so tagged foreign wheat dough bakes too):
+- `firstworks:bread_from_campfire_dough`
+- `firstworks:bread_from_smelting_dough`
+- `firstworks:bread_from_smoking_dough`
+
+**Packmaker pattern** — when another mod owns dough production, remove its conflicting route rather than Firstworks' outputs:
+
+```js
+ServerEvents.recipes(event => {
+    // Example: another mod owns dough production.
+    event.remove({ id: 'somefoodmod:wheat_dough_from_water' })
+})
+```
+
+Because all Firstworks routes match by common tag (`#c:flours/wheat`, `#c:doughs/wheat`), adding your own flour or dough items to those tags is usually enough — no recipe removal required. See [Common NeoForge Tags](#common-neoforge-tags-datactagsitem).
+
+---
+
+## 8. In-World Charcoal Mound System
 
 - **Construction**: `charcoalMinLogs`–`charcoalMaxLogs` connected fuel blocks (`#firstworks:charcoal_woods`; defaults to 4–64 logs), encased in an airtight shell (`#firstworks:charcoal_sealants`; defaults to dirt, grass, mud, clay) leaving 1 exposed face open for ignition.
 - **Candidate Detection**: Calculates shell coverage ($\ge 50\%$). Ordinary standing trees ($< 10\%$ coverage) are ignored and pass through to vanilla flint-and-steel behavior.
@@ -397,22 +513,32 @@ FirstworksEvents.mortarGrindingCompleted(event => {
 
 ---
 
-## 8. Jade & JEI Integration
+## 9. Jade & JEI Integration
 
 - **Jade Tooltips**:
   - **Barrel**: Recipe progress, time remaining, output preview, input/output fluid stores.
   - **Loom**: Loaded threads, stroke progress, output preview.
   - **Brick Mold**: Loaded ingredient, press progress bar.
   - **Mortar & Pestle**: Empty status, loaded materials, grinding progress bar with seconds remaining, output ready alert.
+  - **Quern**: Loaded batch, work progress bar, completed output alert.
   - **Charcoal Mound**: Active log count, seal countdown progress bar, carbonization progress bar, remaining time, and expected yield (resolving through the visible sealant shell).
   - **Charcoal Pile**: Stored charcoal count.
 - **JEI Categories**:
-  - Barrel Processing, Hand Spinning, Loom Weaving, Brick Molding, Mortar Grinding, and dynamic Charcoal Mound Information guide.
+  - Barrel Processing, Hand Spinning, Loom Weaving, Brick Molding, Mortar Grinding, **Quern Grinding**, and dynamic Charcoal Mound Information guide.
 
 ---
 
-## 9. Migration Notes (0.0.10 → 0.0.11)
+## 10. Migration Notes (0.0.10 → 0.0.11)
 
 1. **Config Path Changed**: Move customizations from `config/firstworks-common.toml` to `defaultconfigs/firstworks-server.toml` (for modpacks) or `saves/<world>/serverconfig/firstworks-server.toml` (for existing worlds).
 2. **Charcoal Piles in World**: Charcoal mounds now materialize physical `firstworks:charcoal_pile` blocks in the world upon completion instead of dropping item entities on uncover.
 3. **Legacy Mound Migration**: Existing worlds with completed `"READY"` mounds automatically deserialize as `Phase.LEGACY_READY` and safely convert to physical charcoal piles when chunks load.
+
+---
+
+## 11. Migration Notes (0.0.11 → 0.0.12)
+
+1. **Quern Introduced**: `firstworks:quern` is a new hand-operated bulk workstation, and `firstworks:quern_grinding` recipes use a `work` field (default `60`). Each empty-hand crank contributes `quernManualWorkPerCrank` work (default `5`).
+2. **Flour/Dough Common Tags**: `firstworks:flour` is now tagged `#c:flours` + `#c:flours/wheat` and `firstworks:dough` is tagged `#c:doughs` + `#c:doughs/wheat`. Recipe-matching is tag-based, so foreign flour/dough items can join progression by editing tags only.
+3. **Vanilla Food Overrides**: `minecraft:bread` and `minecraft:cookie` now require `#c:doughs/wheat`; `minecraft:cake` requires `#c:flours/wheat`. Wheat → flour → dough → bread/cookies is the new progression (see [Food Recipe Overrides & Interop IDs](#7-food-recipe-overrides--interop-ids)). Packs that want vanilla behavior should delete these three override files or remove the routes with KubeJS.
+4. **New Materials and Recipes**: Flour, Wheat Dough, water-container dough recipes, dough cooking recipes, and the Quern recipe category are new in 0.0.12.

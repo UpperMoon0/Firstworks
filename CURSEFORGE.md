@@ -62,14 +62,16 @@ Load one clay ball into a Wooden Brick Mold and press twice with an empty hand t
 
 Build charcoal mounds from connected logs surrounded by configurable sealant blocks. Ignite, seal, and wait for the mound to finish; open it to reveal its charcoal yield. Place the Mortar & Pestle workstation, insert a grindable item, and use an empty hand to start its animated grinding process.
 
+Bulk processing expands with the **Quern** (`firstworks:quern`). Load a complete batch of grain, minerals, or pigments and turn the upper runner stone by hand (+5 work per turn by default, configurable). The Quern deliberately remains a manual workstation; later mechanized milling is left to technology mods and modpack progression. Hoppers and pipes can automate batch loading and output extraction, but cannot provide processing work. Mill grain into Flour (`#c:flours/wheat`), knead it with a water bucket, clay water bucket, or vanilla water bottle into Wheat Dough (`#c:doughs/wheat`), and bake it over a campfire, smoker, or furnace into Bread, or craft Cookies. Whole wheat remains dedicated to animal feed, breeding, and agriculture.
+
 ## Made for survival and modpacks
 
 Firstworks can stand alone as a tactile early-game mechanic or serve as the primitive processing layer of a larger progression pack. Its leather, textile, and tool-binding progressions can each be adjusted to fit the experience you want.
 
 Optional integrations make the system easier to read without changing its in-world character:
 
-- **Jade** shows live Barrel, Loom, and Mortar & Pestle status.
-- **JEI** adds dedicated processing, spinning, weaving, brick-molding, and grinding categories.
+- **Jade** shows live Barrel, Loom, Mortar & Pestle, and Quern status.
+- **JEI** adds dedicated processing, spinning, weaving, brick-molding, mortar, and quern categories.
 
 ## Credits
 

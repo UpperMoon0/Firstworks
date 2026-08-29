@@ -9,6 +9,8 @@ import com.nstut.firstworks.content.brick_mold.BrickMoldBlockEntity;
 import com.nstut.firstworks.content.brick_mold.BrickMoldingRecipe;
 import com.nstut.firstworks.content.mortar.MortarBlockEntity;
 import com.nstut.firstworks.content.MortarGrindingRecipe;
+import com.nstut.firstworks.content.quern.QuernBlockEntity;
+import com.nstut.firstworks.content.quern.QuernGrindingRecipe;
 import dev.latvian.mods.kubejs.script.ScriptType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -76,6 +78,17 @@ public final class KubeJSCompat {
             MortarGrindingRecipe recipe, ItemStack input, ItemStack result) {
         FirstworksKubeEvents.MORTAR_GRINDING_COMPLETED.post(ScriptType.SERVER,
                 new MortarGrindingKubeEvent(level, mortar, recipeId, recipe, input, result));
+    }
+    public static boolean fireQuernGrindingStarting(ServerLevel level, QuernBlockEntity quern,
+            ResourceLocation recipeId, QuernGrindingRecipe recipe, ItemStack input, ItemStack result) {
+        return FirstworksKubeEvents.QUERN_GRINDING_STARTING.post(ScriptType.SERVER,
+                new QuernGrindingKubeEvent(level, quern, recipeId, recipe, input, result)).interruptFalse();
+    }
+
+    public static void fireQuernGrindingCompleted(ServerLevel level, QuernBlockEntity quern,
+            ResourceLocation recipeId, QuernGrindingRecipe recipe, ItemStack input, ItemStack result) {
+        FirstworksKubeEvents.QUERN_GRINDING_COMPLETED.post(ScriptType.SERVER,
+                new QuernGrindingKubeEvent(level, quern, recipeId, recipe, input, result));
     }
 
     private KubeJSCompat() {}

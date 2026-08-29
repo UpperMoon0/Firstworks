@@ -1,0 +1,40 @@
+{
+  "keys": [
+    {
+      "name": "result",
+      "role": "output",
+      "type": "item_stack"
+    },
+    {
+      "name": "ingredient",
+      "role": "input",
+      "type": "ingredient"
+    },
+    {
+      "name": "input_count",
+      "role": "input",
+      "type": {
+        "type": "int",
+        "min": 1
+      },
+      "function_names": ["inputCount"],
+      "optional": 1
+    },
+    {
+      "name": "work",
+      "role": "other",
+      "type": {
+        "type": "int",
+        "min": 1
+      },
+      "function_names": ["work"],
+      "optional": 60
+    }
+  ],
+  "unique": ["ingredient"],
+  "constructors": [
+    {
+      "keys": ["result", "ingredient"]
+    }
+  ]
+}

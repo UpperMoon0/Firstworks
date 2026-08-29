@@ -1,0 +1,230 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "minecraft:block/stone",
+    "stone": "minecraft:block/stone",
+    "andesite": "minecraft:block/andesite",
+    "wood": "minecraft:block/oak_planks",
+    "log": "minecraft:block/oak_log"
+  },
+  "display": {
+    "gui": {
+      "rotation": [ 30, 225, 0 ],
+      "translation": [ 0, 0, 0 ],
+      "scale": [ 0.625, 0.625, 0.625 ]
+    },
+    "ground": {
+      "rotation": [ 0, 0, 0 ],
+      "translation": [ 0, 3, 0 ],
+      "scale": [ 0.375, 0.375, 0.375 ]
+    },
+    "fixed": {
+      "rotation": [ 0, 0, 0 ],
+      "translation": [ 0, 0, 0 ],
+      "scale": [ 0.5, 0.5, 0.5 ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [ 75, 45, 0 ],
+      "translation": [ 0, 2.5, 0 ],
+      "scale": [ 0.375, 0.375, 0.375 ]
+    },
+    "firstperson_righthand": {
+      "rotation": [ 0, 45, 0 ],
+      "translation": [ 0, 0, 0 ],
+      "scale": [ 0.4, 0.4, 0.4 ]
+    }
+  },
+  "elements": [
+    {
+      "comment": "Wooden sleeper south",
+      "from": [1, 0, 2],
+      "to": [15, 2, 5],
+      "faces": {
+        "down":  { "texture": "#wood", "cullface": "down" },
+        "up":    { "texture": "#wood" },
+        "north": { "texture": "#wood" },
+        "south": { "texture": "#wood" },
+        "west":  { "texture": "#log" },
+        "east":  { "texture": "#log" }
+      }
+    },
+    {
+      "comment": "Wooden sleeper north",
+      "from": [1, 0, 11],
+      "to": [15, 2, 14],
+      "faces": {
+        "down":  { "texture": "#wood", "cullface": "down" },
+        "up":    { "texture": "#wood" },
+        "north": { "texture": "#wood" },
+        "south": { "texture": "#wood" },
+        "west":  { "texture": "#log" },
+        "east":  { "texture": "#log" }
+      }
+    },
+    {
+      "comment": "Octagonal bedstone cross NS",
+      "from": [4.5, 2, 1.5],
+      "to": [11.5, 6, 14.5],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Octagonal bedstone cross EW",
+      "from": [1.5, 2, 4.5],
+      "to": [14.5, 6, 11.5],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Octagonal bedstone diagonal",
+      "from": [3, 2, 3],
+      "to": [13, 6, 13],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Andesite rim north",
+      "from": [4, 2, 14.5],
+      "to": [12, 6.5, 15.5],
+      "faces": {
+        "up":    { "texture": "#andesite" },
+        "north": { "texture": "#andesite" },
+        "south": { "texture": "#andesite" },
+        "west":  { "texture": "#andesite" },
+        "east":  { "texture": "#andesite" }
+      }
+    },
+    {
+      "comment": "Andesite rim south",
+      "from": [4, 2, 0.5],
+      "to": [12, 6.5, 1.5],
+      "faces": {
+        "up":    { "texture": "#andesite" },
+        "north": { "texture": "#andesite" },
+        "south": { "texture": "#andesite" },
+        "west":  { "texture": "#andesite" },
+        "east":  { "texture": "#andesite" }
+      }
+    },
+    {
+      "comment": "Andesite rim west",
+      "from": [0.5, 2, 4],
+      "to": [1.5, 6.5, 12],
+      "faces": {
+        "up":    { "texture": "#andesite" },
+        "north": { "texture": "#andesite" },
+        "south": { "texture": "#andesite" },
+        "west":  { "texture": "#andesite" },
+        "east":  { "texture": "#andesite" }
+      }
+    },
+    {
+      "comment": "Andesite rim east",
+      "from": [14.5, 2, 4],
+      "to": [15.5, 6.5, 12],
+      "faces": {
+        "up":    { "texture": "#andesite" },
+        "north": { "texture": "#andesite" },
+        "south": { "texture": "#andesite" },
+        "west":  { "texture": "#andesite" },
+        "east":  { "texture": "#andesite" }
+      }
+    },
+    {
+      "comment": "Upper octagonal runner NS",
+      "from": [5, 6, 9.5],
+      "to": [11, 8.5, 14],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Upper octagonal runner south",
+      "from": [5, 6, 2],
+      "to": [11, 8.5, 6.5],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Upper octagonal runner west",
+      "from": [2, 6, 5],
+      "to": [6.5, 8.5, 11],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Upper octagonal runner east",
+      "from": [9.5, 6, 5],
+      "to": [14, 8.5, 11],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Upper octagonal runner diagonal",
+      "from": [3.5, 6, 3.5],
+      "to": [12.5, 8.5, 12.5],
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Vertical wooden hand crank peg",
+      "from": [11, 8.5, 7.25],
+      "to": [12.5, 12.5, 8.75],
+      "faces": {
+        "up":    { "texture": "#log" },
+        "down":  { "texture": "#log" },
+        "north": { "texture": "#wood" },
+        "south": { "texture": "#wood" },
+        "west":  { "texture": "#wood" },
+        "east":  { "texture": "#wood" }
+      }
+    }
+  ]
+}
