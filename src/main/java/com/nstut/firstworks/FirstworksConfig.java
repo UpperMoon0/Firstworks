@@ -96,12 +96,6 @@ public final class FirstworksConfig {
                     "Range: 1 ~ 100")
             .defineInRange("quernManualWorkPerCrank", 5, 1, 100);
 
-    public static final ModConfigSpec.IntValue QUERN_DEFAULT_DRIVEN_WORK_PER_TICK = BUILDER
-            .comment("Default work progress added per tick when external continuous drive is applied without explicit rate.",
-                    "Default: 1",
-                    "Range: 1 ~ 100")
-            .defineInRange("quernDefaultDrivenWorkPerTick", 1, 1, 100);
-
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     private FirstworksConfig() {}

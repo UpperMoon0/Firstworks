@@ -20,11 +20,9 @@ import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 
-public final class QuernBlockEntity extends BlockEntity implements QuernDriveable {
+public final class QuernBlockEntity extends BlockEntity {
     private ItemStack input = ItemStack.EMPTY, output = ItemStack.EMPTY;
     private int progress;
-    private boolean rotating;
-    private int driveRate;
     private float rotation;
     private float clientPrevRotation, clientRotation, rotationTarget;
     private boolean clientInitialized;
@@ -36,47 +34,18 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
         super(ModBlockEntities.QUERN.get(), pos, state);
     }
 
-    public static void tick(Level level, BlockPos pos, BlockState state, QuernBlockEntity quern) {
-        if (level.isClientSide) {
-            quern.clientPrevRotation = quern.clientRotation;
-            if (quern.rotating) {
-                quern.clientRotation = (quern.clientRotation + 9F) % 360F;
-                quern.rotationTarget = quern.clientRotation;
-            } else if (quern.clientRotation != quern.rotationTarget) {
-                float diff = quern.rotationTarget - quern.clientRotation;
-                while (diff < -180F) diff += 360F;
-                while (diff > 180F) diff -= 360F;
-                if (Math.abs(diff) < 1.0F) {
-                    quern.clientRotation = quern.rotationTarget;
-                } else {
-                    float step = Math.min(Math.abs(diff), 9F) * Math.signum(diff);
-                    quern.clientRotation = (quern.clientRotation + step + 360F) % 360F;
-                }
+    public static void clientTick(Level level, BlockPos pos, BlockState state, QuernBlockEntity quern) {
+        quern.clientPrevRotation = quern.clientRotation;
+        if (quern.clientRotation != quern.rotationTarget) {
+            float diff = quern.rotationTarget - quern.clientRotation;
+            while (diff < -180F) diff += 360F;
+            while (diff > 180F) diff -= 360F;
+            if (Math.abs(diff) < 1F) {
+                quern.clientRotation = quern.rotationTarget;
+            } else {
+                float step = Math.min(Math.abs(diff), 9F) * Math.signum(diff);
+                quern.clientRotation = (quern.clientRotation + step + 360F) % 360F;
             }
-            return;
-        }
-        if (!quern.rotating || quern.driveRate <= 0) return;
-        Optional<RecipeHolder<QuernGrindingRecipe>> holder = quern.recipe();
-        if (holder.isEmpty() || !quern.output.isEmpty()
-                || quern.input.getCount() < holder.get().value().inputCount()
-                || !quern.tryBegin(holder.get())) {
-            quern.stop();
-            return;
-        }
-        quern.rotation = (quern.rotation + 9F) % 360F;
-        quern.rotationTarget = quern.rotation;
-        quern.progress += quern.driveRate;
-        if (quern.progress % 12 == 0) {
-            level.playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, .3F, .65F);
-            if (level instanceof ServerLevel sl) {
-                sl.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, quern.input.copyWithCount(1)),
-                        pos.getX() + .5, pos.getY() + .55, pos.getZ() + .5, 2, .12, .03, .12, .01);
-            }
-        }
-        if (quern.progress >= holder.get().value().work()) {
-            quern.complete(holder.get());
-        } else if (quern.progress % 5 == 0) {
-            quern.sync();
         }
     }
 
@@ -91,7 +60,7 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
         return true;
     }
 
-    public boolean work(Player player) {
+    public boolean work() {
         Optional<RecipeHolder<QuernGrindingRecipe>> holder = recipe();
         if (holder.isEmpty() || !output.isEmpty()
                 || input.getCount() < holder.get().value().inputCount()) {
@@ -103,7 +72,6 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
         int workAmount = FirstworksConfig.QUERN_MANUAL_WORK_PER_CRANK.get();
         progress += workAmount;
         rotation = (rotation + 45F) % 360F;
-        rotationTarget += 45F;
         level.playSound(null, worldPosition, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, .38F, .72F + level.random.nextFloat() * .1F);
         if (level instanceof ServerLevel sl) {
             sl.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, input.copyWithCount(1)),
@@ -124,8 +92,6 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
         if (input.isEmpty()) input = ItemStack.EMPTY;
         output = recipe.result().copy();
         progress = 0;
-        rotating = false;
-        driveRate = 0;
         if (level instanceof ServerLevel server) {
             OptionalIntegrations.fireQuernGrindingCompleted(server, this, holder.id(), recipe, consumed, output);
         }
@@ -146,7 +112,7 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
     }
 
     public boolean canInsert(ItemStack stack) {
-        if (rotating || !output.isEmpty() || stack.isEmpty()) return false;
+        if (!output.isEmpty() || stack.isEmpty()) return false;
         Optional<RecipeHolder<QuernGrindingRecipe>> r = findRecipeForIngredient(stack);
         return r.isPresent() && (input.isEmpty() || ItemStack.isSameItemSameComponents(input, stack)) && input.getCount() < r.get().value().inputCount();
     }
@@ -169,7 +135,7 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
     }
 
     public boolean takeInput(Player p) {
-        if (input.isEmpty() || rotating) return false;
+        if (input.isEmpty()) return false;
         p.getInventory().placeItemBackInInventory(input.copy());
         input = ItemStack.EMPTY;
         reset();
@@ -179,51 +145,11 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
 
     private void reset() {
         progress = 0;
-        rotating = false;
-        driveRate = 0;
-    }
-
-    private void stop() {
-        rotating = false;
-        driveRate = 0;
-        progress = 0;
-        sync();
-    }
-
-    @Override
-    public boolean canDrive() {
-        var r = recipe();
-        return r.isPresent() && output.isEmpty() && input.getCount() >= r.get().value().inputCount();
-    }
-
-    @Override
-    public int getDriveRate() {
-        return driveRate;
-    }
-
-    @Override
-    public void setDriveRate(int workPerTick) {
-        if (level != null && level.isClientSide) {
-            return;
-        }
-
-        int clamped = Math.max(0, workPerTick);
-        if (this.driveRate != clamped) {
-            this.driveRate = clamped;
-            this.rotating = clamped > 0;
-            sync();
-        }
-    }
-
-    public void setRotating(boolean rotating) {
-        setDriven(rotating);
     }
 
     public ItemStack getInput() { return input; }
     public ItemStack getOutput() { return output; }
     public int getProgress() { return progress; }
-    public boolean isRotating() { return rotating; }
-
     public float getRotation(float partial) {
         if (level != null && level.isClientSide) {
             float prev = clientPrevRotation;
@@ -266,12 +192,8 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
         input = ItemStack.parseOptional(regs, tag.getCompound("Input"));
         output = ItemStack.parseOptional(regs, tag.getCompound("Output"));
         progress = tag.getInt("Progress");
-        rotating = false;
-        driveRate = 0;
         rotation = tag.getFloat("Rotation");
         if (level != null && level.isClientSide) {
-            rotating = tag.getBoolean("ClientRotating");
-            driveRate = tag.getInt("ClientDriveRate");
             rotationTarget = rotation;
             if (!clientInitialized) {
                 clientRotation = rotation;
@@ -285,8 +207,6 @@ public final class QuernBlockEntity extends BlockEntity implements QuernDriveabl
     public CompoundTag getUpdateTag(HolderLookup.Provider regs) {
         CompoundTag t = new CompoundTag();
         saveAdditional(t, regs);
-        t.putBoolean("ClientRotating", rotating);
-        t.putInt("ClientDriveRate", driveRate);
         return t;
     }
 

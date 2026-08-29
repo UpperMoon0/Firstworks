@@ -36,7 +36,8 @@ public final class QuernBlock extends BaseEntityBlock {
     @Override protected RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
     @Nullable @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new QuernBlockEntity(pos, state); }
     @Nullable @Override public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return createTickerHelper(type, com.nstut.firstworks.registry.ModBlockEntities.QUERN.get(), QuernBlockEntity::tick);
+        if (!level.isClientSide) return null;
+        return createTickerHelper(type, com.nstut.firstworks.registry.ModBlockEntities.QUERN.get(), QuernBlockEntity::clientTick);
     }
     @Override protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
             Player player, InteractionHand hand, BlockHitResult hit) {
@@ -50,7 +51,7 @@ public final class QuernBlock extends BaseEntityBlock {
         if (!level.isClientSide) {
             if (quern.takeOutput(player)) return InteractionResult.SUCCESS;
             if (player.isShiftKeyDown() && quern.takeInput(player)) return InteractionResult.SUCCESS;
-            if (quern.work(player)) return InteractionResult.SUCCESS;
+            if (quern.work()) return InteractionResult.SUCCESS;
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

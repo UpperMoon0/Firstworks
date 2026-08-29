@@ -44,9 +44,10 @@ Looking to configure recipes, custom wood types, KubeJS events, animal drop prof
 ### 🪨 Quern Workstation
 - **Bulk Milling**: Load grain, minerals, or pigments into the central feed eye of the octagonal millstone.
 - **Manual Cranking**: Right-click with an empty hand to turn the wooden crank peg (+5 work per crank by default, configurable) with tactile sounds, particles, and smooth stone rotation.
-- **Continuous Automation**: Supports external rotational power (animal sweeps, horse power, or kinetic systems) via the `QuernDriveable` contract.
+- **Hand Operated**: The Quern is intentionally player-powered. Item insertion and output extraction can be automated, but processing itself cannot.
+- **Progression Role**: Mortar & Pestle handles precision grinding, the Quern provides manual bulk grinding, and mechanized mills belong to later technological progression.
 - **Flour & Dough**: Mill wheat into Flour (`#c:flours/wheat`) in the Quern, knead with water buckets, clay water buckets, or vanilla water bottles into Wheat Dough (`#c:doughs/wheat`), and bake over campfires, smokers, or furnaces into Bread, or craft into Cookies. Cake uses flour with milk, sugar, and eggs.
-- **Automation Ready**: Top face accepts input ingredients, bottom face extracts finished products. Compatible with Jade, JEI, datapacks, and KubeJS.
+- **Transfer Automation**: Top face accepts input ingredients and the bottom face extracts finished products. Compatible with Jade, JEI, datapacks, and KubeJS.
 
 ### 🔪 Primitive Knives, Cordage & Tools
 - **Flint & Bone Knives**: Used for guaranteed plant fibre harvesting from grass, hide scraping, and early crafting.
