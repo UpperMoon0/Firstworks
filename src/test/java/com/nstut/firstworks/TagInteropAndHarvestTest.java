@@ -38,15 +38,35 @@ public class TagInteropAndHarvestTest {
                 "src/main/java/com/nstut/firstworks/GameplayEvents.java"));
         String method = methodBody(source, "gatherPlantFibre");
         assertTrue(method.contains("event.getPlayer().isCreative()"));
-        assertTrue(method.contains("tool.hurtAndBreak(1, event.getPlayer(), EquipmentSlot.MAINHAND)"));
+        long durabilityCalls = countOccurrences(method, "hurtAndBreak");
+        assertEquals(1, durabilityCalls,
+                "fibre harvest must apply exactly one durability point");
+        assertTrue(method.contains("if (guaranteed) {"),
+                "fibre durability must only apply for guaranteed (knife) harvests");
     }
 
     @Test
-    public void guaranteedOchreHarvestDamagesKnives() throws Exception {
+    public void guaranteedOchreHarvestAppliesExactlyOneKnifeDurabilityPoint() throws Exception {
         String source = Files.readString(Path.of(
                 "src/main/java/com/nstut/firstworks/GameplayEvents.java"));
         String method = methodBody(source, "gatherRawOchre");
-        assertTrue(method.contains("tool.hurtAndBreak(1, event.getPlayer(), EquipmentSlot.MAINHAND)"));
+
+        // Regression guard from the PR #10 review: ochre harvesting must cost
+        // exactly one durability point. With dedicated KnifeItem (extending Item,
+        // not SwordItem) there is no sword-style block mining damage, so the only
+        // durability is this single explicit call. Two calls here, or leaving the
+        // knife a SwordItem, would silently over-damage primitive knives.
+        long durabilityCalls = countOccurrences(method, "hurtAndBreak");
+        assertEquals(1, durabilityCalls,
+                "ochre harvest must apply exactly one durability point, not double-damage");
+
+        // The single durability call must live inside the raw-ochre drop block.
+        int dropIdx = method.indexOf("RAW_OCHRE");
+        int dmgIdx = method.indexOf("hurtAndBreak");
+        assertTrue(dropIdx >= 0 && dmgIdx > dropIdx,
+                "ochre durability must follow the raw ochre drop, not be unconditional");
+        assertTrue(method.contains("if (guaranteed) {"),
+                "ochre durability must only apply for guaranteed (knife) harvests");
     }
 
     @Test
@@ -55,6 +75,10 @@ public class TagInteropAndHarvestTest {
         String items = Files.readString(Path.of("src/main/java/com/nstut/firstworks/registry/ModItems.java"));
         assertTrue(knife.contains("class KnifeItem extends Item"));
         assertFalse(knife.contains("extends SwordItem"));
+        // A mineBlock override is the mechanism by which SwordItem applies
+        // damagePerBlock on every non-zero-hardness block break; knives must not.
+        assertFalse(knife.contains("mineBlock"),
+                "KnifeItem must not override mineBlock (no sword-style block durability)");
         assertTrue(items.contains("new KnifeItem(ModToolTiers.BONE"));
         assertTrue(items.contains("new KnifeItem(ModToolTiers.FLINT"));
     }
@@ -70,5 +94,15 @@ public class TagInteropAndHarvestTest {
         assertTrue(start >= 0, "Missing method: " + methodName);
         int nextMethod = source.indexOf("\n    @SubscribeEvent", start + 1);
         return source.substring(start, nextMethod >= 0 ? nextMethod : source.length());
+    }
+
+    private static long countOccurrences(String haystack, String needle) {
+        long count = 0;
+        int idx = 0;
+        while ((idx = haystack.indexOf(needle, idx)) >= 0) {
+            count++;
+            idx += needle.length();
+        }
+        return count;
     }
 }
