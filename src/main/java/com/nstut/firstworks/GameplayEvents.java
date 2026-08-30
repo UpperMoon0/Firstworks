@@ -234,6 +234,7 @@ public final class GameplayEvents {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void gatherPlantFibre(BlockEvent.BreakEvent event) {
         if (event.isCanceled() || !(event.getLevel() instanceof ServerLevel level)) return;
+        if (event.getPlayer().isCreative()) return;
         BlockState state = event.getState();
         int amount;
         if (state.is(ModTags.DOUBLE_PLANT_FIBRE_SOURCES)) {
@@ -249,6 +250,9 @@ public final class GameplayEvents {
         double chance = FirstworksConfig.PLANT_FIBRE_HAND_CHANCE.get();
         if (!guaranteed && level.getRandom().nextDouble() >= chance) return;
         Block.popResource(level, event.getPos(), new ItemStack(ModItems.PLANT_FIBRE.get(), amount));
+        if (guaranteed) {
+            tool.hurtAndBreak(1, event.getPlayer(), EquipmentSlot.MAINHAND);
+        }
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -265,6 +269,9 @@ public final class GameplayEvents {
         double chance = FirstworksConfig.RAW_OCHRE_GATHER_CHANCE.get();
         if (guaranteed || level.getRandom().nextDouble() < chance) {
             Block.popResource(level, event.getPos(), new ItemStack(ModItems.RAW_OCHRE.get(), 1));
+            if (guaranteed) {
+                tool.hurtAndBreak(1, event.getPlayer(), EquipmentSlot.MAINHAND);
+            }
         }
     }
 

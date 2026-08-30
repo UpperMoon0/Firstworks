@@ -6,6 +6,7 @@ import com.nstut.firstworks.content.TanninSolutionBucketItem;
 import com.nstut.firstworks.content.ColoredFleeceItem;
 import com.nstut.firstworks.content.ClayBucketItem;
 import com.nstut.firstworks.content.HandSpindleItem;
+import com.nstut.firstworks.content.KnifeItem;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.BlockItem;
@@ -92,7 +93,7 @@ public final class ModItems {
     public static final DeferredHolder<Item, Item> BONE_SWORD = ITEMS.register("bone_sword",
             () -> new SwordItem(ModToolTiers.BONE, new Item.Properties().attributes(SwordItem.createAttributes(ModToolTiers.BONE, 3, -2.4F))));
     public static final DeferredHolder<Item, Item> BONE_KNIFE = ITEMS.register("bone_knife",
-            () -> new SwordItem(ModToolTiers.BONE, new Item.Properties().attributes(SwordItem.createAttributes(ModToolTiers.BONE, 1, -2.0F))));
+            () -> new KnifeItem(ModToolTiers.BONE, 1, -2.0F));
 
     // Flint tools
     public static final DeferredHolder<Item, Item> FLINT_PICKAXE = ITEMS.register("flint_pickaxe",
@@ -106,7 +107,7 @@ public final class ModItems {
     public static final DeferredHolder<Item, Item> FLINT_SWORD = ITEMS.register("flint_sword",
             () -> new SwordItem(ModToolTiers.FLINT, new Item.Properties().attributes(SwordItem.createAttributes(ModToolTiers.FLINT, 3, -2.4F))));
     public static final DeferredHolder<Item, Item> FLINT_KNIFE = ITEMS.register("flint_knife",
-            () -> new SwordItem(ModToolTiers.FLINT, new Item.Properties().attributes(SwordItem.createAttributes(ModToolTiers.FLINT, 1, -1.8F))));
+            () -> new KnifeItem(ModToolTiers.FLINT, 1, -1.8F));
 
     public static final Map<String, DeferredHolder<Item, Item>> BARREL_ITEMS = registerBarrelItems();
     public static final DeferredHolder<Item, Item> BARREL = BARREL_ITEMS.get("barrel");

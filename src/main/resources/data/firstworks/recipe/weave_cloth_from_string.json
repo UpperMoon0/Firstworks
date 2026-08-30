@@ -1,6 +1,6 @@
 {
   "type": "firstworks:loom_weaving",
-  "ingredient": { "item": "minecraft:string" },
+  "ingredient": { "tag": "c:strings" },
   "input_count": 4,
   "result": { "id": "firstworks:cloth" },
   "strokes": 16

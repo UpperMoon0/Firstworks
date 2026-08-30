@@ -144,5 +144,6 @@
   "jade.firstworks.quern.empty": "Empty - add a grindable batch",
   "jade.firstworks.quern.loaded": "Loaded: %s / %s",
   "jade.firstworks.quern.progress": "Grinding progress: %s%%",
-  "jade.firstworks.quern.ready": "Ready: %sx %s"
+  "jade.firstworks.quern.ready": "Ready: %sx %s",
+  "config.jade.plugin_firstworks.quern_progress": "Quern Grinding"
 }

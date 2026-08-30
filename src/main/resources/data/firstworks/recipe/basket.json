@@ -4,7 +4,7 @@
   "pattern": ["STS", "T T", "STS"],
   "key": {
     "S": { "item": "minecraft:stick" },
-    "T": { "item": "firstworks:twine" }
+    "T": { "tag": "c:strings" }
   },
   "result": { "id": "firstworks:basket" }
 }
