@@ -19,6 +19,7 @@ This document is the authoritative technical reference for modpack developers an
 9. [Jade & JEI Integration](#9-jade--jei-integration)
 10. [Migration Notes (0.0.10 → 0.0.11)](#10-migration-notes-0010--0011)
 11. [Migration Notes (0.0.11 → 0.0.12)](#11-migration-notes-0011--0012)
+12. [Migration Notes (0.0.12 → 0.0.13)](#12-migration-notes-0012--0013)
 
 ---
 
@@ -73,7 +74,7 @@ Firstworks exposes data-driven tags for extensible pack integration. Below are t
 
 ### Common NeoForge Tags (`data/c/tags/item/`)
 
-Firstworks participates in the `c` (Common Tags) interoperability namespace so third-party flours and doughs plug into Firstworks progression without recipe edits:
+Firstworks participates in the `c` (Common Tags) interoperability namespace so compatible third-party materials plug into Firstworks progression without recipe edits:
 
 | Tag | Shipped Default Items | Purpose |
 | :--- | :--- | :--- |
@@ -81,6 +82,7 @@ Firstworks participates in the `c` (Common Tags) interoperability namespace so t
 | `#c:flours/wheat` | `firstworks:flour` | Wheat flour accepted by dough recipes and the vanilla Cake override. |
 | `#c:doughs` | `firstworks:dough` | Any raw dough accepted by dough consumers. |
 | `#c:doughs/wheat` | `firstworks:dough` | Wheat dough accepted by Firstworks bread cooking recipes and the vanilla Bread/Cookie overrides. |
+| `#c:strings` | `minecraft:string`, `firstworks:twine` | String-compatible materials accepted by the Basket, Rope, and Cloth recipes. Add compatible third-party string materials here. |
 
 **Intended rule:** third-party mods and datapacks that add their own flour or wheat dough should add those items to these common tags rather than hardcoding `firstworks:flour` / `firstworks:dough` into replacement recipes. Firstworks recipes and overrides match by tag, so tagged foreign items work automatically (e.g. a rice flour mod adds its item to `#c:flours`, a modpack reroutes a mod's wheat dough through `#c:doughs/wheat` to bake with Firstworks bread recipes).
 
@@ -163,7 +165,7 @@ Processes items and/or fluids over time in a sealed or open barrel.
 ```json
 {
   "type": "firstworks:loom_weaving",
-  "ingredient": { "item": "firstworks:twine" },
+  "ingredient": { "tag": "c:strings" },
   "input_count": 4,
   "result": { "id": "firstworks:cloth", "count": 1 },
   "strokes": 16
@@ -542,3 +544,9 @@ Because all Firstworks routes match by common tag (`#c:flours/wheat`, `#c:doughs
 2. **Flour/Dough Common Tags**: `firstworks:flour` is now tagged `#c:flours` + `#c:flours/wheat` and `firstworks:dough` is tagged `#c:doughs` + `#c:doughs/wheat`. Recipe-matching is tag-based, so foreign flour/dough items can join progression by editing tags only.
 3. **Vanilla Food Overrides**: `minecraft:bread` and `minecraft:cookie` now require `#c:doughs/wheat`; `minecraft:cake` requires `#c:flours/wheat`. Wheat → flour → dough → bread/cookies is the new progression (see [Food Recipe Overrides & Interop IDs](#7-food-recipe-overrides--interop-ids)). Packs that want vanilla behavior should delete these three override files or remove the routes with KubeJS.
 4. **New Materials and Recipes**: Flour, Wheat Dough, water-container dough recipes, dough cooking recipes, and the Quern recipe category are new in 0.0.12.
+
+## 12. Migration Notes (0.0.12 → 0.0.13)
+
+1. **Common String Inputs**: Basket, Rope, and Cloth now consume `#c:strings`, which includes vanilla String and Firstworks Twine by default. Add compatible third-party string materials to that tag.
+2. **Removed Recipe IDs**: `firstworks:rope_from_string` and `firstworks:weave_cloth_from_twine` were removed because their replacements now use `#c:strings`. Datapacks and KubeJS scripts that remove or replace these IDs should be updated.
+3. **Knife Behavior**: `firstworks:bone_knife` and `firstworks:flint_knife` are now dedicated knife items rather than sword items. Their registry IDs and durability values remain unchanged; ordinary block breaking no longer applies sword-style durability damage.

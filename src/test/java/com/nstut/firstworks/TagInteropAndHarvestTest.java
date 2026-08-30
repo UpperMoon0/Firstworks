@@ -49,6 +49,16 @@ public class TagInteropAndHarvestTest {
         assertTrue(method.contains("tool.hurtAndBreak(1, event.getPlayer(), EquipmentSlot.MAINHAND)"));
     }
 
+    @Test
+    public void primitiveKnivesDoNotInheritSwordBlockDamage() throws Exception {
+        String knife = Files.readString(Path.of("src/main/java/com/nstut/firstworks/content/KnifeItem.java"));
+        String items = Files.readString(Path.of("src/main/java/com/nstut/firstworks/registry/ModItems.java"));
+        assertTrue(knife.contains("class KnifeItem extends Item"));
+        assertFalse(knife.contains("extends SwordItem"));
+        assertTrue(items.contains("new KnifeItem(ModToolTiers.BONE"));
+        assertTrue(items.contains("new KnifeItem(ModToolTiers.FLINT"));
+    }
+
     private static JsonObject read(String fileName) throws Exception {
         try (FileReader reader = new FileReader(RECIPE_DIR.resolve(fileName).toFile())) {
             return JsonParser.parseReader(reader).getAsJsonObject();
