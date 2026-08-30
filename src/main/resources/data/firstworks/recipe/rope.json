@@ -2,9 +2,9 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    { "item": "firstworks:twine" },
-    { "item": "firstworks:twine" },
-    { "item": "firstworks:twine" }
+    { "tag": "c:strings" },
+    { "tag": "c:strings" },
+    { "tag": "c:strings" }
   ],
   "result": { "id": "firstworks:rope" }
 }
