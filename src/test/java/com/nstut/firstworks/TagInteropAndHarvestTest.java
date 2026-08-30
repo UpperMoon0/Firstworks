@@ -38,9 +38,11 @@ public class TagInteropAndHarvestTest {
                 "src/main/java/com/nstut/firstworks/GameplayEvents.java"));
         String method = methodBody(source, "gatherPlantFibre");
         assertTrue(method.contains("event.getPlayer().isCreative()"));
-        long durabilityCalls = countOccurrences(method, "hurtAndBreak");
-        assertEquals(1, durabilityCalls,
-                "fibre harvest must apply exactly one durability point");
+        long exactCalls = countOccurrences(method, "hurtAndBreak(1,");
+        assertEquals(1, exactCalls,
+                "fibre harvest must apply exactly one durability point (amount 1)");
+        assertEquals(exactCalls, countOccurrences(method, "hurtAndBreak("),
+                "fibre harvest must not apply any other durability amount");
         assertTrue(method.contains("if (guaranteed) {"),
                 "fibre durability must only apply for guaranteed (knife) harvests");
     }
@@ -52,13 +54,16 @@ public class TagInteropAndHarvestTest {
         String method = methodBody(source, "gatherRawOchre");
 
         // Regression guard from the PR #10 review: ochre harvesting must cost
-        // exactly one durability point. With dedicated KnifeItem (extending Item,
-        // not SwordItem) there is no sword-style block mining damage, so the only
-        // durability is this single explicit call. Two calls here, or leaving the
-        // knife a SwordItem, would silently over-damage primitive knives.
-        long durabilityCalls = countOccurrences(method, "hurtAndBreak");
-        assertEquals(1, durabilityCalls,
+        // exactly one durability point. The dedicated KnifeItem installs no Tool
+        // component (see primitiveKnivesExtendTieredItemNotSwordItem), so ordinary
+        // block breaking applies no knife durability; the only durability applied
+        // here is this single explicit call. A second call, or a wrong amount,
+        // would silently over-damage primitive knives.
+        long exactCalls = countOccurrences(method, "hurtAndBreak(1,");
+        assertEquals(1, exactCalls,
                 "ochre harvest must apply exactly one durability point, not double-damage");
+        assertEquals(exactCalls, countOccurrences(method, "hurtAndBreak("),
+                "ochre harvest must not apply any other durability amount");
 
         // The single durability call must live inside the raw-ochre drop block.
         int dropIdx = method.indexOf("RAW_OCHRE");
@@ -70,15 +75,27 @@ public class TagInteropAndHarvestTest {
     }
 
     @Test
-    public void primitiveKnivesDoNotInheritSwordBlockDamage() throws Exception {
+    public void primitiveKnivesExtendTieredItemNotSwordItem() throws Exception {
         String knife = Files.readString(Path.of("src/main/java/com/nstut/firstworks/content/KnifeItem.java"));
         String items = Files.readString(Path.of("src/main/java/com/nstut/firstworks/registry/ModItems.java"));
-        assertTrue(knife.contains("class KnifeItem extends Item"));
+        // Architectural separation the review asked for: knives share the tier base
+        // with SwordItem but are not swords.
+        assertTrue(knife.contains("class KnifeItem extends TieredItem"));
         assertFalse(knife.contains("extends SwordItem"));
-        // A mineBlock override is the mechanism by which SwordItem applies
-        // damagePerBlock on every non-zero-hardness block break; knives must not.
-        assertFalse(knife.contains("mineBlock"),
-                "KnifeItem must not override mineBlock (no sword-style block durability)");
+        // Handing the tier to TieredItem restores tier durability, repair material
+        // (Bone/Flint), and enchantability — none of which plain Item provides.
+        // TieredItem.isValidRepairItem delegates to tier.getRepairIngredient() and
+        // getEnchantmentValue() to tier.getEnchantmentValue().
+        assertTrue(knife.contains("super(tier,"), "tier must be delegated to TieredItem");
+        // Combat costs exactly one durability per successful hit (SwordItem-equivalent).
+        assertTrue(knife.contains("postHurtEnemy"));
+        assertTrue(knife.contains("hurtAndBreak(1,"), "combat must cost exactly one durability");
+        // Ordinary block breaking must cost 0: a knife installs no Tool component
+        // (which is what supplies damagePerBlock in 1.21), and is not a SwordItem.
+        // This is the real guarantee — a mineBlock override would be a red herring.
+        assertFalse(knife.contains("createToolProperties"), "knife must not install a Tool component");
+        assertFalse(knife.contains("Tool.of("), "knife must not install a Tool component");
+        assertFalse(knife.contains("new Tool("), "knife must not install a Tool component");
         assertTrue(items.contains("new KnifeItem(ModToolTiers.BONE"));
         assertTrue(items.contains("new KnifeItem(ModToolTiers.FLINT"));
     }
