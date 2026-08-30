@@ -33,12 +33,13 @@ public final class ToolBindingRecipes {
         boolean bindMetal = bindTools && FirstworksConfig.BIND_METAL_VANILLA_TOOLS.getAsBoolean();
         boolean textiles = FirstworksConfig.ENABLE_TEXTILE_PROGRESSION.getAsBoolean();
         boolean masonry = FirstworksConfig.ENABLE_MASONRY_PROGRESSION.getAsBoolean();
+        boolean grain = FirstworksConfig.ENABLE_GRAIN_PROGRESSION.getAsBoolean();
         boolean replaceLeather = FirstworksConfig.REPLACE_ANIMAL_LEATHER.getAsBoolean();
-        rewrite(event.getPlayerList().getServer().getRecipeManager(), bindPrimitive, bindMetal, textiles, masonry, replaceLeather);
+        rewrite(event.getPlayerList().getServer().getRecipeManager(), bindPrimitive, bindMetal, textiles, masonry, grain, replaceLeather);
         com.nstut.firstworks.content.barrel.BarrelBlockEntity.invalidateAllBarrels();
     }
 
-    private static void rewrite(RecipeManager manager, boolean bindPrimitive, boolean bindMetal, boolean textiles, boolean masonry, boolean replaceLeather) {
+    private static void rewrite(RecipeManager manager, boolean bindPrimitive, boolean bindMetal, boolean textiles, boolean masonry, boolean grain, boolean replaceLeather) {
         Ingredient primitiveBinding = Ingredient.of(ModTags.PRIMITIVE_BINDINGS);
         Ingredient rope = Ingredient.of(ModTags.STRONG_BINDINGS);
         Map<ResourceLocation, Recipe<?>> replacements = new HashMap<>();
@@ -60,6 +61,12 @@ public final class ToolBindingRecipes {
 
         if (replaceLeather) {
             replacements.put(vanilla("leather"), shapedSimple(ModItems.RAW_HIDE.get(), Ingredient.of(Items.RABBIT_HIDE), "##", "##"));
+        }
+
+        // When grain progression is disabled, the Firstworks flour/dough overrides of the vanilla
+        // Wheat → Bread/Cookies/Cake recipes must be swapped back to the vanilla wheat routes.
+        if (!grain) {
+            addGrainVanillaRoutes(replacements);
         }
 
         List<RecipeHolder<?>> rewritten = new ArrayList<>(manager.getRecipes().size());
@@ -120,6 +127,24 @@ public final class ToolBindingRecipes {
         return id.getNamespace().equals(Firstworks.MOD_ID) && Set.of(
                 "brick_mold", "mold_unfired_clay_brick", "fire_clay_brick", "fire_clay_brick_from_smelting",
                 "mix_mortar", "mortar_bound_brick_block").contains(id.getPath());
+    }
+
+    private static void addGrainVanillaRoutes(Map<ResourceLocation, Recipe<?>> replacements) {
+        // Restore the vanilla Wheat → Bread / Cookies / Cake routes by swapping the Firstworks
+        // flour/dough overrides (same recipe ids) back to their wheat-based recipes.
+        replacements.put(vanilla("bread"), shapedVanilla(Items.BREAD,
+                Map.of('#', Ingredient.of(Items.WHEAT)), "###"));
+        replacements.put(vanilla("cookie"), shapedVanilla(Items.COOKIE,
+                Map.of('#', Ingredient.of(Items.WHEAT), 'X', Ingredient.of(Items.COCOA_BEANS)), "#X#"));
+        replacements.put(vanilla("cake"), shapedVanilla(Items.CAKE,
+                Map.of('A', Ingredient.of(Items.MILK_BUCKET), 'B', Ingredient.of(Items.SUGAR),
+                        'C', Ingredient.of(Items.EGG), '#', Ingredient.of(Items.WHEAT)),
+                "AAA", "BCB", "# #"));
+    }
+
+    private static ShapedRecipe shapedVanilla(Item result, Map<Character, Ingredient> keys, String... pattern) {
+        return new ShapedRecipe("", CraftingBookCategory.MISC,
+                ShapedRecipePattern.of(keys, pattern), new ItemStack(result));
     }
 
     private static void addTier(Map<ResourceLocation, Recipe<?>> recipes, String tier, Ingredient material,

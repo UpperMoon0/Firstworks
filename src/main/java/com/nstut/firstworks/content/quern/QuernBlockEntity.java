@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
+import java.util.Comparator;
 import java.util.Optional;
 
 public final class QuernBlockEntity extends BlockEntity {
@@ -71,7 +72,11 @@ public final class QuernBlockEntity extends BlockEntity {
         }
         int workAmount = FirstworksConfig.QUERN_MANUAL_WORK_PER_CRANK.get();
         progress += workAmount;
-        rotationSteps++;
+        // Visual rotation scales with the work applied, not just the number of cranks: a crank that
+        // contributes more work (higher quernManualWorkPerCrank, or a future faster drive) advances the
+        // stone further per turn. The client eases toward the target at its fixed per-tick cap, so a
+        // higher work rate reads as a faster spin without changing the balance (work field unchanged).
+        rotationSteps += workAmount;
         level.playSound(null, worldPosition, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, .38F, .72F + level.random.nextFloat() * .1F);
         if (level instanceof ServerLevel sl) {
             sl.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, input.copyWithCount(1)),
@@ -100,15 +105,21 @@ public final class QuernBlockEntity extends BlockEntity {
     }
 
     public Optional<RecipeHolder<QuernGrindingRecipe>> findRecipeForIngredient(ItemStack stack) {
-        if (stack.isEmpty() || level == null) return Optional.empty();
-        return level.getRecipeManager().getAllRecipesFor(ModRecipes.QUERN_GRINDING_TYPE.get()).stream()
-                .filter(holder -> holder.value().ingredient().test(stack))
-                .findFirst();
+        return bestRecipeFor(stack);
     }
 
     private Optional<RecipeHolder<QuernGrindingRecipe>> recipe() {
-        if (level == null || input.isEmpty()) return Optional.empty();
-        return level.getRecipeManager().getRecipeFor(ModRecipes.QUERN_GRINDING_TYPE.get(), new SingleRecipeInput(input), level);
+        return bestRecipeFor(input);
+    }
+
+    private Optional<RecipeHolder<QuernGrindingRecipe>> bestRecipeFor(ItemStack stack) {
+        if (stack.isEmpty() || level == null) return Optional.empty();
+        // Overlapping ingredient matchers resolve by priority (highest first), then by recipe id,
+        // so packmakers can layer quern recipes without requiring mutually exclusive ingredients.
+        return level.getRecipeManager().getAllRecipesFor(ModRecipes.QUERN_GRINDING_TYPE.get()).stream()
+                .filter(holder -> holder.value().ingredient().test(stack))
+                .max(Comparator.comparingInt((RecipeHolder<QuernGrindingRecipe> holder) -> holder.value().priority())
+                        .thenComparing(holder -> holder.id().toString()));
     }
 
     public boolean canInsert(ItemStack stack) {
