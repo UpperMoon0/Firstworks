@@ -68,31 +68,98 @@ public final class GameplayEvents {
         if (!result.isSuccessful()) { if (result.message() != null) event.getEntity().displayClientMessage(result.message(), true); return; }
         if (!event.getEntity().hasInfiniteMaterials()) { EquipmentSlot slot = event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND; tool.hurtAndBreak(1, event.getEntity(), slot); }
     }
-    @SubscribeEvent(priority = EventPriority.LOWEST) public static void onBlockPlaced(BlockEvent.EntityPlaceEvent event) { if (!event.isCanceled() && event.getLevel() instanceof ServerLevel level) CharcoalMoundData.get(level).onBlockPlaced(level, event.getPos()); }
-    @SubscribeEvent public static void tickCharcoalMounds(LevelTickEvent.Post event) { if (event.getLevel() instanceof ServerLevel level) CharcoalMoundData.get(level).tick(level); }
-    @SubscribeEvent public static void onAddReloadListeners(net.neoforged.neoforge.event.AddReloadListenerEvent event) { event.addListener(com.nstut.firstworks.content.animal.AnimalMaterialManager.INSTANCE); }
 
-    @SubscribeEvent public static void replaceAnimalLeather(LivingDropsEvent event) {
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onBlockPlaced(BlockEvent.EntityPlaceEvent event) {
+        if (!event.isCanceled() && event.getLevel() instanceof ServerLevel level) CharcoalMoundData.get(level).onBlockPlaced(level, event.getPos());
+    }
+
+    @SubscribeEvent
+    public static void tickCharcoalMounds(LevelTickEvent.Post event) {
+        if (event.getLevel() instanceof ServerLevel level) CharcoalMoundData.get(level).tick(level);
+    }
+
+    @SubscribeEvent
+    public static void onAddReloadListeners(net.neoforged.neoforge.event.AddReloadListenerEvent event) {
+        event.addListener(com.nstut.firstworks.content.animal.AnimalMaterialManager.INSTANCE);
+    }
+
+    @SubscribeEvent
+    public static void replaceAnimalLeather(LivingDropsEvent event) {
         if (!FirstworksConfig.REPLACE_ANIMAL_LEATHER.getAsBoolean() || event.getEntity().getType().is(ModTags.NO_RAW_HIDE_DROPS)) return;
         var profile = com.nstut.firstworks.content.animal.AnimalMaterialManager.getProfile(event.getEntity().getType()); int looting = getLootingLevel(event);
         if (profile.isPresent() && profile.get().hide().isPresent()) { int count=profile.get().hide().get().roll(event.getEntity().getRandom(),looting); event.getDrops().removeIf(drop->drop.getItem().is(Items.LEATHER)||drop.getItem().is(ModTags.RAW_HIDES)); if(count>0)event.getDrops().add(new ItemEntity(event.getEntity().level(),event.getEntity().getX(),event.getEntity().getY(),event.getEntity().getZ(),new ItemStack(ModItems.RAW_HIDE.get(),count))); return; }
         if (!event.getEntity().getType().is(ModTags.LEATHER_DROPS_AS_RAW_HIDE)) return;
         event.getDrops().forEach(drop->{ItemStack stack=drop.getItem();if(stack.is(Items.LEATHER))drop.setItem(new ItemStack(ModItems.RAW_HIDE.get(),stack.getCount()));});
     }
-    @SubscribeEvent public static void addAnimalBones(LivingDropsEvent event) {
+
+    @SubscribeEvent
+    public static void addAnimalBones(LivingDropsEvent event) {
         if (!FirstworksConfig.ADD_ANIMAL_BONE_DROPS.getAsBoolean() || event.getEntity().getType().is(ModTags.NO_BONE_DROPS)) return;
         var profile=com.nstut.firstworks.content.animal.AnimalMaterialManager.getProfile(event.getEntity().getType());int looting=getLootingLevel(event);
         if(profile.isPresent()&&profile.get().bones().isPresent()){int count=profile.get().bones().get().roll(event.getEntity().getRandom(),looting);if(count>0)event.getDrops().add(new ItemEntity(event.getEntity().level(),event.getEntity().getX(),event.getEntity().getY(),event.getEntity().getZ(),new ItemStack(Items.BONE,count)));return;}
         if(!event.getEntity().getType().is(ModTags.DROPS_BONES))return;int count=1+event.getEntity().getRandom().nextInt(2);if(looting>0)count+=event.getEntity().getRandom().nextInt(looting+1);event.getDrops().add(new ItemEntity(event.getEntity().level(),event.getEntity().getX(),event.getEntity().getY(),event.getEntity().getZ(),new ItemStack(Items.BONE,count)));
     }
+
     private static int getLootingLevel(LivingDropsEvent event){if(event.getEntity().level() instanceof ServerLevel serverLevel&&event.getSource()!=null&&event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker)return serverLevel.registryAccess().lookup(net.minecraft.core.registries.Registries.ENCHANTMENT).flatMap(reg->reg.get(net.minecraft.world.item.enchantment.Enchantments.LOOTING)).map(looting->net.minecraft.world.item.enchantment.EnchantmentHelper.getEnchantmentLevel(looting,attacker)).orElse(0);return 0;}
-    @SubscribeEvent public static void replaceSheepDeathWool(LivingDropsEvent event){if(!FirstworksConfig.ENABLE_TEXTILE_PROGRESSION.getAsBoolean()||!(event.getEntity() instanceof Sheep sheep))return;event.getDrops().forEach(drop->{if(drop.getItem().is(ItemTags.WOOL)){int amount=1+sheep.getRandom().nextInt(2);drop.setItem(ColoredFleeceItem.create(ModItems.RAW_FLEECE.get(),sheep.getColor(),amount));}});}
-    @SubscribeEvent public static void shearFleece(PlayerInteractEvent.EntityInteract event){if(!FirstworksConfig.ENABLE_TEXTILE_PROGRESSION.getAsBoolean()||!(event.getTarget() instanceof Sheep sheep))return;ItemStack shears=event.getEntity().getItemInHand(event.getHand());if(!shears.is(Items.SHEARS)||!sheep.readyForShearing())return;event.setCancellationResult(InteractionResult.sidedSuccess(sheep.level().isClientSide));event.setCanceled(true);if(sheep.level().isClientSide)return;sheep.level().playSound(null,sheep,SoundEvents.SHEEP_SHEAR,SoundSource.PLAYERS,1F,1F);sheep.setSheared(true);sheep.gameEvent(GameEvent.SHEAR,event.getEntity());sheep.spawnAtLocation(ColoredFleeceItem.create(ModItems.RAW_FLEECE.get(),sheep.getColor(),3+sheep.getRandom().nextInt(3)));EquipmentSlot slot=event.getHand()==net.minecraft.world.InteractionHand.MAIN_HAND?EquipmentSlot.MAINHAND:EquipmentSlot.OFFHAND;shears.hurtAndBreak(1,event.getEntity(),slot);}
-    @SubscribeEvent(priority=EventPriority.HIGH) public static void knifeShearFleece(PlayerInteractEvent.EntityInteract event){if(!FirstworksConfig.ENABLE_TEXTILE_PROGRESSION.getAsBoolean()||!(event.getTarget() instanceof Sheep sheep)||!sheep.readyForShearing())return;ItemStack knife=event.getEntity().getItemInHand(event.getHand());if(!knife.is(ModTags.PRIMITIVE_KNIVES))return;event.setCancellationResult(InteractionResult.sidedSuccess(sheep.level().isClientSide));event.setCanceled(true);if(sheep.level().isClientSide)return;sheep.level().playSound(null,sheep,SoundEvents.SHEEP_SHEAR,SoundSource.PLAYERS,.8F,.85F);sheep.setSheared(true);sheep.gameEvent(GameEvent.SHEAR,event.getEntity());sheep.spawnAtLocation(ColoredFleeceItem.create(ModItems.RAW_FLEECE.get(),sheep.getColor(),1));EquipmentSlot slot=event.getHand()==net.minecraft.world.InteractionHand.MAIN_HAND?EquipmentSlot.MAINHAND:EquipmentSlot.OFFHAND;knife.hurtAndBreak(8,event.getEntity(),slot);}
-    @SubscribeEvent(priority=EventPriority.LOWEST) public static void collectBarkWhenStripping(BlockEvent.BlockToolModificationEvent event){if(event.isSimulated()||event.getItemAbility()!=ItemAbilities.AXE_STRIP||!(event.getLevel() instanceof ServerLevel level))return;BlockState state=event.getState();Block block=state.getBlock();BlockState result=block.getToolModifiedState(state,event.getContext(),ItemAbilities.AXE_STRIP,true);if(result==null&&event.getFinalState()==state)return;ResourceLocation id=BuiltInRegistries.BLOCK.getKey(block);String wood=WoodTypeRegistry.tryResolveWoodType(id);if(wood==null)return;Block.popResource(level,event.getPos(),TreeBarkItem.create(ModItems.TREE_BARK.get(),wood,1+level.getRandom().nextInt(3)));}
-    @SubscribeEvent(priority=EventPriority.LOWEST) public static void gatherPlantFibre(BlockEvent.BreakEvent event){if(event.isCanceled()||!(event.getLevel() instanceof ServerLevel level)||event.getPlayer().isCreative())return;BlockState state=event.getState();int amount=state.is(ModTags.DOUBLE_PLANT_FIBRE_SOURCES)?2:state.is(ModTags.PLANT_FIBRE_SOURCES)?1:0;if(amount==0)return;ItemStack tool=event.getPlayer().getMainHandItem();boolean guaranteed=tool.is(ModTags.PRIMITIVE_KNIVES);if(!guaranteed&&level.getRandom().nextDouble()>=FirstworksConfig.PLANT_FIBRE_HAND_CHANCE.get())return;Block.popResource(level,event.getPos(),new ItemStack(ModItems.PLANT_FIBRE.get(),amount));if(guaranteed)tool.hurtAndBreak(1,event.getPlayer(),EquipmentSlot.MAINHAND);}
-    @SubscribeEvent(priority=EventPriority.LOWEST) public static void gatherRawOchre(BlockEvent.BreakEvent event){if(event.isCanceled()||!(event.getLevel() instanceof ServerLevel level)||event.getPlayer()==null||event.getPlayer().isCreative()||!event.getState().is(ModTags.OCHRE_SOURCES))return;ItemStack tool=event.getPlayer().getMainHandItem();if(hasSilkTouch(level,tool))return;boolean guaranteed=tool.is(ModTags.PRIMITIVE_KNIVES);if(guaranteed||level.getRandom().nextDouble()<FirstworksConfig.RAW_OCHRE_GATHER_CHANCE.get()){Block.popResource(level,event.getPos(),new ItemStack(ModItems.RAW_OCHRE.get()));if(guaranteed)tool.hurtAndBreak(1,event.getPlayer(),EquipmentSlot.MAINHAND);}}
-    @SubscribeEvent(priority=EventPriority.LOWEST) public static void onBlockBreak(BlockEvent.BreakEvent event){if(!event.isCanceled()&&event.getLevel() instanceof ServerLevel level)CharcoalMoundData.get(level).onBlockBroken(level,event.getPos());}
+
+    @SubscribeEvent
+    public static void replaceSheepDeathWool(LivingDropsEvent event){if(!FirstworksConfig.ENABLE_TEXTILE_PROGRESSION.getAsBoolean()||!(event.getEntity() instanceof Sheep sheep))return;event.getDrops().forEach(drop->{if(drop.getItem().is(ItemTags.WOOL)){int amount=1+sheep.getRandom().nextInt(2);drop.setItem(ColoredFleeceItem.create(ModItems.RAW_FLEECE.get(),sheep.getColor(),amount));}});}
+
+    @SubscribeEvent
+    public static void shearFleece(PlayerInteractEvent.EntityInteract event){if(!FirstworksConfig.ENABLE_TEXTILE_PROGRESSION.getAsBoolean()||!(event.getTarget() instanceof Sheep sheep))return;ItemStack shears=event.getEntity().getItemInHand(event.getHand());if(!shears.is(Items.SHEARS)||!sheep.readyForShearing())return;event.setCancellationResult(InteractionResult.sidedSuccess(sheep.level().isClientSide));event.setCanceled(true);if(sheep.level().isClientSide)return;sheep.level().playSound(null,sheep,SoundEvents.SHEEP_SHEAR,SoundSource.PLAYERS,1F,1F);sheep.setSheared(true);sheep.gameEvent(GameEvent.SHEAR,event.getEntity());sheep.spawnAtLocation(ColoredFleeceItem.create(ModItems.RAW_FLEECE.get(),sheep.getColor(),3+sheep.getRandom().nextInt(3)));EquipmentSlot slot=event.getHand()==net.minecraft.world.InteractionHand.MAIN_HAND?EquipmentSlot.MAINHAND:EquipmentSlot.OFFHAND;shears.hurtAndBreak(1,event.getEntity(),slot);}
+
+    @SubscribeEvent(priority=EventPriority.HIGH)
+    public static void knifeShearFleece(PlayerInteractEvent.EntityInteract event){if(!FirstworksConfig.ENABLE_TEXTILE_PROGRESSION.getAsBoolean()||!(event.getTarget() instanceof Sheep sheep)||!sheep.readyForShearing())return;ItemStack knife=event.getEntity().getItemInHand(event.getHand());if(!knife.is(ModTags.PRIMITIVE_KNIVES))return;event.setCancellationResult(InteractionResult.sidedSuccess(sheep.level().isClientSide));event.setCanceled(true);if(sheep.level().isClientSide)return;sheep.level().playSound(null,sheep,SoundEvents.SHEEP_SHEAR,SoundSource.PLAYERS,.8F,.85F);sheep.setSheared(true);sheep.gameEvent(GameEvent.SHEAR,event.getEntity());sheep.spawnAtLocation(ColoredFleeceItem.create(ModItems.RAW_FLEECE.get(),sheep.getColor(),1));EquipmentSlot slot=event.getHand()==net.minecraft.world.InteractionHand.MAIN_HAND?EquipmentSlot.MAINHAND:EquipmentSlot.OFFHAND;knife.hurtAndBreak(8,event.getEntity(),slot);}
+
+    @SubscribeEvent(priority=EventPriority.LOWEST)
+    public static void collectBarkWhenStripping(BlockEvent.BlockToolModificationEvent event){if(event.isSimulated()||event.getItemAbility()!=ItemAbilities.AXE_STRIP||!(event.getLevel() instanceof ServerLevel level))return;BlockState state=event.getState();Block block=state.getBlock();BlockState result=block.getToolModifiedState(state,event.getContext(),ItemAbilities.AXE_STRIP,true);if(result==null&&event.getFinalState()==state)return;ResourceLocation id=BuiltInRegistries.BLOCK.getKey(block);String wood=WoodTypeRegistry.tryResolveWoodType(id);if(wood==null)return;Block.popResource(level,event.getPos(),TreeBarkItem.create(ModItems.TREE_BARK.get(),wood,1+level.getRandom().nextInt(3)));}
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void gatherPlantFibre(BlockEvent.BreakEvent event) {
+        if (event.isCanceled() || !(event.getLevel() instanceof ServerLevel level)) return;
+        if (event.getPlayer().isCreative()) return;
+        BlockState state = event.getState();
+        int amount;
+        if (state.is(ModTags.DOUBLE_PLANT_FIBRE_SOURCES)) {
+            amount = 2;
+        } else if (state.is(ModTags.PLANT_FIBRE_SOURCES)) {
+            amount = 1;
+        } else {
+            return;
+        }
+
+        ItemStack tool = event.getPlayer().getMainHandItem();
+        boolean guaranteed = tool.is(ModTags.PRIMITIVE_KNIVES);
+        if (!guaranteed && level.getRandom().nextDouble() >= FirstworksConfig.PLANT_FIBRE_HAND_CHANCE.get()) return;
+        Block.popResource(level, event.getPos(), new ItemStack(ModItems.PLANT_FIBRE.get(), amount));
+        if (guaranteed) {
+            tool.hurtAndBreak(1, event.getPlayer(), EquipmentSlot.MAINHAND);
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void gatherRawOchre(BlockEvent.BreakEvent event) {
+        if (event.isCanceled() || !(event.getLevel() instanceof ServerLevel level)) return;
+        if (event.getPlayer() == null || event.getPlayer().isCreative()) return;
+        BlockState state = event.getState();
+        if (!state.is(ModTags.OCHRE_SOURCES)) return;
+
+        ItemStack tool = event.getPlayer().getMainHandItem();
+        if (hasSilkTouch(level, tool)) return;
+
+        boolean guaranteed = tool.is(ModTags.PRIMITIVE_KNIVES);
+        if (guaranteed || level.getRandom().nextDouble() < FirstworksConfig.RAW_OCHRE_GATHER_CHANCE.get()) {
+            Block.popResource(level, event.getPos(), new ItemStack(ModItems.RAW_OCHRE.get()));
+            if (guaranteed) {
+                tool.hurtAndBreak(1, event.getPlayer(), EquipmentSlot.MAINHAND);
+            }
+        }
+    }
+
+    @SubscribeEvent(priority=EventPriority.LOWEST)
+    public static void onBlockBreak(BlockEvent.BreakEvent event){if(!event.isCanceled()&&event.getLevel() instanceof ServerLevel level)CharcoalMoundData.get(level).onBlockBroken(level,event.getPos());}
+
     private static boolean hasSilkTouch(ServerLevel level,ItemStack stack){if(stack.isEmpty())return false;return level.registryAccess().lookup(net.minecraft.core.registries.Registries.ENCHANTMENT).flatMap(reg->reg.get(net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH)).map(st->net.minecraft.world.item.enchantment.EnchantmentHelper.getItemEnchantmentLevel(st,stack)>0).orElse(false);}
     private GameplayEvents() {}
 }
