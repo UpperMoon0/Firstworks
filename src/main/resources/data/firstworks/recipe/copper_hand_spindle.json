@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "tools",
+  "pattern": [" C", "S "],
+  "key": {"C": {"item": "firstworks:copper_wire"}, "S": {"item": "firstworks:hand_spindle"}},
+  "result": {"id": "firstworks:copper_hand_spindle"}
+}

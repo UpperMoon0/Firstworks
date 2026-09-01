@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [" F ", "FQF", " W "],
+  "key": {"F": {"item": "firstworks:copper_fasteners"}, "Q": {"item": "firstworks:quern"}, "W": {"item": "firstworks:worked_copper_billet"}},
+  "result": {"id": "firstworks:rotary_quern"}
+}

@@ -1,7 +1,4 @@
 {
   "replace": false,
-  "values": [
-    "firstworks:bone_knife",
-    "firstworks:flint_knife"
-  ]
+  "values": ["firstworks:bone_knife", "firstworks:flint_knife", "firstworks:copper_knife"]
 }

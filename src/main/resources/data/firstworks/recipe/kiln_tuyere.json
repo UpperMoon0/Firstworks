@@ -1,0 +1,7 @@
+{
+  "type": "firstworks:workshop_processing",
+  "station": "kiln",
+  "ingredient": {"item": "firstworks:unfired_tuyere"},
+  "result": {"id": "firstworks:tuyere"},
+  "work": 200
+}

@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"firstworks:block/copper_loom"},"facing=east":{"model":"firstworks:block/copper_loom","y":90},"facing=south":{"model":"firstworks:block/copper_loom","y":180},"facing=west":{"model":"firstworks:block/copper_loom","y":270}}}

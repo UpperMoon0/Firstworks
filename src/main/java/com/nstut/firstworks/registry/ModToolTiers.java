@@ -11,7 +11,8 @@ import java.util.function.Supplier;
 
 public enum ModToolTiers implements Tier {
     BONE(BlockTags.INCORRECT_FOR_STONE_TOOL, 250, 4.25F, 1.25F, 10, () -> Ingredient.of(Items.BONE)),
-    FLINT(BlockTags.INCORRECT_FOR_STONE_TOOL, 150, 5.5F, 2.0F, 6, () -> Ingredient.of(Items.FLINT));
+    FLINT(BlockTags.INCORRECT_FOR_STONE_TOOL, 150, 5.5F, 2.0F, 6, () -> Ingredient.of(Items.FLINT)),
+    COPPER(BlockTags.INCORRECT_FOR_IRON_TOOL, 220, 6.0F, 2.0F, 8, () -> Ingredient.of(Items.COPPER_INGOT));
 
     private final TagKey<Block> incorrectBlocksForDrops;
     private final int uses;
