@@ -24,7 +24,7 @@ public final class BellowsBlock extends Block {
                     found = true;
                 }
             }
-            if (found) level.playSound(null, pos, SoundEvents.WIND_CHARGE_BURST, SoundSource.BLOCKS, .55F, .72F);
+            if (found) level.playSound(null, pos, SoundEvents.WIND_CHARGE_BURST.value(), SoundSource.BLOCKS, .55F, .72F);
         }
         return found ? InteractionResult.sidedSuccess(level.isClientSide) : InteractionResult.PASS;
     }
