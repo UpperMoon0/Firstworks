@@ -31,24 +31,40 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
     @Override public int getHeight() { return 62; }
     @Override public IDrawable getIcon() { return icon; }
 
-    @Override public void setRecipe(IRecipeLayoutBuilder builder, WorkshopRecipe recipe, IFocusGroup focuses) {
-        builder.addSlot(RecipeIngredientRole.CATALYST, 3, 5).setStandardSlotBackground().addItemStack(stationStack(recipe.station()));
-        builder.addSlot(RecipeIngredientRole.INPUT, 35, 5).setStandardSlotBackground()
-                .addItemStacks(Arrays.stream(recipe.ingredient().getItems()).map(stack -> stack.copyWithCount(recipe.inputCount())).toList());
-        if (recipe.catalyst().getItems().length > 0) {
-            builder.addSlot(RecipeIngredientRole.CATALYST, 63, 5).setStandardSlotBackground()
-                    .addItemStacks(Arrays.stream(recipe.catalyst().getItems()).map(stack -> stack.copyWithCount(recipe.catalystCount())).toList());
-        }
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 122, 5).setStandardSlotBackground().addItemStack(recipe.result());
+    @Override
+    public void setRecipe(IRecipeLayoutBuilder builder, WorkshopRecipe recipe, IFocusGroup focuses) {
+        builder.addSlot(RecipeIngredientRole.CATALYST, 3, 5)
+                .setStandardSlotBackground()
+                .addItemStack(stationStack(recipe.station()));
+        builder.addSlot(RecipeIngredientRole.INPUT, 35, 5)
+                .setStandardSlotBackground()
+                .addItemStacks(Arrays.stream(recipe.ingredient().getItems())
+                        .map(stack -> stack.copyWithCount(recipe.inputCount()))
+                        .toList());
+        recipe.catalyst().ifPresent(catalyst ->
+                builder.addSlot(RecipeIngredientRole.CATALYST, 63, 5)
+                        .setStandardSlotBackground()
+                        .addItemStacks(Arrays.stream(catalyst.getItems())
+                                .map(stack -> stack.copyWithCount(recipe.catalystCount()))
+                                .toList()));
+        builder.addSlot(RecipeIngredientRole.OUTPUT, 122, 5)
+                .setStandardSlotBackground()
+                .addItemStack(recipe.result());
     }
 
-    @Override public void draw(WorkshopRecipe recipe, IRecipeSlotsView slots, GuiGraphics graphics, double mouseX, double mouseY) {
+    @Override
+    public void draw(WorkshopRecipe recipe, IRecipeSlotsView slots, GuiGraphics graphics, double mouseX, double mouseY) {
         arrow.draw(graphics, 91, 5);
         var font = Minecraft.getInstance().font;
-        graphics.drawString(font, Component.translatable("jei.firstworks.workshop.station", stationName(recipe.station())), 3, 34, 0xFF606060, false);
-        graphics.drawString(font, Component.translatable("jei.firstworks.workshop.work", recipe.work()), 3, 46, 0xFF606060, false);
+        graphics.drawString(font,
+                Component.translatable("jei.firstworks.workshop.station", stationName(recipe.station())),
+                3, 34, 0xFF606060, false);
+        graphics.drawString(font,
+                Component.translatable("jei.firstworks.workshop.work", recipe.work()),
+                3, 46, 0xFF606060, false);
         if (WorkshopRecipe.CRUCIBLE_FURNACE.equals(recipe.station())) {
-            graphics.drawString(font, Component.translatable("jei.firstworks.workshop.air"), 83, 46, 0xFF606060, false);
+            graphics.drawString(font, Component.translatable("jei.firstworks.workshop.air"),
+                    83, 46, 0xFF606060, false);
         }
     }
 
