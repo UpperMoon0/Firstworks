@@ -1,17 +1,21 @@
 package com.nstut.firstworks.gametest;
 
 import com.nstut.firstworks.Firstworks;
+import com.nstut.firstworks.content.quern.QuernBlockEntity;
 import com.nstut.firstworks.content.workshop.WorkshopBlockEntity;
+import com.nstut.firstworks.content.workshop.WorkshopRecipe;
+import com.nstut.firstworks.content.workshop.WorkshopRecipeInput;
 import com.nstut.firstworks.registry.ModBlocks;
 import com.nstut.firstworks.registry.ModItems;
+import com.nstut.firstworks.registry.ModRecipes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -46,6 +50,56 @@ public final class WorkshopSelectionGameTests {
         check(helper, wheel.work(player), "Pottery Wheel refused catalyst-specific recipe work");
         check(helper, wheel.getOutput().is(Items.DIAMOND),
                 "Pottery Wheel completed the wrong equal-batch workshop recipe");
+
+        helper.succeed();
+    }
+
+    @GameTest(template = EMPTY, timeoutTicks = 20)
+    public static void standardRecipeManagerHonorsWorkshopStationAndCatalyst(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        var recipes = level.getRecipeManager();
+
+        var wrongStation = recipes.getRecipeFor(
+                ModRecipes.WORKSHOP_PROCESSING_TYPE.get(),
+                new WorkshopRecipeInput(WorkshopRecipe.KILN,
+                        new ItemStack(Items.EMERALD), new ItemStack(Items.STICK)),
+                level);
+        check(helper, wrongStation.isEmpty(),
+                "RecipeManager matched a Pottery Wheel workshop recipe at the Kiln station");
+
+        var missingCatalyst = recipes.getRecipeFor(
+                ModRecipes.WORKSHOP_PROCESSING_TYPE.get(),
+                new WorkshopRecipeInput(WorkshopRecipe.POTTERY_WHEEL,
+                        new ItemStack(Items.EMERALD), ItemStack.EMPTY),
+                level);
+        check(helper, missingCatalyst.isEmpty(),
+                "RecipeManager matched a catalyst-required workshop recipe without its catalyst");
+
+        var matched = recipes.getRecipeFor(
+                ModRecipes.WORKSHOP_PROCESSING_TYPE.get(),
+                new WorkshopRecipeInput(WorkshopRecipe.POTTERY_WHEEL,
+                        new ItemStack(Items.EMERALD), new ItemStack(Items.STICK)),
+                level);
+        check(helper, matched.isPresent() && matched.get().id().getPath().equals("gametest_required_catalyst"),
+                "RecipeManager did not match the complete workshop station/input/catalyst state");
+
+        helper.succeed();
+    }
+
+    @GameTest(template = EMPTY, timeoutTicks = 20)
+    public static void quernPriorityAndRecipeIdTieBreakAreBehavioral(GameTestHelper helper) {
+        BlockPos quernPos = new BlockPos(2, 1, 8);
+        helper.setBlock(quernPos, ModBlocks.QUERN.get());
+        QuernBlockEntity quern = helper.getBlockEntity(quernPos);
+
+        var selected = quern.findRecipeForIngredient(new ItemStack(Items.QUARTZ)).orElseThrow(
+                () -> new IllegalStateException("No overlapping quern recipe loaded for priority test"));
+        check(helper, selected.value().priority() == 10,
+                "Quern did not prefer the highest-priority overlapping recipe");
+        check(helper, selected.id().getPath().equals("gametest_quern_priority_tie_z"),
+                "Quern priority ties did not resolve deterministically by recipe id");
+        check(helper, selected.value().result().is(Items.EMERALD),
+                "Quern selected the wrong result after priority/id ordering");
 
         helper.succeed();
     }
