@@ -7,6 +7,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -176,8 +177,13 @@ public final class WorkshopBlockEntity extends BlockEntity {
                 .filter(holder -> holder.value().catalystMatches(catalyst))
                 .sorted(Comparator.comparingInt((RecipeHolder<WorkshopRecipe> holder) -> holder.value().inputCount())
                         .reversed()
+                        .thenComparingInt(holder -> holder.value().hasCatalyst() ? 0 : 1)
                         .thenComparing(holder -> holder.id().toString()))
                 .findFirst();
+    }
+
+    private Optional<ResourceLocation> activeRecipeId() {
+        return activeRecipe().map(RecipeHolder::id);
     }
 
     private Stream<RecipeHolder<WorkshopRecipe>> stationRecipes() {
@@ -283,6 +289,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
             return false;
         }
 
+        Optional<ResourceLocation> previousRecipe = slot == FUEL_SLOT ? Optional.empty() : activeRecipeId();
         if (slot == INPUT_SLOT) {
             input = addOne(input, held);
         } else if (slot == CATALYST_SLOT) {
@@ -297,14 +304,19 @@ public final class WorkshopBlockEntity extends BlockEntity {
             held.shrink(1);
         }
 
-        // Fuel is a reserve, not part of recipe identity. Topping it up must never destroy
-        // already-completed work or force a running batch to consume another fuel item.
-        if (slot != FUEL_SLOT) {
+        resetProcessingIfRecipeChanged(slot, previousRecipe);
+        sync();
+        return true;
+    }
+
+    private void resetProcessingIfRecipeChanged(int slot, Optional<ResourceLocation> previousRecipe) {
+        if (slot == FUEL_SLOT) {
+            return;
+        }
+        if (!heated() || !previousRecipe.equals(activeRecipeId())) {
             progress = 0;
             running = false;
         }
-        sync();
-        return true;
     }
 
     private static ItemStack addOne(ItemStack target, ItemStack source) {
@@ -509,6 +521,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
                 return stack;
             }
             if (!simulate) {
+                Optional<ResourceLocation> previousRecipe = slot == FUEL_SLOT ? Optional.empty() : activeRecipeId();
                 ItemStack target = current.isEmpty()
                         ? stack.copyWithCount(accepted)
                         : current.copyWithCount(current.getCount() + accepted);
@@ -520,10 +533,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
                     fuel = target;
                 }
 
-                if (slot != FUEL_SLOT) {
-                    progress = 0;
-                    running = false;
-                }
+                resetProcessingIfRecipeChanged(slot, previousRecipe);
                 sync();
             }
             return stack.copyWithCount(stack.getCount() - accepted);
