@@ -1,0 +1,13 @@
+{
+  "parent":"minecraft:block/block",
+  "textures":{"particle":"minecraft:block/stone","stone":"minecraft:block/stone","smooth":"minecraft:block/smooth_stone","wood":"minecraft:block/oak_planks","log":"minecraft:block/stripped_oak_log","copper":"minecraft:block/cut_copper"},
+  "elements":[
+    {"from":[3,5.4,3],"to":[13,7.5,13],"faces":{"down":{"texture":"#smooth"},"up":{"texture":"#smooth"},"north":{"texture":"#smooth"},"south":{"texture":"#smooth"},"west":{"texture":"#smooth"},"east":{"texture":"#smooth"}}},
+    {"from":[2,5.4,5],"to":[14,7.5,11],"faces":{"down":{"texture":"#stone"},"up":{"texture":"#stone"},"north":{"texture":"#stone"},"south":{"texture":"#stone"},"west":{"texture":"#stone"},"east":{"texture":"#stone"}}},
+    {"from":[5,5.4,2],"to":[11,7.5,14],"faces":{"down":{"texture":"#stone"},"up":{"texture":"#stone"},"north":{"texture":"#stone"},"south":{"texture":"#stone"},"west":{"texture":"#stone"},"east":{"texture":"#stone"}}},
+    {"from":[6.6,7.3,6.6],"to":[9.4,8.2,9.4],"faces":{"down":{"texture":"#copper"},"up":{"texture":"#copper"},"north":{"texture":"#copper"},"south":{"texture":"#copper"},"west":{"texture":"#copper"},"east":{"texture":"#copper"}}},
+    {"from":[7.2,7.8,7.2],"to":[8.8,10.1,8.8],"faces":{"down":{"texture":"#copper"},"up":{"texture":"#copper"},"north":{"texture":"#copper"},"south":{"texture":"#copper"},"west":{"texture":"#copper"},"east":{"texture":"#copper"}}},
+    {"from":[7.2,9.5,7.2],"to":[13.3,10.6,8.8],"faces":{"down":{"texture":"#wood"},"up":{"texture":"#wood"},"north":{"texture":"#wood"},"south":{"texture":"#wood"},"west":{"texture":"#wood"},"east":{"texture":"#wood"}}},
+    {"from":[12.4,9.2,7],"to":[14.2,12.7,9],"faces":{"down":{"texture":"#log"},"up":{"texture":"#log"},"north":{"texture":"#log"},"south":{"texture":"#log"},"west":{"texture":"#log"},"east":{"texture":"#log"}}}
+  ]
+}

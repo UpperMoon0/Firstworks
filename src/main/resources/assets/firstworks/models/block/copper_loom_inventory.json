@@ -14,7 +14,11 @@
     {"from":[11.9,3.5,5.5],"to":[15.1,5.1,10.5],"faces":{"down":{"texture":"#copper"},"up":{"texture":"#copper"},"north":{"texture":"#copper"},"south":{"texture":"#copper"},"west":{"texture":"#copper"},"east":{"texture":"#copper"}}},
     {"from":[2.8,12.7,5.35],"to":[13.2,13.55,10.65],"faces":{"down":{"texture":"#darkcopper"},"up":{"texture":"#darkcopper"},"north":{"texture":"#darkcopper"},"south":{"texture":"#darkcopper"},"west":{"texture":"#darkcopper"},"east":{"texture":"#darkcopper"}}},
     {"from":[3.6,1.8,4],"to":[12.4,2.7,5.4],"faces":{"down":{"texture":"#wood"},"up":{"texture":"#wood"},"north":{"texture":"#wood"},"south":{"texture":"#wood"},"west":{"texture":"#wood"},"east":{"texture":"#wood"}}},
-    {"from":[7.2,2,3.2],"to":[8.8,4.3,5.8],"faces":{"down":{"texture":"#copper"},"up":{"texture":"#copper"},"north":{"texture":"#copper"},"south":{"texture":"#copper"},"west":{"texture":"#copper"},"east":{"texture":"#copper"}}}
+    {"from":[7.2,2,3.2],"to":[8.8,4.3,5.8],"faces":{"down":{"texture":"#copper"},"up":{"texture":"#copper"},"north":{"texture":"#copper"},"south":{"texture":"#copper"},"west":{"texture":"#copper"},"east":{"texture":"#copper"}}},
+    {"from":[3.1,6.6,4.7],"to":[12.9,8,5.6],"faces":{"down":{"texture":"#copper"},"up":{"texture":"#copper"},"north":{"texture":"#copper"},"south":{"texture":"#copper"},"west":{"texture":"#copper"},"east":{"texture":"#copper"}}},
+    {"from":[3.1,6.3,4.8],"to":[4.15,11.3,5.55],"faces":{"down":{"texture":"#wood"},"up":{"texture":"#wood"},"north":{"texture":"#wood"},"south":{"texture":"#wood"},"west":{"texture":"#wood"},"east":{"texture":"#wood"}}},
+    {"from":[11.85,6.3,4.8],"to":[12.9,11.3,5.55],"faces":{"down":{"texture":"#wood"},"up":{"texture":"#wood"},"north":{"texture":"#wood"},"south":{"texture":"#wood"},"west":{"texture":"#wood"},"east":{"texture":"#wood"}}},
+    {"from":[4.2,7,4.95],"to":[11.8,7.55,5.35],"faces":{"down":{"texture":"#darkcopper"},"up":{"texture":"#darkcopper"},"north":{"texture":"#darkcopper"},"south":{"texture":"#darkcopper"},"west":{"texture":"#darkcopper"},"east":{"texture":"#darkcopper"}}}
   ],
   "display":{"gui":{"rotation":[30,225,0],"scale":[0.625,0.625,0.625]},"ground":{"translation":[0,3,0],"scale":[0.25,0.25,0.25]},"fixed":{"scale":[0.5,0.5,0.5]}}
 }

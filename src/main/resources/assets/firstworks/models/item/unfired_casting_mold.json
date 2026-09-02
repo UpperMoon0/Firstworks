@@ -1,1 +1,13 @@
-{"parent":"minecraft:item/generated","textures":{"layer0":"firstworks:item/unfired_casting_mold"}}
+{
+  "parent":"minecraft:block/block",
+  "textures":{"particle":"minecraft:block/clay","clay":"minecraft:block/clay","dark":"minecraft:block/gray_terracotta"},
+  "elements":[
+    {"from":[2,2,4],"to":[14,3.2,12],"faces":{"down":{"texture":"#clay"},"up":{"texture":"#clay"},"north":{"texture":"#clay"},"south":{"texture":"#clay"},"west":{"texture":"#clay"},"east":{"texture":"#clay"}}},
+    {"from":[2,3.2,4],"to":[3.5,6,12],"faces":{"down":{"texture":"#clay"},"up":{"texture":"#clay"},"north":{"texture":"#clay"},"south":{"texture":"#clay"},"west":{"texture":"#clay"},"east":{"texture":"#clay"}}},
+    {"from":[12.5,3.2,4],"to":[14,6,12],"faces":{"down":{"texture":"#clay"},"up":{"texture":"#clay"},"north":{"texture":"#clay"},"south":{"texture":"#clay"},"west":{"texture":"#clay"},"east":{"texture":"#clay"}}},
+    {"from":[3.5,3.2,4],"to":[12.5,6,5.5],"faces":{"down":{"texture":"#clay"},"up":{"texture":"#clay"},"north":{"texture":"#clay"},"south":{"texture":"#clay"},"west":{"texture":"#clay"},"east":{"texture":"#clay"}}},
+    {"from":[3.5,3.2,10.5],"to":[12.5,6,12],"faces":{"down":{"texture":"#clay"},"up":{"texture":"#clay"},"north":{"texture":"#clay"},"south":{"texture":"#clay"},"west":{"texture":"#clay"},"east":{"texture":"#clay"}}},
+    {"from":[5,3.15,6.2],"to":[11,3.65,9.8],"faces":{"down":{"texture":"#dark"},"up":{"texture":"#dark"},"north":{"texture":"#dark"},"south":{"texture":"#dark"},"west":{"texture":"#dark"},"east":{"texture":"#dark"}}}
+  ],
+  "display":{"gui":{"rotation":[30,225,0],"scale":[0.9,0.9,0.9]},"ground":{"translation":[0,3,0],"scale":[0.35,0.35,0.35]},"fixed":{"scale":[0.6,0.6,0.6]}}
+}

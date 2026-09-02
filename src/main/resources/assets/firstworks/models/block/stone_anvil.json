@@ -1,1 +1,14 @@
-{"parent":"minecraft:block/cube_all","textures":{"all":"minecraft:block/stone"}}
+{
+  "parent":"minecraft:block/block",
+  "textures":{"particle":"minecraft:block/stone","stone":"minecraft:block/stone","dressed":"minecraft:block/smooth_stone","dark":"minecraft:block/andesite","wood":"minecraft:block/stripped_oak_log"},
+  "elements":[
+    {"from":[2,0,2],"to":[14,2.5,14],"faces":{"down":{"texture":"#wood"},"up":{"texture":"#wood"},"north":{"texture":"#wood"},"south":{"texture":"#wood"},"west":{"texture":"#wood"},"east":{"texture":"#wood"}}},
+    {"from":[3,2.5,3],"to":[13,4.2,13],"faces":{"down":{"texture":"#dark"},"up":{"texture":"#dark"},"north":{"texture":"#dark"},"south":{"texture":"#dark"},"west":{"texture":"#dark"},"east":{"texture":"#dark"}}},
+    {"from":[5,4.2,5],"to":[11,7.2,11],"faces":{"down":{"texture":"#stone"},"up":{"texture":"#stone"},"north":{"texture":"#stone"},"south":{"texture":"#stone"},"west":{"texture":"#stone"},"east":{"texture":"#stone"}}},
+    {"from":[3,7.2,3],"to":[13,9.4,13],"faces":{"down":{"texture":"#stone"},"up":{"texture":"#stone"},"north":{"texture":"#stone"},"south":{"texture":"#stone"},"west":{"texture":"#stone"},"east":{"texture":"#stone"}}},
+    {"from":[2,9.4,3],"to":[14,10.6,13],"faces":{"down":{"texture":"#dressed"},"up":{"texture":"#dressed"},"north":{"texture":"#dressed"},"south":{"texture":"#dressed"},"west":{"texture":"#dressed"},"east":{"texture":"#dressed"}}},
+    {"from":[5,8,0.5],"to":[11,9.7,4],"faces":{"down":{"texture":"#stone"},"up":{"texture":"#stone"},"north":{"texture":"#stone"},"south":{"texture":"#stone"},"west":{"texture":"#stone"},"east":{"texture":"#stone"}}},
+    {"from":[6,3.4,1.7],"to":[10,5.2,4.7],"faces":{"down":{"texture":"#dark"},"up":{"texture":"#dark"},"north":{"texture":"#dark"},"south":{"texture":"#dark"},"west":{"texture":"#dark"},"east":{"texture":"#dark"}}}
+  ],
+  "display":{"gui":{"rotation":[30,225,0],"scale":[0.72,0.72,0.72]},"ground":{"translation":[0,3,0],"scale":[0.35,0.35,0.35]},"fixed":{"scale":[0.55,0.55,0.55]}}
+}

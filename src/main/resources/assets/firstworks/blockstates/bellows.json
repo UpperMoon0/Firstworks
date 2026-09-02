@@ -1,1 +1,1 @@
-{"variants":{"":{"model":"firstworks:block/bellows"}}}
+{"variants":{"facing=north":{"model":"firstworks:block/bellows"},"facing=east":{"model":"firstworks:block/bellows","y":90},"facing=south":{"model":"firstworks:block/bellows","y":180},"facing=west":{"model":"firstworks:block/bellows","y":270}}}

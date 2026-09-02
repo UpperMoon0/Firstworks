@@ -1,6 +1,7 @@
 package com.nstut.firstworks.registry;
 
 import com.nstut.firstworks.Firstworks;
+import com.nstut.firstworks.content.BellowsBlockEntity;
 import com.nstut.firstworks.content.barrel.BarrelBlockEntity;
 import com.nstut.firstworks.content.barrel.BarrelBlock;
 import com.nstut.firstworks.content.brick_mold.BrickMoldBlockEntity;
@@ -28,6 +29,7 @@ public final class ModBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MortarBlockEntity>> MORTAR = TYPES.register("mortar_and_pestle", () -> BlockEntityType.Builder.of(MortarBlockEntity::new, ModBlocks.MORTAR_AND_PESTLE.get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<QuernBlockEntity>> QUERN = TYPES.register("quern", () -> BlockEntityType.Builder.of(QuernBlockEntity::new, ModBlocks.QUERN.get(), ModBlocks.ROTARY_QUERN.get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WorkshopBlockEntity>> WORKSHOP = TYPES.register("workshop", () -> BlockEntityType.Builder.of(WorkshopBlockEntity::new, ModBlocks.POTTERY_WHEEL.get(), ModBlocks.KILN.get(), ModBlocks.STONE_ANVIL.get(), ModBlocks.CRUCIBLE_FURNACE.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BellowsBlockEntity>> BELLOWS = TYPES.register("bellows", () -> BlockEntityType.Builder.of(BellowsBlockEntity::new, ModBlocks.BELLOWS.get()).build(null));
 
     public static void register(IEventBus bus) { TYPES.register(bus); bus.addListener(ModBlockEntities::registerCapabilities); }
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {

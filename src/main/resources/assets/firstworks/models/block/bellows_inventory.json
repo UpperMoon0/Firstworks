@@ -7,7 +7,12 @@
     {"from":[7,1.35,0],"to":[9,3.2,4.2],"faces":{"down":{"texture":"#nozzle"},"up":{"texture":"#nozzle"},"north":{"texture":"#nozzle"},"south":{"texture":"#nozzle"},"west":{"texture":"#nozzle"},"east":{"texture":"#nozzle"}}},
     {"from":[6.6,1.1,3.6],"to":[9.4,3.45,5],"faces":{"down":{"texture":"#metal"},"up":{"texture":"#metal"},"north":{"texture":"#metal"},"south":{"texture":"#metal"},"west":{"texture":"#metal"},"east":{"texture":"#metal"}}},
     {"from":[1.5,0,2.5],"to":[3.2,1.2,13.5],"faces":{"down":{"texture":"#log"},"up":{"texture":"#log"},"north":{"texture":"#log"},"south":{"texture":"#log"},"west":{"texture":"#log"},"east":{"texture":"#log"}}},
-    {"from":[12.8,0,2.5],"to":[14.5,1.2,13.5],"faces":{"down":{"texture":"#log"},"up":{"texture":"#log"},"north":{"texture":"#log"},"south":{"texture":"#log"},"west":{"texture":"#log"},"east":{"texture":"#log"}}}
+    {"from":[12.8,0,2.5],"to":[14.5,1.2,13.5],"faces":{"down":{"texture":"#log"},"up":{"texture":"#log"},"north":{"texture":"#log"},"south":{"texture":"#log"},"west":{"texture":"#log"},"east":{"texture":"#log"}}},
+    {"from":[2.7,3,3.6],"to":[13.3,6.9,12.4],"faces":{"down":{"texture":"#leather"},"up":{"texture":"#leather"},"north":{"texture":"#leather"},"south":{"texture":"#leather"},"west":{"texture":"#leather"},"east":{"texture":"#leather"}}},
+    {"from":[2.3,4.1,4.2],"to":[13.7,5,11.8],"faces":{"down":{"texture":"#leather"},"up":{"texture":"#leather"},"north":{"texture":"#leather"},"south":{"texture":"#leather"},"west":{"texture":"#leather"},"east":{"texture":"#leather"}}},
+    {"from":[2,6.8,3],"to":[14,8.8,13],"faces":{"down":{"texture":"#wood"},"up":{"texture":"#wood"},"north":{"texture":"#wood"},"south":{"texture":"#wood"},"west":{"texture":"#wood"},"east":{"texture":"#wood"}}},
+    {"from":[5.7,8.4,10.8],"to":[10.3,9.7,14.6],"faces":{"down":{"texture":"#log"},"up":{"texture":"#log"},"north":{"texture":"#log"},"south":{"texture":"#log"},"west":{"texture":"#log"},"east":{"texture":"#log"}}},
+    {"from":[2.2,6.5,11.7],"to":[13.8,8.9,13.7],"faces":{"down":{"texture":"#metal"},"up":{"texture":"#metal"},"north":{"texture":"#metal"},"south":{"texture":"#metal"},"west":{"texture":"#metal"},"east":{"texture":"#metal"}}}
   ],
   "display":{"gui":{"rotation":[30,225,0],"scale":[0.72,0.72,0.72]},"ground":{"translation":[0,3,0],"scale":[0.35,0.35,0.35]},"fixed":{"scale":[0.55,0.55,0.55]}}
 }

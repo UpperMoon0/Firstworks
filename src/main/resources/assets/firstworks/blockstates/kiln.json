@@ -1,1 +1,1 @@
-{"variants":{"":{"model":"firstworks:block/kiln"}}}
+{"variants":{"facing=north":{"model":"firstworks:block/kiln"},"facing=east":{"model":"firstworks:block/kiln","y":90},"facing=south":{"model":"firstworks:block/kiln","y":180},"facing=west":{"model":"firstworks:block/kiln","y":270}}}

@@ -9,6 +9,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -31,12 +32,32 @@ public final class WorkshopBlockEntity extends BlockEntity {
     private int progress;
     private int stokeTicks;
     private boolean running;
+    private long actionSteps;
+
+    private double clientPrevRotation;
+    private double clientRotation;
+    private double rotationTarget;
+    private boolean clientRotationInitialized;
+    private long clientObservedActionSteps = Long.MIN_VALUE;
+    private long clientActionTick = Long.MIN_VALUE;
+
     private final IItemHandler handler = new WorkshopItemHandler();
 
     public WorkshopBlockEntity(BlockPos pos, BlockState state) { super(ModBlockEntities.WORKSHOP.get(), pos, state); }
 
     public String station() {
         return getBlockState().getBlock() instanceof WorkshopBlock workshop ? workshop.station() : "";
+    }
+
+    public static void clientTick(Level level, BlockPos pos, BlockState state, WorkshopBlockEntity workshop) {
+        workshop.clientPrevRotation = workshop.clientRotation;
+        if (workshop.clientRotation < workshop.rotationTarget) {
+            double diff = workshop.rotationTarget - workshop.clientRotation;
+            workshop.clientRotation += Math.min(diff, 18.0D);
+        } else if (workshop.clientRotation > workshop.rotationTarget) {
+            workshop.clientRotation = workshop.rotationTarget;
+            workshop.clientPrevRotation = workshop.rotationTarget;
+        }
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, WorkshopBlockEntity workshop) {
@@ -60,7 +81,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
             workshop.fuel.shrink(1);
             if (workshop.fuel.isEmpty()) workshop.fuel = ItemStack.EMPTY;
             workshop.running = true;
-            level.playSound(null, pos, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, .55F, .85F);
+            level.playSound(null, pos, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 0.55F, 0.85F);
         }
 
         workshop.progress++;
@@ -82,9 +103,10 @@ public final class WorkshopBlockEntity extends BlockEntity {
         if (holder.isEmpty() || !output.isEmpty()) return false;
 
         progress++;
+        actionSteps++;
         if (level != null) level.playSound(null, worldPosition,
                 station.equals(WorkshopRecipe.POTTERY_WHEEL) ? SoundEvents.BRUSH_GENERIC : SoundEvents.ANVIL_HIT,
-                SoundSource.BLOCKS, .45F, station.equals(WorkshopRecipe.POTTERY_WHEEL) ? 1.15F : 1.35F);
+                SoundSource.BLOCKS, 0.45F, station.equals(WorkshopRecipe.POTTERY_WHEEL) ? 1.15F : 1.35F);
         if (progress >= holder.get().value().work()) complete(holder.get().value());
         else sync();
         return true;
@@ -100,7 +122,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
         output = recipe.result().copy();
         progress = 0;
         running = false;
-        if (level != null) level.playSound(null, worldPosition, SoundEvents.PLAYER_LEVELUP, SoundSource.BLOCKS, .22F, 1.65F);
+        if (level != null) level.playSound(null, worldPosition, SoundEvents.PLAYER_LEVELUP, SoundSource.BLOCKS, 0.22F, 1.65F);
         sync();
     }
 
@@ -177,6 +199,27 @@ public final class WorkshopBlockEntity extends BlockEntity {
     public ItemStack getCatalyst() { return catalyst; }
     public ItemStack getFuel() { return fuel; }
     public ItemStack getOutput() { return output; }
+    public boolean isRunning() { return running; }
+
+    public float getProgressFraction() {
+        if (!output.isEmpty()) return 1.0F;
+        return activeRecipe().map(holder -> Mth.clamp((float) progress / Math.max(1, holder.value().work()), 0.0F, 1.0F)).orElse(0.0F);
+    }
+
+    public float getWheelRotation(float partialTick) {
+        if (level != null && level.isClientSide) {
+            double interpolated = clientPrevRotation + (clientRotation - clientPrevRotation) * partialTick;
+            return (float) (interpolated % 360.0D);
+        }
+        return (float) ((actionSteps * 72L) % 360L);
+    }
+
+    public float getActionPulse(float partialTick) {
+        if (level == null || clientActionTick == Long.MIN_VALUE) return 0.0F;
+        float elapsed = (float) (level.getGameTime() + partialTick - clientActionTick);
+        if (elapsed < 0.0F || elapsed >= 6.0F) return 0.0F;
+        return Mth.sin((float) Math.PI * Mth.clamp(elapsed / 6.0F, 0.0F, 1.0F));
+    }
 
     private void sync() {
         setChanged();
@@ -192,6 +235,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
         tag.putInt("Progress", progress);
         tag.putInt("StokeTicks", stokeTicks);
         tag.putBoolean("Running", running);
+        tag.putLong("ActionSteps", actionSteps);
     }
 
     @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider regs) {
@@ -203,6 +247,20 @@ public final class WorkshopBlockEntity extends BlockEntity {
         progress = tag.getInt("Progress");
         stokeTicks = tag.getInt("StokeTicks");
         running = tag.getBoolean("Running");
+        long loadedActionSteps = tag.getLong("ActionSteps");
+        if (level != null && level.isClientSide) {
+            if (clientObservedActionSteps != Long.MIN_VALUE && loadedActionSteps != clientObservedActionSteps) {
+                clientActionTick = level.getGameTime();
+            }
+            clientObservedActionSteps = loadedActionSteps;
+            rotationTarget = loadedActionSteps * 72.0D;
+            if (!clientRotationInitialized) {
+                clientRotation = rotationTarget;
+                clientPrevRotation = rotationTarget;
+                clientRotationInitialized = true;
+            }
+        }
+        actionSteps = loadedActionSteps;
     }
 
     @Override public CompoundTag getUpdateTag(HolderLookup.Provider regs) { return saveWithoutMetadata(regs); }
