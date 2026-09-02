@@ -39,10 +39,10 @@ Starting in **0.0.11**, Firstworks registers all gameplay options as a **`SERVER
 | `addAnimalBoneDrops` | Boolean | `true` | `true / false` | Adds 1–2 bones to vertebrate entities in `#firstworks:drops_bones`. |
 | `bindVanillaToolRecipes` | Boolean | `true` | `true / false` | Master toggle requiring bindings for vanilla wooden/stone/metal/diamond tools. |
 | `bindPrimitiveVanillaTools` | Boolean | `true` | `true / false` | Requires `#firstworks:primitive_bindings` for wooden and stone tools. |
-| `bindMetalVanillaTools` | Boolean | `true` | `true / false` | Requires `#firstworks:strong_bindings` (Rope) for iron, gold, and diamond tools. |
+| `bindMetalVanillaTools` | Boolean | `true` | `true / false` | Requires `#firstworks:strong_bindings` for iron, gold, and diamond tools. |
 | `enableTextileProgression` | Boolean | `true` | `true / false` | Replaces wool drops with raw fleece, disables String-to-Wool, and requires Cloth/Clean Wool for beds. |
 | `enableMasonryProgression` | Boolean | `true` | `true / false` | Requires brick molding, firing, wet mortar mixing, and mortar-bound brick blocks. |
-| `enableGrainProgression` | Boolean | `true` | `true / false` | Overrides the vanilla Wheat → Bread, Wheat → Cookies, and Wheat → Cake recipes to require `#c:doughs/wheat` / `#c:flours/wheat` (the Firstworks flour/dough pipeline). Disable to restore the vanilla grain routes while keeping the Quern, Flour, and Dough items. |
+| `enableGrainProgression` | Boolean | `true` | `true / false` | When enabled, rewrites the winning `minecraft:bread`, `minecraft:cookie`, and `minecraft:cake` recipes to require `#c:doughs/wheat` / `#c:flours/wheat`. When disabled, Firstworks leaves those recipe IDs untouched so vanilla or another datapack/mod can own them. |
 | `rainFillsBarrels` | Boolean | `true` | `true / false` | Allows rain to gradually fill open barrels with water during precipitation events. |
 | `rainFillAmount` | Integer | `100` | `1 – 4000` | Millibuckets of water gathered per precipitation event. |
 | `charcoalCarbonizeDuration` | Integer | `6000` | `20 – 72000` | Ticks required for a sealed mound to carbonize (default: 5 minutes / 6000 ticks). |
@@ -65,9 +65,13 @@ Firstworks exposes data-driven tags for extensible pack integration. Below are t
 
 | Tag | Shipped Default Items | Purpose |
 | :--- | :--- | :--- |
-| `#firstworks:primitive_knives` | `firstworks:bone_knife`, `firstworks:flint_knife` | Tools recognized for hide scraping, guaranteed fibre harvesting, and ochre extraction. |
+| `#firstworks:primitive_knives` | `firstworks:bone_knife`, `firstworks:flint_knife`, `firstworks:copper_knife` | Tools recognized for hide scraping, guaranteed fibre harvesting, ochre extraction, and other primitive knife interactions. |
 | `#firstworks:primitive_bindings` | `firstworks:crude_cordage`, `firstworks:rope` | Items accepted as bindings for wooden, stone, bone, and flint tools. |
-| `#firstworks:strong_bindings` | `firstworks:rope` | High-tier binding items required for iron, gold, and diamond tools. |
+| `#firstworks:strong_bindings` | `firstworks:rope`, `firstworks:hafting_compound` | Strong binding role used by higher-tier tools and Stone/Copper workshop recipes. |
+| `#firstworks:resin_tapping_tools` | `firstworks:resin_tap` | Additional tools accepted for renewable resin tapping; primitive knives are accepted separately. |
+| `#firstworks:hammers` | `firstworks:stone_hammer` | Hammer-role tools that advance Stone Anvil work. |
+| `#firstworks:refractory_materials` | `firstworks:grog`, `firstworks:refractory_clay`, `firstworks:refractory_brick` | Shared refractory-material classification for workshop extension. |
+| `#firstworks:primitive_copper` | Cast/annealed/worked copper billets, Copper Wire, Copper Fasteners, Copper Knife | Firstworks primitive-copper products that precede mature metallurgy. |
 | `#firstworks:charcoal_igniters` | `firstworks:fire_starter`, `minecraft:flint_and_steel` | Items capable of igniting charcoal mounds. |
 | `#firstworks:raw_hides` | `firstworks:raw_hide` | Raw hide items removed during animal drop normalization before adding `firstworks:raw_hide`. Packs integrating third-party animal mods should add items like `naturalist:hide` here. |
 | `#firstworks:tree_bark` | `firstworks:tree_bark` | Stripped bark items used for brewing tannin solution in barrels. |
@@ -81,17 +85,18 @@ Firstworks participates in the `c` (Common Tags) interoperability namespace so c
 | Tag | Shipped Default Items | Purpose |
 | :--- | :--- | :--- |
 | `#c:flours` | `firstworks:flour` | Any ground-grain flour accepted by flour consumers. |
-| `#c:flours/wheat` | `firstworks:flour` | Wheat flour accepted by dough recipes and the vanilla Cake override. |
+| `#c:flours/wheat` | `firstworks:flour` | Wheat flour accepted by dough recipes and the runtime Cake progression rewrite. |
 | `#c:doughs` | `firstworks:dough` | Any raw dough accepted by dough consumers. |
-| `#c:doughs/wheat` | `firstworks:dough` | Wheat dough accepted by Firstworks bread cooking recipes and the vanilla Bread/Cookie overrides. |
+| `#c:doughs/wheat` | `firstworks:dough` | Wheat dough accepted by Firstworks bread cooking recipes and the runtime Bread/Cookie progression rewrites. |
 | `#c:strings` | `minecraft:string`, `firstworks:twine` | String-compatible materials accepted by the Basket, Rope, and Cloth recipes. Add compatible third-party string materials here. |
 
-**Intended rule:** third-party mods and datapacks that add their own flour or wheat dough should add those items to these common tags rather than hardcoding `firstworks:flour` / `firstworks:dough` into replacement recipes. Firstworks recipes and overrides match by tag, so tagged foreign items work automatically (e.g. a rice flour mod adds its item to `#c:flours`, a modpack reroutes a mod's wheat dough through `#c:doughs/wheat` to bake with Firstworks bread recipes).
+**Intended rule:** third-party mods and datapacks that add their own flour or wheat dough should add those items to these common tags rather than hardcoding `firstworks:flour` / `firstworks:dough` into replacement recipes. Firstworks recipes and enabled runtime rewrites match by tag, so tagged foreign items work automatically (e.g. a rice flour mod adds its item to `#c:flours`, a modpack reroutes a mod's wheat dough through `#c:doughs/wheat` to bake with Firstworks bread recipes).
 
 ### Block Tags (`data/firstworks/tags/block/`)
 
 | Tag | Shipped Default Blocks | Purpose |
 | :--- | :--- | :--- |
+| `#firstworks:resin_trees` | `#minecraft:spruce_logs`, `#minecraft:jungle_logs` | Living/log blocks that can receive renewable resin scars. |
 | `#firstworks:charcoal_woods` | `#minecraft:logs_that_burn` | Blocks accepted as fuel logs in charcoal mounds. Non-burning woods are excluded. |
 | `#firstworks:charcoal_sealants` | `minecraft:dirt`, `minecraft:grass_block`, `minecraft:coarse_dirt`, `minecraft:rooted_dirt`, `minecraft:podzol`, `minecraft:mud`, `minecraft:clay` | Airtight casing blocks required to seal charcoal mounds. |
 | `#firstworks:ochre_sources` | `minecraft:clay`, `minecraft:coarse_dirt`, `minecraft:red_sand`, `minecraft:terracotta` | World blocks capable of yielding raw ochre when broken. |
@@ -247,6 +252,25 @@ The Quern is intentionally player-operated. Item transfer can be automated, but 
 
 **Visual speed:** the grinding stone's rotation advances in proportion to the work applied per crank, so a higher `quernManualWorkPerCrank` (more work per turn) visibly spins the quern faster. The balance is unchanged — the `work` field on each recipe is still the single universal labor measure, and there are no per-source `manual_work` / `animal_duration` / `mechanical_duration` fields. (Per-source drive metadata such as a mechanical drive spinning faster than an animal wheel is not part of this release; the rate-to-rotation scaling above is the supported knob.)
 
+### 7. Workshop Processing (`firstworks:workshop_processing`)
+Stone/Copper workshop stations use one shared recipe type with a station selector. Full interaction and extension details live in [`STONE_COPPER_WORKSHOP.md`](STONE_COPPER_WORKSHOP.md).
+
+```json
+{
+  "type": "firstworks:workshop_processing",
+  "station": "crucible_furnace",
+  "ingredient": { "item": "minecraft:raw_copper" },
+  "input_count": 3,
+  "catalyst": { "item": "firstworks:casting_mold" },
+  "catalyst_count": 1,
+  "consume_catalyst": false,
+  "result": { "id": "firstworks:cast_copper_billet" },
+  "work": 240
+}
+```
+
+Supported `station` values are `pottery_wheel`, `kiln`, `stone_anvil`, and `crucible_furnace`. Unknown values fail recipe loading. The `catalyst` field is genuinely optional: omit it for a catalyst-free recipe. If the field is present but resolves to an empty ingredient/tag, it remains a required catalyst and the recipe matches nothing rather than silently bypassing the requirement.
+
 ---
 
 ## 5. KubeJS Integration
@@ -332,6 +356,15 @@ ServerEvents.recipes(event => {
     },
     work: 60
   }).id('example:wheat_flour')
+
+  // 7. Workshop Processing
+  event.custom({
+    type: 'firstworks:workshop_processing',
+    station: 'stone_anvil',
+    ingredient: { item: 'firstworks:annealed_copper_billet' },
+    result: { id: 'firstworks:worked_copper_billet' },
+    work: 8
+  }).id('example:work_copper')
 })
 ```
 
@@ -461,24 +494,29 @@ FirstworksEvents.quernGrindingCompleted(event => {
   - 9-slot primitive storage container with full automation and hopper support.
 - **Mortar & Pestle (`firstworks:mortar_and_pestle`)**:
   - Exposes standard NeoForge `IItemHandler` capability (extracts output only).
-- **Quern (`firstworks:quern`)**:
+- **Quern (`firstworks:quern`, `firstworks:rotary_quern`)**:
   - **Top Face**: Inserts raw ingredients into input slot.
   - **Bottom Face**: Extracts completed result from output slot (raw input cannot be extracted by automation).
   - **Side Faces / Unsided**: Accepts input insertion and output extraction.
   - **Processing**: Has no powered processing capability. Automated transfer does not advance work; only a player's empty-hand crank does.
+- **Workshop stations (`pottery_wheel`, `kiln`, `stone_anvil`, `crucible_furnace`)**:
+  - All faces expose the same four-slot handler: slot 0 input, slot 1 catalyst, slot 2 fuel, slot 3 output.
+  - Automation may insert into the first three valid slots and may extract only completed output from slot 3.
+  - Normal player right-click favors recipe input/catalyst roles. On heated stations, sneak-right-click coal/charcoal forces the held item into slot 2, so fuel remains reachable even when a pack recipe also uses that item as input or catalyst.
+  - Adding recipe input/catalyst resets active work; adding reserve fuel does not reset progress or consume another fuel item while the current batch is already running.
 
 ---
 
 ## 7. Food Recipe Overrides & Interop IDs
 
-Firstworks rewrites vanilla wheat-food progression and adds its own dough pipeline. Target these exact recipe IDs when rerouting or removing routes:
+Firstworks can rewrite vanilla wheat-food progression at datapack sync time while keeping the recipe IDs interoperable.
 
-**Vanilla recipe overrides** (shipped under `data/minecraft/recipe/`; these replace the vanilla files):
+**Runtime progression rewrites** (enabled by `enableGrainProgression`, default `true`):
 - `minecraft:bread` — 3× `#c:doughs/wheat`
-- `minecraft:cookie` — `#c:doughs/wheat` + cocoa beans
+- `minecraft:cookie` — `#c:doughs/wheat` + cocoa beans → 8 cookies
 - `minecraft:cake` — 3× `#c:flours/wheat` + milk buckets + sugar + egg
 
-These overrides are gated by the `enableGrainProgression` config (default `true`). When disabled, Firstworks removes `minecraft:bread` / `minecraft:cookie` / `minecraft:cake` on the next datapack reload/restart, restoring the vanilla Wheat → Bread / Cookies / Cake routes. The Quern, Flour, and Dough items (and the `firstworks:bread_from_*` cooking recipes) remain available either way.
+Firstworks **does not ship `data/minecraft/recipe/bread.json`, `cookie.json`, or `cake.json` in 0.0.14**. Instead, when grain progression is enabled, it replaces the winning recipes for those IDs after datapacks load. When the toggle is disabled and datapacks are reloaded/restarted, Firstworks performs no rewrite, so the vanilla recipe or whichever datapack/mod won that ID remains intact. The Quern, Flour, Dough, and `firstworks:bread_from_*` cooking recipes remain available either way.
 
 **Firstworks dough recipes** (`data/firstworks/recipe/`):
 - `firstworks:dough_from_water_bucket` — 3× `#c:flours/wheat` + water bucket → 3 dough
@@ -533,7 +571,8 @@ Because all Firstworks routes match by common tag (`#c:flours/wheat`, `#c:doughs
   - **Charcoal Mound**: Active log count, seal countdown progress bar, carbonization progress bar, remaining time, and expected yield (resolving through the visible sealant shell).
   - **Charcoal Pile**: Stored charcoal count.
 - **JEI Categories**:
-  - Barrel Processing, Hand Spinning, Loom Weaving, Brick Molding, Mortar Grinding, **Quern Grinding**, and dynamic Charcoal Mound Information guide.
+  - Barrel Processing, Hand Spinning, Loom Weaving, Brick Molding, Mortar Grinding, Quern Grinding, **Workshop Processing**, and dynamic Charcoal Mound Information guide.
+  - The Copper Hand Spindle is a catalyst for Hand Spinning, the Rotary Quern is a catalyst for Quern Grinding, Copper Looms are discovered with the Loom block family, and each workshop station is a catalyst for Workshop Processing.
 
 ---
 
@@ -549,7 +588,7 @@ Because all Firstworks routes match by common tag (`#c:flours/wheat`, `#c:doughs
 
 1. **Quern Introduced**: `firstworks:quern` is a new hand-operated bulk workstation, and `firstworks:quern_grinding` recipes use a `work` field (default `60`). Each empty-hand crank contributes `quernManualWorkPerCrank` work (default `5`).
 2. **Flour/Dough Common Tags**: `firstworks:flour` is now tagged `#c:flours` + `#c:flours/wheat` and `firstworks:dough` is tagged `#c:doughs` + `#c:doughs/wheat`. Recipe-matching is tag-based, so foreign flour/dough items can join progression by editing tags only.
-3. **Vanilla Food Overrides**: `minecraft:bread` and `minecraft:cookie` now require `#c:doughs/wheat`; `minecraft:cake` requires `#c:flours/wheat`. Wheat → flour → dough → bread/cookies is the new progression (see [Food Recipe Overrides & Interop IDs](#7-food-recipe-overrides--interop-ids)). Packs that want vanilla behavior should delete these three override files or remove the routes with KubeJS.
+3. **Vanilla Food Overrides**: 0.0.12 introduced hard datapack overrides for `minecraft:bread`, `minecraft:cookie`, and `minecraft:cake`. In 0.0.14 those files are removed and the same progression is applied at datapack sync time only while `enableGrainProgression=true`; see [Food Recipe Overrides & Interop IDs](#7-food-recipe-overrides--interop-ids).
 4. **New Materials and Recipes**: Flour, Wheat Dough, water-container dough recipes, dough cooking recipes, and the Quern recipe category are new in 0.0.12.
 
 ## 12. Migration Notes (0.0.12 → 0.0.13)
@@ -562,6 +601,8 @@ Because all Firstworks routes match by common tag (`#c:flours/wheat`, `#c:doughs
 
 ## 13. Migration Notes (0.0.13 → 0.0.14)
 
-1. **Grain Progression Toggle**: `enableGrainProgression` (default `true`) controls whether the vanilla Wheat → Bread, Wheat → Cookies, and Wheat → Cake recipes are overridden to require the Firstworks flour/dough pipeline (`#c:doughs/wheat` / `#c:flours/wheat`). Disable it to restore the vanilla grain routes; the Quern, Flour, and Dough items remain. Changing this option requires a datapack reload or game restart.
+1. **Grain Progression Toggle**: `enableGrainProgression` (default `true`) rewrites the winning Bread/Cookie/Cake recipes to require the Firstworks flour/dough pipeline. Firstworks no longer ships hard `data/minecraft` replacements for those IDs; disabling the toggle leaves the winning datapack/mod recipes untouched after reload/restart. The Quern, Flour, and Dough items remain available either way.
 2. **Quern Recipe Priority**: `firstworks:quern_grinding` gains an optional `priority` field (default `0`). When multiple quern recipes match the same ingredient, the highest `priority` wins (ties break by recipe id). The previous requirement that quern ingredient matchers be mutually exclusive is relaxed — overlapping matchers now resolve deterministically.
 3. **Quern Visual Speed**: the grinding stone's rotation advances with the work applied per crank (`quernManualWorkPerCrank`); there are still no per-source labor or duration fields on recipes.
+4. **Workshop Catalyst Semantics**: `firstworks:workshop_processing` distinguishes an omitted catalyst from a declared catalyst whose ingredient/tag resolves empty. Declared-empty catalysts match nothing instead of becoming catalyst-free recipes.
+5. **Workshop Role Routing**: player insertion now resolves recipe roles before fuel; sneak-right-click coal/charcoal on a heated workshop station explicitly targets the fuel reserve. Automation retains fixed slots 0=input, 1=catalyst, 2=fuel, 3=output.
