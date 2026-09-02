@@ -12,7 +12,6 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
 
 import java.util.Optional;
@@ -20,7 +19,7 @@ import java.util.Set;
 
 public record WorkshopRecipe(String station, Ingredient ingredient, int inputCount, Optional<Ingredient> catalyst,
                              int catalystCount, boolean consumeCatalyst, ItemStack result, int work)
-        implements Recipe<SingleRecipeInput> {
+        implements Recipe<WorkshopRecipeInput> {
     public static final String POTTERY_WHEEL = "pottery_wheel";
     public static final String KILN = "kiln";
     public static final String STONE_ANVIL = "stone_anvil";
@@ -32,14 +31,38 @@ public record WorkshopRecipe(String station, Ingredient ingredient, int inputCou
         if (!VALID_STATIONS.contains(station)) {
             throw new IllegalArgumentException("Unknown workshop station: " + station);
         }
+        if (ingredient == null) {
+            throw new IllegalArgumentException("Workshop ingredient must not be null");
+        }
         if (catalyst == null) {
             throw new IllegalArgumentException("Workshop catalyst optional must not be null");
+        }
+        if (inputCount < 1 || inputCount > 64) {
+            throw new IllegalArgumentException("Workshop input_count must be in range 1..64");
+        }
+        if (catalystCount < 1 || catalystCount > 64) {
+            throw new IllegalArgumentException("Workshop catalyst_count must be in range 1..64");
+        }
+        if (work < 1 || work > 72000) {
+            throw new IllegalArgumentException("Workshop work must be in range 1..72000");
+        }
+        if (result == null || result.isEmpty()) {
+            throw new IllegalArgumentException("Workshop result must not be empty");
+        }
+        if (catalyst.isEmpty() && consumeCatalyst) {
+            throw new IllegalArgumentException("consume_catalyst requires a catalyst");
+        }
+        if (catalyst.isEmpty() && catalystCount != 1) {
+            throw new IllegalArgumentException("catalyst_count requires a catalyst");
         }
     }
 
     @Override
-    public boolean matches(SingleRecipeInput input, Level level) {
-        return ingredient.test(input.item()) && input.item().getCount() >= inputCount;
+    public boolean matches(WorkshopRecipeInput input, Level level) {
+        return station.equals(input.station())
+                && ingredient.test(input.input())
+                && input.input().getCount() >= inputCount
+                && catalystMatches(input.catalyst());
     }
 
     public boolean hasCatalyst() {
@@ -56,7 +79,7 @@ public record WorkshopRecipe(String station, Ingredient ingredient, int inputCou
     }
 
     @Override
-    public ItemStack assemble(SingleRecipeInput input, HolderLookup.Provider registries) {
+    public ItemStack assemble(WorkshopRecipeInput input, HolderLookup.Provider registries) {
         return result.copy();
     }
 
