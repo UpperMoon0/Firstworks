@@ -2,6 +2,7 @@ package com.nstut.firstworks;
 
 import com.nstut.firstworks.content.ColoredFleeceItem;
 import com.nstut.firstworks.content.ResinScarBlock;
+import com.nstut.firstworks.content.ResinTreeSupport;
 import com.nstut.firstworks.content.TreeBarkItem;
 import com.nstut.firstworks.content.charcoal.CharcoalMoundData;
 import com.nstut.firstworks.registry.ModBlocks;
@@ -43,7 +44,8 @@ public final class GameplayEvents {
     public static void tapResinTree(PlayerInteractEvent.RightClickBlock event) {
         Direction face = event.getFace();
         if (face == null || face.getAxis() == Direction.Axis.Y
-                || !event.getLevel().getBlockState(event.getPos()).is(ModTags.RESIN_TREES)) {
+                || !event.getLevel().getBlockState(event.getPos()).is(ModTags.RESIN_TREES)
+                || !ResinTreeSupport.isLivingTree(event.getLevel(), event.getPos())) {
             return;
         }
 
