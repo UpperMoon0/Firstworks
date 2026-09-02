@@ -2,6 +2,7 @@ package com.nstut.firstworks.compat.jei;
 
 import com.nstut.firstworks.content.workshop.WorkshopRecipe;
 import com.nstut.firstworks.registry.ModItems;
+import com.nstut.firstworks.registry.ModTags;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
@@ -14,8 +15,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
 
 import java.util.Arrays;
+import java.util.List;
 
 public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRecipe> {
     private final RecipeType<WorkshopRecipe> recipeType;
@@ -33,7 +37,7 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
     @Override public RecipeType<WorkshopRecipe> getRecipeType() { return recipeType; }
     @Override public Component getTitle() { return stationName(station); }
     @Override public int getWidth() { return 160; }
-    @Override public int getHeight() { return 62; }
+    @Override public int getHeight() { return 88; }
     @Override public IDrawable getIcon() { return icon; }
 
     @Override
@@ -55,6 +59,32 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
         builder.addSlot(RecipeIngredientRole.OUTPUT, 122, 5)
                 .setStandardSlotBackground()
                 .addItemStack(recipe.result());
+
+        addProcessRequirements(builder, recipe.station());
+    }
+
+    private static void addProcessRequirements(IRecipeLayoutBuilder builder, String station) {
+        switch (station) {
+            case WorkshopRecipe.STONE_ANVIL -> builder.addSlot(RecipeIngredientRole.CATALYST, 35, 31)
+                    .setStandardSlotBackground()
+                    .addItemStacks(Arrays.stream(Ingredient.of(ModTags.HAMMERS).getItems()).toList());
+            case WorkshopRecipe.KILN -> addFuelSlot(builder, 35);
+            case WorkshopRecipe.CRUCIBLE_FURNACE -> {
+                addFuelSlot(builder, 35);
+                builder.addSlot(RecipeIngredientRole.CATALYST, 63, 31)
+                        .setStandardSlotBackground()
+                        .addItemStack(new ItemStack(ModItems.BELLOWS.get()));
+            }
+            default -> {
+                // Pottery Wheel work is an empty-hand action, represented by the instruction text below.
+            }
+        }
+    }
+
+    private static void addFuelSlot(IRecipeLayoutBuilder builder, int x) {
+        builder.addSlot(RecipeIngredientRole.CATALYST, x, 31)
+                .setStandardSlotBackground()
+                .addItemStacks(List.of(new ItemStack(Items.COAL), new ItemStack(Items.CHARCOAL)));
     }
 
     @Override
@@ -63,14 +93,15 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
         var font = Minecraft.getInstance().font;
         graphics.drawString(font,
                 Component.translatable("jei.firstworks.workshop.station", stationName(recipe.station())),
-                3, 34, 0xFF606060, false);
+                3, 55, 0xFF606060, false);
         graphics.drawString(font,
                 Component.translatable("jei.firstworks.workshop.work", recipe.work()),
-                3, 46, 0xFF606060, false);
-        if (WorkshopRecipe.CRUCIBLE_FURNACE.equals(recipe.station())) {
-            graphics.drawString(font, Component.translatable("jei.firstworks.workshop.air"),
-                    83, 46, 0xFF606060, false);
-        }
+                3, 67, 0xFF606060, false);
+        graphics.drawString(font, actionName(recipe.station()), 3, 79, 0xFF606060, false);
+    }
+
+    private static Component actionName(String station) {
+        return Component.translatable("jei.firstworks.workshop.action." + station);
     }
 
     private static ItemStack stationStack(String station) {
