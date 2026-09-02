@@ -1,6 +1,7 @@
 package com.nstut.firstworks.gametest;
 
 import com.nstut.firstworks.Firstworks;
+import com.nstut.firstworks.content.BellowsBlock;
 import com.nstut.firstworks.content.quern.QuernBlockEntity;
 import com.nstut.firstworks.content.workshop.WorkshopBlockEntity;
 import com.nstut.firstworks.content.workshop.WorkshopRecipe;
@@ -9,6 +10,7 @@ import com.nstut.firstworks.registry.ModBlocks;
 import com.nstut.firstworks.registry.ModItems;
 import com.nstut.firstworks.registry.ModRecipes;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
@@ -100,6 +102,34 @@ public final class WorkshopSelectionGameTests {
                 "Quern priority ties did not resolve deterministically by recipe id");
         check(helper, selected.value().result().is(Items.EMERALD),
                 "Quern selected the wrong result after priority/id ordering");
+
+        helper.succeed();
+    }
+
+    @GameTest(template = EMPTY, timeoutTicks = 20)
+    public static void bellowsPressesBankFiniteAirReserve(GameTestHelper helper) {
+        BlockPos bellowsPos = new BlockPos(5, 1, 4);
+        BlockPos furnacePos = bellowsPos.east();
+        helper.setBlock(furnacePos, ModBlocks.CRUCIBLE_FURNACE.get());
+        helper.setBlock(bellowsPos,
+                ModBlocks.BELLOWS.get().defaultBlockState().setValue(BellowsBlock.FACING, Direction.EAST));
+        WorkshopBlockEntity furnace = helper.getBlockEntity(furnacePos);
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+
+        helper.useBlock(bellowsPos, player);
+        int firstPress = furnace.getStokeTicks();
+        check(helper, firstPress == 160,
+                "First Bellows press did not add one full airflow pulse");
+
+        helper.useBlock(bellowsPos, player);
+        check(helper, furnace.getStokeTicks() == 320,
+                "Second Bellows press replaced rather than banked the existing airflow pulse");
+
+        for (int i = 0; i < 6; i++) {
+            helper.useBlock(bellowsPos, player);
+        }
+        check(helper, furnace.getStokeTicks() == 480,
+                "Bellows airflow reserve did not clamp at the intended three-stroke capacity");
 
         helper.succeed();
     }

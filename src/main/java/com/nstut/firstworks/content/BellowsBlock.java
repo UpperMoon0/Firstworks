@@ -35,6 +35,8 @@ import java.util.Map;
 public final class BellowsBlock extends BaseEntityBlock {
     public static final MapCodec<BellowsBlock> CODEC = simpleCodec(BellowsBlock::new);
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    private static final int AIR_PER_PRESS = 160;
+    private static final int MAX_AIR_RESERVE = AIR_PER_PRESS * 3;
 
     private static final VoxelShape NORTH_SHAPE = Shapes.or(
             Block.box(1.5, 0.0, 2.5, 14.5, 3.45, 14.0),
@@ -96,21 +98,28 @@ public final class BellowsBlock extends BaseEntityBlock {
             return InteractionResult.PASS;
         }
 
-        if (!level.isClientSide && workshop.stoke(160)) {
-            if (level.getBlockEntity(pos) instanceof BellowsBlockEntity bellows) {
-                bellows.press();
-            }
-            level.playSound(null, pos, SoundEvents.WIND_CHARGE_BURST.value(),
-                    SoundSource.BLOCKS, 0.62F, 0.72F);
-            if (level instanceof ServerLevel server) {
-                double x = pos.getX() + 0.5 + facing.getStepX() * 0.48;
-                double y = pos.getY() + 0.34;
-                double z = pos.getZ() + 0.5 + facing.getStepZ() * 0.48;
-                server.sendParticles(ParticleTypes.CLOUD, x, y, z,
-                        6, 0.045, 0.025, 0.045, 0.018);
-                server.sendParticles(ParticleTypes.SMALL_FLAME,
-                        furnacePos.getX() + 0.5, furnacePos.getY() + 0.42, furnacePos.getZ() + 0.5,
-                        3, 0.10, 0.07, 0.10, 0.01);
+        if (!level.isClientSide) {
+            int currentAir = workshop.getStokeTicks();
+            if (currentAir < MAX_AIR_RESERVE) {
+                int targetAir = Math.min(MAX_AIR_RESERVE, currentAir + AIR_PER_PRESS);
+                if (workshop.stoke(targetAir)) {
+                    if (level.getBlockEntity(pos) instanceof BellowsBlockEntity bellows) {
+                        bellows.press();
+                    }
+                    int pressureStage = Math.max(1, (targetAir + AIR_PER_PRESS - 1) / AIR_PER_PRESS);
+                    level.playSound(null, pos, SoundEvents.WIND_CHARGE_BURST.value(),
+                            SoundSource.BLOCKS, 0.58F + pressureStage * 0.03F, 0.70F + pressureStage * 0.05F);
+                    if (level instanceof ServerLevel server) {
+                        double x = pos.getX() + 0.5 + facing.getStepX() * 0.48;
+                        double y = pos.getY() + 0.34;
+                        double z = pos.getZ() + 0.5 + facing.getStepZ() * 0.48;
+                        server.sendParticles(ParticleTypes.CLOUD, x, y, z,
+                                4 + pressureStage, 0.045, 0.025, 0.045, 0.018);
+                        server.sendParticles(ParticleTypes.SMALL_FLAME,
+                                furnacePos.getX() + 0.5, furnacePos.getY() + 0.42, furnacePos.getZ() + 0.5,
+                                2 + pressureStage, 0.10, 0.07, 0.10, 0.01);
+                    }
+                }
             }
         }
         return InteractionResult.sidedSuccess(level.isClientSide);

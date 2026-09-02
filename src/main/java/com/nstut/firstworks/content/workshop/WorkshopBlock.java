@@ -41,6 +41,9 @@ import java.util.Map;
  */
 public abstract class WorkshopBlock extends BaseEntityBlock {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    private static final double POTTERY_INNER_RADIUS_SQ = 0.18D * 0.18D;
+    private static final double POTTERY_MIDDLE_RADIUS_SQ = 0.36D * 0.36D;
+
     private final String station;
 
     protected WorkshopBlock(Properties properties, String station) {
@@ -102,13 +105,16 @@ public abstract class WorkshopBlock extends BaseEntityBlock {
             }
         } else if (WorkshopRecipe.CRUCIBLE_FURNACE.equals(station)
                 && (workshop.isRunning() || workshop.getStokeTicks() > 0)) {
-            if (random.nextInt(2) == 0) {
+            int air = workshop.getStokeTicks();
+            int flameChance = air >= 320 ? 1 : 2;
+            if (random.nextInt(flameChance) == 0) {
                 level.addParticle(ParticleTypes.SMALL_FLAME,
                         pos.getX() + 0.5, pos.getY() + 0.70, pos.getZ() + 0.5,
                         (random.nextDouble() - 0.5) * 0.01, 0.012,
                         (random.nextDouble() - 0.5) * 0.01);
             }
-            if (workshop.getStokeTicks() > 0 && random.nextInt(3) == 0) {
+            int sparkChance = air >= 320 ? 2 : 3;
+            if (air > 0 && random.nextInt(sparkChance) == 0) {
                 level.addParticle(ParticleTypes.LAVA,
                         pos.getX() + 0.5, pos.getY() + 0.73, pos.getZ() + 0.5,
                         0.0, 0.0, 0.0);
@@ -130,6 +136,31 @@ public abstract class WorkshopBlock extends BaseEntityBlock {
                 level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 0.65F, 1.35F);
             }
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        }
+
+        // Pottery keeps the recipe API batch-based, but the bundled GUI-free interaction no longer
+        // requires counting repeated insertion clicks. Sneak-place a valid ingredient on the top
+        // plate: center / middle / outer ring loads a 1 / 2 / 3 item batch respectively. Normal
+        // insertion remains available for arbitrary pack recipes and larger custom batch sizes.
+        if (station.equals(WorkshopRecipe.POTTERY_WHEEL)
+                && player.isShiftKeyDown()
+                && hit.getDirection() == Direction.UP
+                && workshop.getInput().isEmpty()
+                && workshop.canInsert(stack)) {
+            int targetBatch = potteryBatchForHit(pos, hit);
+            if (player.hasInfiniteMaterials() || stack.getCount() >= targetBatch) {
+                if (!level.isClientSide) {
+                    int inserted = 0;
+                    while (inserted < targetBatch && workshop.insert(stack, player.hasInfiniteMaterials())) {
+                        inserted++;
+                    }
+                    if (inserted > 0) {
+                        level.playSound(null, pos, SoundEvents.BRUSH_GENERIC, SoundSource.BLOCKS,
+                                0.45F, 0.90F + inserted * 0.08F);
+                    }
+                }
+                return ItemInteractionResult.sidedSuccess(level.isClientSide);
+            }
         }
 
         // Normal right-click favors recipe roles. Sneak-right-click provides an explicit,
@@ -190,6 +221,19 @@ public abstract class WorkshopBlock extends BaseEntityBlock {
         shapes.put(Direction.SOUTH, rotate(northShape, 2));
         shapes.put(Direction.WEST, rotate(northShape, 3));
         return shapes;
+    }
+
+    private static int potteryBatchForHit(BlockPos pos, BlockHitResult hit) {
+        double dx = hit.getLocation().x - (pos.getX() + 0.5D);
+        double dz = hit.getLocation().z - (pos.getZ() + 0.5D);
+        double radiusSq = dx * dx + dz * dz;
+        if (radiusSq <= POTTERY_INNER_RADIUS_SQ) {
+            return 1;
+        }
+        if (radiusSq <= POTTERY_MIDDLE_RADIUS_SQ) {
+            return 2;
+        }
+        return 3;
     }
 
     private static VoxelShape rotate(VoxelShape original, int turns) {
