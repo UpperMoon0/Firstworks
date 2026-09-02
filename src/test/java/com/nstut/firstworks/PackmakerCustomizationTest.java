@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PackmakerCustomizationTest {
@@ -12,6 +13,13 @@ public class PackmakerCustomizationTest {
     private static final Path TOOL_BINDING = Path.of("src/main/java/com/nstut/firstworks/ToolBindingRecipes.java");
     private static final Path QUERN_RECIPE = Path.of("src/main/java/com/nstut/firstworks/content/quern/QuernGrindingRecipe.java");
     private static final Path QUERN_BE = Path.of("src/main/java/com/nstut/firstworks/content/quern/QuernBlockEntity.java");
+    private static final Path WORKSHOP_BE = Path.of(
+            "src/main/java/com/nstut/firstworks/content/workshop/WorkshopBlockEntity.java");
+    private static final Path WORKSHOP_BLOCK = Path.of(
+            "src/main/java/com/nstut/firstworks/content/workshop/WorkshopBlock.java");
+    private static final Path JEI_PLUGIN = Path.of(
+            "src/main/java/com/nstut/firstworks/compat/jei/FirstworksJeiPlugin.java");
+    private static final Path VANILLA_RECIPE_DIR = Path.of("src/main/resources/data/minecraft/recipe");
 
     @Test
     public void grainProgressionHasConfigToggle() throws Exception {
@@ -23,18 +31,47 @@ public class PackmakerCustomizationTest {
     }
 
     @Test
-    public void grainOverridesRestoreExactVanillaRoutesWhenDisabled() throws Exception {
+    public void grainProgressionIsRuntimeOnlyAndPreservesDatapackWinnersWhenDisabled() throws Exception {
         String src = Files.readString(TOOL_BINDING);
         assertTrue(src.contains("OnDatapackSyncEvent"),
                 "grain recipe gating must reuse the datapack-sync rewrite pattern");
         assertTrue(src.contains("ENABLE_GRAIN_PROGRESSION"),
                 "the grain toggle must drive the rewrite");
-        assertTrue(src.contains("addGrainVanillaRoutes"),
-                "disabling grain progression must swap the overrides back to vanilla routes");
-        assertTrue(src.contains("shapedVanilla(Items.COOKIE, 8"),
-                "restored vanilla cookies must produce eight cookies");
+        assertTrue(src.contains("if (grain)") && src.contains("addGrainProgressionRoutes"),
+                "Firstworks grain routes must only be injected while progression is enabled");
+        assertTrue(src.contains("WHEAT_DOUGHS") && src.contains("WHEAT_FLOURS"),
+                "runtime grain routes must keep using the common wheat dough/flour tags");
+        assertTrue(src.contains("shapedMisc(Items.COOKIE, 8"),
+                "progression cookies must retain the vanilla eight-cookie output");
         assertTrue(src.contains("\"AAA\", \"BCB\", \"###\""),
-                "restored vanilla cake must consume three wheat across the bottom row");
+                "progression cake must retain the expected three-row shape");
+
+        for (String id : new String[]{"bread", "cookie", "cake"}) {
+            assertFalse(Files.exists(VANILLA_RECIPE_DIR.resolve(id + ".json")),
+                    "Firstworks must not ship a hard minecraft:" + id
+                            + " datapack replacement; disabled progression must leave the winning datapack recipe untouched");
+        }
+    }
+
+    @Test
+    public void copperMachineUpgradesAreRegisteredAsJeiCatalysts() throws Exception {
+        String src = Files.readString(JEI_PLUGIN);
+        assertTrue(src.contains("ModItems.COPPER_HAND_SPINDLE.get(), SPINDLE_SPINNING"),
+                "Copper Hand Spindle must expose spinning recipes in JEI");
+        assertTrue(src.contains("ModBlocks.ROTARY_QUERN.get(), QUERN_GRINDING"),
+                "Rotary Quern must expose quern recipes in JEI");
+    }
+
+    @Test
+    public void workshopFuelOverlapHasExplicitGuiFreeRouting() throws Exception {
+        String block = Files.readString(WORKSHOP_BLOCK);
+        String entity = Files.readString(WORKSHOP_BE);
+        assertTrue(entity.contains("preferredPlayerInsertionSlot"),
+                "normal workshop insertion must resolve recipe roles deliberately");
+        assertTrue(entity.contains("canInsertFuel") && entity.contains("insertFuel"),
+                "heated workshops must expose an explicit fuel insertion path");
+        assertTrue(block.contains("player.isShiftKeyDown() && workshop.canInsertFuel(stack)"),
+                "sneak-right-click must force coal/charcoal into the fuel reserve when roles overlap");
     }
 
     @Test
