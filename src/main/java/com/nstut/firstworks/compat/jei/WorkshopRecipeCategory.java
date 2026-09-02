@@ -37,7 +37,7 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
     @Override public RecipeType<WorkshopRecipe> getRecipeType() { return recipeType; }
     @Override public Component getTitle() { return stationName(station); }
     @Override public int getWidth() { return 160; }
-    @Override public int getHeight() { return 88; }
+    @Override public int getHeight() { return 76; }
     @Override public IDrawable getIcon() { return icon; }
 
     @Override
@@ -76,7 +76,7 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
                         .addItemStack(new ItemStack(ModItems.BELLOWS.get()));
             }
             default -> {
-                // Pottery Wheel work is an empty-hand action, represented by the instruction text below.
+                // Pottery Wheel work is performed by empty-hand interaction and needs no extra item slot.
             }
         }
     }
@@ -97,11 +97,10 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
         graphics.drawString(font,
                 Component.translatable("jei.firstworks.workshop.work", recipe.work()),
                 3, 67, 0xFF606060, false);
-        graphics.drawString(font, actionName(recipe.station()), 3, 79, 0xFF606060, false);
-    }
-
-    private static Component actionName(String station) {
-        return Component.translatable("jei.firstworks.workshop.action." + station);
+        if (WorkshopRecipe.CRUCIBLE_FURNACE.equals(recipe.station())) {
+            graphics.drawString(font, Component.translatable("jei.firstworks.workshop.air"),
+                    83, 67, 0xFF606060, false);
+        }
     }
 
     private static ItemStack stationStack(String station) {
