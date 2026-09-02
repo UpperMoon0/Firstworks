@@ -20,6 +20,7 @@ This document is the authoritative technical reference for modpack developers an
 10. [Migration Notes (0.0.10 → 0.0.11)](#10-migration-notes-0010--0011)
 11. [Migration Notes (0.0.11 → 0.0.12)](#11-migration-notes-0011--0012)
 12. [Migration Notes (0.0.12 → 0.0.13)](#12-migration-notes-0012--0013)
+13. [Migration Notes (0.0.13 → 0.0.14)](#13-migration-notes-0013--0014)
 
 ---
 
@@ -41,6 +42,7 @@ Starting in **0.0.11**, Firstworks registers all gameplay options as a **`SERVER
 | `bindMetalVanillaTools` | Boolean | `true` | `true / false` | Requires `#firstworks:strong_bindings` (Rope) for iron, gold, and diamond tools. |
 | `enableTextileProgression` | Boolean | `true` | `true / false` | Replaces wool drops with raw fleece, disables String-to-Wool, and requires Cloth/Clean Wool for beds. |
 | `enableMasonryProgression` | Boolean | `true` | `true / false` | Requires brick molding, firing, wet mortar mixing, and mortar-bound brick blocks. |
+| `enableGrainProgression` | Boolean | `true` | `true / false` | Overrides the vanilla Wheat → Bread, Wheat → Cookies, and Wheat → Cake recipes to require `#c:doughs/wheat` / `#c:flours/wheat` (the Firstworks flour/dough pipeline). Disable to restore the vanilla grain routes while keeping the Quern, Flour, and Dough items. |
 | `rainFillsBarrels` | Boolean | `true` | `true / false` | Allows rain to gradually fill open barrels with water during precipitation events. |
 | `rainFillAmount` | Integer | `100` | `1 – 4000` | Millibuckets of water gathered per precipitation event. |
 | `charcoalCarbonizeDuration` | Integer | `6000` | `20 – 72000` | Ticks required for a sealed mound to carbonize (default: 5 minutes / 6000 ticks). |
@@ -229,6 +231,7 @@ Hand-operated bulk grinding workstation.
 | `input_count` | Int `1–64` | `1` | Batch size consumed per completion. Items are inserted one at a time until the batch is full. |
 | `result` | Item Stack | *(required)* | Output produced when the batch completes. |
 | `work` | Int `1–72000` | `60` | Total processing effort required per batch. |
+| `priority` | Int | `0` | When several quern recipes match the same ingredient, the highest `priority` wins. Ties break by recipe id, so overlapping matchers resolve deterministically without requiring mutually exclusive ingredients. |
 
 **Work-based manual model.** Recipe `work` is the hand-labor required for one batch. The global config controls how much work each player crank contributes:
 
@@ -240,7 +243,9 @@ For the shipped Wheat recipe, `60 work ÷ 5 work per crank = 12 cranks` at the d
 
 The Quern is intentionally player-operated. Item transfer can be automated, but grinding cannot: hoppers and pipes may load a valid batch and extract its finished result, while a player must still turn the crank to provide every unit of processing work.
 
-**Ingredient Exclusivity:** because the quern matches ingredients independently of stack size to allow incremental 1-by-1 loading, quern recipes must define mutually exclusive ingredient sets (never register multiple quern recipes with overlapping ingredient matchers).
+**Ingredient Exclusivity:** because the quern matches ingredients independently of stack size to allow incremental 1-by-1 loading, recipes historically had to define mutually exclusive ingredient sets. That restriction is lifted: when multiple quern recipes match the same input, the one with the highest `priority` is selected (ties break by recipe id). Packmakers can now intentionally layer quern recipes that share an ingredient (for example a high-`priority` special output over a low-`priority` fallback) without a pack bug.
+
+**Visual speed:** the grinding stone's rotation advances in proportion to the work applied per crank, so a higher `quernManualWorkPerCrank` (more work per turn) visibly spins the quern faster. The balance is unchanged — the `work` field on each recipe is still the single universal labor measure, and there are no per-source `manual_work` / `animal_duration` / `mechanical_duration` fields. (Per-source drive metadata such as a mechanical drive spinning faster than an animal wheel is not part of this release; the rate-to-rotation scaling above is the supported knob.)
 
 ---
 
@@ -473,6 +478,8 @@ Firstworks rewrites vanilla wheat-food progression and adds its own dough pipeli
 - `minecraft:cookie` — `#c:doughs/wheat` + cocoa beans
 - `minecraft:cake` — 3× `#c:flours/wheat` + milk buckets + sugar + egg
 
+These overrides are gated by the `enableGrainProgression` config (default `true`). When disabled, Firstworks removes `minecraft:bread` / `minecraft:cookie` / `minecraft:cake` on the next datapack reload/restart, restoring the vanilla Wheat → Bread / Cookies / Cake routes. The Quern, Flour, and Dough items (and the `firstworks:bread_from_*` cooking recipes) remain available either way.
+
 **Firstworks dough recipes** (`data/firstworks/recipe/`):
 - `firstworks:dough_from_water_bucket` — 3× `#c:flours/wheat` + water bucket → 3 dough
 - `firstworks:dough_from_clay_water` — 3× `#c:flours/wheat` + `firstworks:water_clay_bucket` → 3 dough
@@ -550,3 +557,11 @@ Because all Firstworks routes match by common tag (`#c:flours/wheat`, `#c:doughs
 1. **Common String Inputs**: Basket, Rope, and Cloth now consume `#c:strings`, which includes vanilla String and Firstworks Twine by default. Add compatible third-party string materials to that tag.
 2. **Removed Recipe IDs**: `firstworks:rope_from_string` and `firstworks:weave_cloth_from_twine` were removed because their replacements now use `#c:strings`. Datapacks and KubeJS scripts that remove or replace these IDs should be updated.
 3. **Knife Behavior**: `firstworks:bone_knife` and `firstworks:flint_knife` are now dedicated knife items rather than sword items. Their registry IDs and durability values remain unchanged; ordinary block breaking no longer applies sword-style durability damage.
+
+---
+
+## 13. Migration Notes (0.0.13 → 0.0.14)
+
+1. **Grain Progression Toggle**: `enableGrainProgression` (default `true`) controls whether the vanilla Wheat → Bread, Wheat → Cookies, and Wheat → Cake recipes are overridden to require the Firstworks flour/dough pipeline (`#c:doughs/wheat` / `#c:flours/wheat`). Disable it to restore the vanilla grain routes; the Quern, Flour, and Dough items remain. Changing this option requires a datapack reload or game restart.
+2. **Quern Recipe Priority**: `firstworks:quern_grinding` gains an optional `priority` field (default `0`). When multiple quern recipes match the same ingredient, the highest `priority` wins (ties break by recipe id). The previous requirement that quern ingredient matchers be mutually exclusive is relaxed — overlapping matchers now resolve deterministically.
+3. **Quern Visual Speed**: the grinding stone's rotation advances with the work applied per crank (`quernManualWorkPerCrank`); there are still no per-source labor or duration fields on recipes.

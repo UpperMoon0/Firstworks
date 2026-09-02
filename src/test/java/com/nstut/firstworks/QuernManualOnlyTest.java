@@ -40,7 +40,9 @@ public class QuernManualOnlyTest {
     @Test
     public void crankAnimationUsesMonotonicForwardSteps() throws Exception {
         String entity = Files.readString(QUERN_PACKAGE.resolve("QuernBlockEntity.java"));
-        assertTrue(entity.contains("rotationSteps++"));
+        // Rotation still advances monotonically forward (here scaled by the work applied per crank, so a
+        // higher work rate reads as a faster spin without reversing).
+        assertTrue(entity.contains("rotationSteps += workAmount"));
         assertTrue(entity.contains("putLong(\"RotationSteps\", rotationSteps)"));
         assertTrue(entity.contains("rotationTarget = rotationSteps * 45D"));
         assertFalse(entity.contains("while (diff"), "Animation must not select a shortest path that can reverse");

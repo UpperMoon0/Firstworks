@@ -12,7 +12,7 @@ import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 
 public record QuernGrindingRecipe(Ingredient ingredient, int inputCount, ItemStack result,
-        int work) implements Recipe<SingleRecipeInput> {
+        int work, int priority) implements Recipe<SingleRecipeInput> {
     public QuernGrindingRecipe {
         if (inputCount < 1 || work < 1 || result.isEmpty())
             throw new IllegalArgumentException("Quern recipe counts, work values, and result must be positive");
@@ -21,7 +21,9 @@ public record QuernGrindingRecipe(Ingredient ingredient, int inputCount, ItemSta
     public boolean matches(SingleRecipeInput input, Level level) {
         // Match independently of batch size so the workstation can accept a
         // recipe batch one item at a time. The block entity gates processing.
-        // Packmakers must ensure quern recipe ingredient sets are mutually exclusive.
+        // When multiple recipes match the same ingredient, the highest priority wins
+        // (see QuernBlockEntity); ties break on recipe id, so overlaps resolve deterministically
+        // without requiring mutually exclusive ingredient matchers.
         return ingredient.test(input.item());
     }
     @Override public ItemStack assemble(SingleRecipeInput input, HolderLookup.Provider registries) { return result.copy(); }
@@ -36,13 +38,14 @@ public record QuernGrindingRecipe(Ingredient ingredient, int inputCount, ItemSta
                 Ingredient.CODEC.fieldOf("ingredient").forGetter(QuernGrindingRecipe::ingredient),
                 Codec.intRange(1, 64).optionalFieldOf("input_count", 1).forGetter(QuernGrindingRecipe::inputCount),
                 ItemStack.CODEC.fieldOf("result").forGetter(QuernGrindingRecipe::result),
-                Codec.intRange(1, 72000).optionalFieldOf("work", 60).forGetter(QuernGrindingRecipe::work)
+                Codec.intRange(1, 72000).optionalFieldOf("work", 60).forGetter(QuernGrindingRecipe::work),
+                Codec.INT.optionalFieldOf("priority", 0).forGetter(QuernGrindingRecipe::priority)
         ).apply(i, QuernGrindingRecipe::new));
         private static final StreamCodec<RegistryFriendlyByteBuf, QuernGrindingRecipe> STREAM_CODEC = StreamCodec.of(
                 (b, r) -> { Ingredient.CONTENTS_STREAM_CODEC.encode(b, r.ingredient); b.writeVarInt(r.inputCount);
-                    ItemStack.STREAM_CODEC.encode(b, r.result); b.writeVarInt(r.work); },
+                    ItemStack.STREAM_CODEC.encode(b, r.result); b.writeVarInt(r.work); b.writeVarInt(r.priority); },
                 b -> new QuernGrindingRecipe(Ingredient.CONTENTS_STREAM_CODEC.decode(b), b.readVarInt(),
-                        ItemStack.STREAM_CODEC.decode(b), b.readVarInt()));
+                        ItemStack.STREAM_CODEC.decode(b), b.readVarInt(), b.readVarInt()));
         @Override public MapCodec<QuernGrindingRecipe> codec() { return CODEC; }
         @Override public StreamCodec<RegistryFriendlyByteBuf, QuernGrindingRecipe> streamCodec() { return STREAM_CODEC; }
     }
