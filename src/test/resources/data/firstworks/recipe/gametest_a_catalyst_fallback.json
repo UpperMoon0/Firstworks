@@ -1,0 +1,8 @@
+{
+  "type": "firstworks:workshop_processing",
+  "station": "pottery_wheel",
+  "ingredient": {"item": "minecraft:amethyst_shard"},
+  "input_count": 1,
+  "result": {"id": "minecraft:dirt"},
+  "work": 1
+}
