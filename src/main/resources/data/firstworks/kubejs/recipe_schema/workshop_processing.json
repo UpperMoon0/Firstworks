@@ -4,9 +4,9 @@
     {"name": "station", "role": "other", "type": "string"},
     {"name": "ingredient", "role": "input", "type": "ingredient"},
     {"name": "input_count", "role": "input", "type": {"type": "int", "min": 1}, "function_names": ["inputCount"], "optional": 1},
-    {"name": "catalyst", "role": "input", "type": "ingredient", "optional": []},
+    {"name": "catalyst", "role": "input", "type": "optional_ingredient", "optional": []},
     {"name": "catalyst_count", "role": "input", "type": {"type": "int", "min": 1}, "function_names": ["catalystCount"], "optional": 1},
-    {"name": "consume_catalyst", "role": "other", "type": "bool", "function_names": ["consumeCatalyst"], "optional": false},
+    {"name": "consume_catalyst", "role": "other", "type": "boolean", "function_names": ["consumeCatalyst"], "optional": false},
     {"name": "work", "role": "other", "type": {"type": "int", "min": 1}, "optional": 20}
   ],
   "unique": ["station", "ingredient"],
