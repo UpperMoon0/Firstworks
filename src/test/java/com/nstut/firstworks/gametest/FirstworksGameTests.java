@@ -157,12 +157,12 @@ public final class FirstworksGameTests {
         helper.setBlock(kilnPos, ModBlocks.KILN.get());
         WorkshopBlockEntity kiln = helper.getBlockEntity(kilnPos);
 
-        hold(player, new ItemStack(Items.COAL, 2));
+        hold(player, new ItemStack(Items.CHARCOAL, 2));
         helper.useBlock(kilnPos, player);
-        check(helper, kiln.getInput().is(Items.COAL) && kiln.getInput().getCount() == 1,
+        check(helper, kiln.getInput().is(Items.CHARCOAL) && kiln.getInput().getCount() == 1,
                 "normal insertion did not prefer the custom recipe input role over fuel");
         check(helper, kiln.getFuel().isEmpty(),
-                "normal insertion routed an overlapping coal recipe input into fuel");
+                "normal insertion routed an overlapping charcoal recipe input into fuel");
         check(helper, kiln.activeRecipe().isEmpty(),
                 "recipe with an explicitly declared empty catalyst tag became active");
 
@@ -171,8 +171,8 @@ public final class FirstworksGameTests {
         player.setShiftKeyDown(false);
         check(helper, kiln.getInput().getCount() == 1,
                 "sneak fuel insertion modified the loaded recipe input");
-        check(helper, kiln.getFuel().is(Items.COAL) && kiln.getFuel().getCount() == 1,
-                "sneak-right-click did not explicitly route overlapping coal into fuel");
+        check(helper, kiln.getFuel().is(Items.CHARCOAL) && kiln.getFuel().getCount() == 1,
+                "sneak-right-click did not explicitly route overlapping charcoal into fuel");
 
         tickHeated(level, helper.absolutePos(kilnPos), kiln, 4);
         check(helper, kiln.getOutput().isEmpty(),
