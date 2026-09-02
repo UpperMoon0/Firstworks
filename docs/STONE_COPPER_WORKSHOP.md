@@ -33,4 +33,4 @@ The Pottery Wheel advances with empty-hand interactions. The Stone Anvil advance
 Resin scars attach to horizontal faces of blocks in `firstworks:resin_trees`. Their four visible growth stages progress from a fresh cut to a resin-heavy ripe scar; only the ripe stage can be harvested. The scar remains attached to the tapped face and resets to its fresh visual state after harvesting.
 
 ## Default primitive-copper contract
-The bundled default path is raw copper → cast billet (Crucible Furnace + fired mold + air) → annealed billet (Kiln) → worked billet (Stone Anvil + hammer). Firstworks copper tools, wire, fasteners, shears, buckets, and workshop upgrades are downstream of the worked billet so packs can gate mature metallurgy later without replacing the primitive mechanics.
+The bundled default path is raw copper → cast billet (Crucible Furnace + fired mold + air) → annealed billet (Kiln) → worked billet (Stone Anvil + hammer). Firstworks copper knife, wire, fasteners, shears, and workshop upgrades are downstream of the worked billet so packs can gate mature metallurgy later without replacing the primitive mechanics.

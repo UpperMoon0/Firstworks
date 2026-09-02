@@ -3,7 +3,6 @@ package com.nstut.firstworks.registry;
 import com.nstut.firstworks.Firstworks;
 import com.nstut.firstworks.content.ClayBucketItem;
 import com.nstut.firstworks.content.ColoredFleeceItem;
-import com.nstut.firstworks.content.CopperBucketItem;
 import com.nstut.firstworks.content.HandSpindleItem;
 import com.nstut.firstworks.content.KnifeItem;
 import com.nstut.firstworks.content.TanninSolutionBucketItem;
@@ -127,17 +126,6 @@ public final class ModItems {
     public static final DeferredHolder<Item, Item> PLASTER_BLOCK = blockItem("plaster_block", ModBlocks.PLASTER_BLOCK);
     public static final DeferredHolder<Item, Item> COPPER_SHEARS = ITEMS.register(
             "copper_shears", () -> new ShearsItem(new Item.Properties().durability(180)));
-    public static final DeferredHolder<Item, Item> COPPER_BUCKET = ITEMS.register(
-            "copper_bucket",
-            () -> new CopperBucketItem(Fluids.EMPTY, new Item.Properties().stacksTo(1)));
-    public static final DeferredHolder<Item, Item> WATER_COPPER_BUCKET = ITEMS.register(
-            "water_copper_bucket",
-            () -> new CopperBucketItem(Fluids.WATER,
-                    new Item.Properties().craftRemainder(COPPER_BUCKET.get()).stacksTo(1)));
-    public static final DeferredHolder<Item, Item> TANNIN_COPPER_BUCKET = ITEMS.register(
-            "tannin_copper_bucket",
-            () -> new CopperBucketItem(ModFluids.TANNIN_SOLUTION.get(),
-                    new Item.Properties().craftRemainder(COPPER_BUCKET.get()).stacksTo(1)));
 
     // Tool tiers.
     public static final DeferredHolder<Item, Item> BONE_PICKAXE = pickaxe("bone_pickaxe", ModToolTiers.BONE, 1.0F, -2.8F);
@@ -154,11 +142,6 @@ public final class ModItems {
     public static final DeferredHolder<Item, Item> FLINT_SWORD = sword("flint_sword", ModToolTiers.FLINT, 3, -2.4F);
     public static final DeferredHolder<Item, Item> FLINT_KNIFE = knife("flint_knife", ModToolTiers.FLINT, 1, -1.8F);
 
-    public static final DeferredHolder<Item, Item> COPPER_PICKAXE = pickaxe("copper_pickaxe", ModToolTiers.COPPER, 1.0F, -2.8F);
-    public static final DeferredHolder<Item, Item> COPPER_AXE = axe("copper_axe", ModToolTiers.COPPER, 7.0F, -3.15F);
-    public static final DeferredHolder<Item, Item> COPPER_SHOVEL = shovel("copper_shovel", ModToolTiers.COPPER, 1.5F, -3.0F);
-    public static final DeferredHolder<Item, Item> COPPER_HOE = hoe("copper_hoe", ModToolTiers.COPPER, -1.0F, -2.0F);
-    public static final DeferredHolder<Item, Item> COPPER_SWORD = sword("copper_sword", ModToolTiers.COPPER, 3, -2.4F);
     public static final DeferredHolder<Item, Item> COPPER_KNIFE = knife("copper_knife", ModToolTiers.COPPER, 1, -1.8F);
 
     public static final Map<String, DeferredHolder<Item, Item>> BARREL_ITEMS = registerBarrelItems();

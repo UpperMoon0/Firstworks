@@ -14,14 +14,26 @@ public class StoneCopperProgressionRecipeTest {
     }
 
     @Test
-    public void workedCopperOwnsFastenersAndTools() throws Exception {
+    public void workedCopperOwnsFastenersAndRetainedTools() throws Exception {
         String fasteners = resource("data/firstworks/recipe/copper_fasteners.json");
         assertTrue(fasteners.contains("firstworks:worked_copper_billet"));
         assertFalse(fasteners.contains("minecraft:copper_ingot"));
 
-        String pickaxe = resource("data/firstworks/recipe/copper_pickaxe.json");
-        assertTrue(pickaxe.contains("firstworks:worked_copper_billet"));
-        assertTrue(pickaxe.contains("firstworks:strong_bindings"));
+        String knife = resource("data/firstworks/recipe/copper_knife.json");
+        assertTrue(knife.contains("firstworks:worked_copper_billet"));
+        assertTrue(knife.contains("firstworks:strong_bindings"));
+
+        String shears = resource("data/firstworks/recipe/copper_shears.json");
+        assertTrue(shears.contains("firstworks:worked_copper_billet"));
+    }
+
+    @Test
+    public void genericCopperBloatIsNotShipped() {
+        for (String id : new String[]{
+                "copper_pickaxe", "copper_axe", "copper_shovel", "copper_hoe", "copper_sword", "copper_bucket"}) {
+            assertFalse(Files.exists(Path.of("src/main/resources/data/firstworks/recipe", id + ".json")),
+                    "Redundant copper recipe should not be shipped: " + id);
+        }
     }
 
     @Test
