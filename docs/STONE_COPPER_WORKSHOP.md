@@ -17,7 +17,7 @@ Fields:
 - `station`: `pottery_wheel`, `kiln`, `stone_anvil`, or `crucible_furnace`. Unknown station ids are rejected during recipe loading instead of producing unreachable recipes.
 - `ingredient`: primary input ingredient.
 - `input_count`: optional primary-input count, default 1.
-- `catalyst`: optional catalyst/tool/mold ingredient.
+- `catalyst`: optional catalyst/tool/mold ingredient. Field presence is authoritative: an explicitly declared catalyst that resolves to an empty ingredient/tag still remains required and therefore matches nothing. Omit the field entirely for catalyst-free recipes.
 - `catalyst_count`: optional catalyst count, default 1.
 - `consume_catalyst`: whether the catalyst is consumed, default false.
 - `result`: result item stack.
@@ -28,6 +28,9 @@ When multiple recipes at one station match the loaded input and catalyst, Firstw
 The bundled Pottery Wheel uses the batch itself as an in-world selector: 1 Refractory Clay shapes a tuyère, 2 shapes a casting mold, and 3 shapes a crucible. Adding material resets manual progress, so the player can load the intended batch before beginning to shape it without a GUI.
 
 The Pottery Wheel advances with empty-hand interactions. The Stone Anvil advances when struck with an item in `firstworks:hammers`. The Kiln consumes coal/charcoal and advances over time. The Crucible Furnace consumes coal/charcoal but only advances while receiving Bellows air; use a Bellows adjacent to the furnace to stoke it. Fuel is a reserve rather than recipe state, so adding more fuel to a running heated station preserves its current progress and does not consume another fuel item immediately.
+
+### GUI-free insertion role resolution
+Normal right-click insertion favors workshop recipe roles before fuel when an item can serve more than one role. Existing input batches are allowed to grow to a larger matching `input_count` before a same-item catalyst is selected; once the loaded batch satisfies a recipe that needs the held catalyst, the catalyst slot is preferred. On heated stations, **sneak-right-click coal or charcoal to force it into the fuel reserve**. Automation remains explicit: item-handler slot 0 is input, slot 1 is catalyst, slot 2 is fuel, and slot 3 is output.
 
 ## Resin tapping
 Resin scars attach to horizontal faces of blocks in `firstworks:resin_trees`. Their four visible growth stages progress from a fresh cut to a resin-heavy ripe scar; only the ripe stage can be harvested. The scar remains attached to the tapped face and resets to its fresh visual state after harvesting.
