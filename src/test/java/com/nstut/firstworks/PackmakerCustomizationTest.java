@@ -21,6 +21,8 @@ public class PackmakerCustomizationTest {
             "src/main/java/com/nstut/firstworks/compat/jei/FirstworksJeiPlugin.java");
     private static final Path WORKSHOP_JEI_PLUGIN = Path.of(
             "src/main/java/com/nstut/firstworks/compat/jei/WorkshopJeiPlugin.java");
+    private static final Path WORKSHOP_JEI_CATEGORY = Path.of(
+            "src/main/java/com/nstut/firstworks/compat/jei/WorkshopRecipeCategory.java");
     private static final Path VANILLA_RECIPE_DIR = Path.of("src/main/resources/data/minecraft/recipe");
 
     @Test
@@ -80,6 +82,17 @@ public class PackmakerCustomizationTest {
         assertTrue(src.contains("ModBlocks.CRUCIBLE_FURNACE.get(), CRUCIBLE_FURNACE_PROCESSING"));
         assertTrue(src.contains("ModBlocks.BELLOWS.get(), CRUCIBLE_FURNACE_PROCESSING"),
                 "Bellows must expose only Crucible Furnace processing in JEI");
+    }
+
+    @Test
+    public void workshopJeiShowsRequiredManualToolsFuelAndAir() throws Exception {
+        String src = Files.readString(WORKSHOP_JEI_CATEGORY);
+        assertTrue(src.contains("Ingredient.of(ModTags.HAMMERS)"),
+                "Stone Anvil JEI recipes must show the pack-extensible hammer requirement");
+        assertTrue(src.contains("new ItemStack(Items.COAL)") && src.contains("new ItemStack(Items.CHARCOAL)"),
+                "heated workshop JEI recipes must show their accepted fuel items");
+        assertTrue(src.contains("new ItemStack(ModItems.BELLOWS.get())"),
+                "Crucible Furnace JEI recipes must show Bellows as an air-control requirement");
     }
 
     @Test
