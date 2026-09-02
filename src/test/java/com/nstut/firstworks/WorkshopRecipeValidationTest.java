@@ -1,9 +1,6 @@
 package com.nstut.firstworks;
 
 import com.nstut.firstworks.content.workshop.WorkshopRecipe;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -27,7 +24,8 @@ public class WorkshopRecipeValidationTest {
     }
 
     private static WorkshopRecipe recipe(String station) {
-        return new WorkshopRecipe(station, Ingredient.of(Items.CLAY_BALL), 1, Ingredient.EMPTY,
-                1, false, new ItemStack(Items.BRICK), 20);
+        // This unit test only exercises station validation. Avoid touching Minecraft's global item
+        // registries here; those are bootstrapped by the GameTest environment, not plain JUnit.
+        return new WorkshopRecipe(station, null, 1, null, 1, false, null, 20);
     }
 }

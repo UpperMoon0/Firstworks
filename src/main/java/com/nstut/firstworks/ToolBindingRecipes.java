@@ -35,11 +35,13 @@ public final class ToolBindingRecipes {
         boolean masonry = FirstworksConfig.ENABLE_MASONRY_PROGRESSION.getAsBoolean();
         boolean grain = FirstworksConfig.ENABLE_GRAIN_PROGRESSION.getAsBoolean();
         boolean replaceLeather = FirstworksConfig.REPLACE_ANIMAL_LEATHER.getAsBoolean();
-        rewrite(event.getPlayerList().getServer().getRecipeManager(), bindPrimitive, bindMetal, textiles, masonry, grain, replaceLeather);
+        rewrite(event.getPlayerList().getServer().getRecipeManager(), bindPrimitive, bindMetal, textiles,
+                masonry, grain, replaceLeather);
         com.nstut.firstworks.content.barrel.BarrelBlockEntity.invalidateAllBarrels();
     }
 
-    private static void rewrite(RecipeManager manager, boolean bindPrimitive, boolean bindMetal, boolean textiles, boolean masonry, boolean grain, boolean replaceLeather) {
+    private static void rewrite(RecipeManager manager, boolean bindPrimitive, boolean bindMetal,
+                                boolean textiles, boolean masonry, boolean grain, boolean replaceLeather) {
         Ingredient primitiveBinding = Ingredient.of(ModTags.PRIMITIVE_BINDINGS);
         Ingredient rope = Ingredient.of(ModTags.STRONG_BINDINGS);
         Map<ResourceLocation, Recipe<?>> replacements = new HashMap<>();
@@ -60,11 +62,10 @@ public final class ToolBindingRecipes {
         }
 
         if (replaceLeather) {
-            replacements.put(vanilla("leather"), shapedSimple(ModItems.RAW_HIDE.get(), Ingredient.of(Items.RABBIT_HIDE), "##", "##"));
+            replacements.put(vanilla("leather"),
+                    shapedSimple(ModItems.RAW_HIDE.get(), Ingredient.of(Items.RABBIT_HIDE), "##", "##"));
         }
 
-        // When grain progression is disabled, the Firstworks flour/dough overrides of the vanilla
-        // Wheat → Bread/Cookies/Cake recipes must be swapped back to the vanilla wheat routes.
         if (!grain) {
             addGrainVanillaRoutes(replacements);
         }
@@ -89,6 +90,7 @@ public final class ToolBindingRecipes {
                 removed++;
                 continue;
             }
+
             Recipe<?> replacement = replacements.get(holder.id());
             if (replacement == null) {
                 rewritten.add(holder);
@@ -99,7 +101,7 @@ public final class ToolBindingRecipes {
         }
         if (changed > 0 || removed > 0) {
             manager.replaceRecipes(rewritten);
-            Firstworks.LOGGER.info("Reworked {} tool recipes and removed {} bypass progression recipes", changed, removed);
+            Firstworks.LOGGER.info("Reworked {} progression recipes and removed {} bypass recipes", changed, removed);
         }
     }
 
@@ -130,25 +132,24 @@ public final class ToolBindingRecipes {
     }
 
     private static void addGrainVanillaRoutes(Map<ResourceLocation, Recipe<?>> replacements) {
-        // Restore the vanilla Wheat → Bread / Cookies / Cake routes by swapping the Firstworks
-        // flour/dough overrides (same recipe ids) back to their wheat-based recipes.
-        replacements.put(vanilla("bread"), shapedVanilla(Items.BREAD,
+        replacements.put(vanilla("bread"), shapedVanilla(Items.BREAD, 1,
                 Map.of('#', Ingredient.of(Items.WHEAT)), "###"));
-        replacements.put(vanilla("cookie"), shapedVanilla(Items.COOKIE,
+        replacements.put(vanilla("cookie"), shapedVanilla(Items.COOKIE, 8,
                 Map.of('#', Ingredient.of(Items.WHEAT), 'X', Ingredient.of(Items.COCOA_BEANS)), "#X#"));
-        replacements.put(vanilla("cake"), shapedVanilla(Items.CAKE,
+        replacements.put(vanilla("cake"), shapedVanilla(Items.CAKE, 1,
                 Map.of('A', Ingredient.of(Items.MILK_BUCKET), 'B', Ingredient.of(Items.SUGAR),
                         'C', Ingredient.of(Items.EGG), '#', Ingredient.of(Items.WHEAT)),
-                "AAA", "BCB", "# #"));
+                "AAA", "BCB", "###"));
     }
 
-    private static ShapedRecipe shapedVanilla(Item result, Map<Character, Ingredient> keys, String... pattern) {
+    private static ShapedRecipe shapedVanilla(Item result, int count,
+                                               Map<Character, Ingredient> keys, String... pattern) {
         return new ShapedRecipe("", CraftingBookCategory.MISC,
-                ShapedRecipePattern.of(keys, pattern), new ItemStack(result));
+                ShapedRecipePattern.of(keys, pattern), new ItemStack(result, count));
     }
 
     private static void addTier(Map<ResourceLocation, Recipe<?>> recipes, String tier, Ingredient material,
-            Ingredient binding, Item pickaxe, Item axe, Item shovel, Item hoe, Item sword) {
+                                Ingredient binding, Item pickaxe, Item axe, Item shovel, Item hoe, Item sword) {
         recipes.put(vanilla(tier + "_pickaxe"), shaped(pickaxe, material, binding, "MMM", "BS ", " S "));
         recipes.put(vanilla(tier + "_axe"), shaped(axe, material, binding, "MM ", "MSB", " S "));
         recipes.put(vanilla(tier + "_shovel"), shaped(shovel, material, binding, " M ", "BS ", " S "));

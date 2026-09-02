@@ -5,7 +5,8 @@ import org.junit.jupiter.api.Test;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class QuernManualOnlyTest {
     private static final Path QUERN_PACKAGE = Path.of("src/main/java/com/nstut/firstworks/content/quern");
@@ -40,12 +41,13 @@ public class QuernManualOnlyTest {
     @Test
     public void crankAnimationUsesMonotonicForwardSteps() throws Exception {
         String entity = Files.readString(QUERN_PACKAGE.resolve("QuernBlockEntity.java"));
-        // Rotation still advances monotonically forward (here scaled by the work applied per crank, so a
-        // higher work rate reads as a faster spin without reversing).
         assertTrue(entity.contains("rotationSteps += workAmount"));
         assertTrue(entity.contains("putLong(\"RotationSteps\", rotationSteps)"));
-        assertTrue(entity.contains("rotationTarget = rotationSteps * 45D"));
-        assertFalse(entity.contains("while (diff"), "Animation must not select a shortest path that can reverse");
+        assertTrue(entity.contains("rotationTarget = rotationSteps * 45.0D"));
+        assertTrue(entity.contains("diff * 0.65D"),
+                "Animation catch-up must accelerate for large forward backlogs");
+        assertFalse(entity.contains("while (diff"),
+                "Animation must not select a shortest path that can reverse");
         assertFalse(entity.contains("rotation = (rotation + 45F) % 360F"));
     }
 }
