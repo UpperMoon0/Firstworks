@@ -131,6 +131,16 @@ public abstract class WorkshopBlock extends BaseEntityBlock {
             }
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
+
+        // Normal right-click favors recipe roles. Sneak-right-click provides an explicit,
+        // GUI-free escape hatch when coal/charcoal also appears in a custom recipe role.
+        if (player.isShiftKeyDown() && workshop.canInsertFuel(stack)) {
+            if (!level.isClientSide) {
+                workshop.insertFuel(stack, player.hasInfiniteMaterials());
+            }
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        }
+
         if (!workshop.canInsert(stack)) {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
