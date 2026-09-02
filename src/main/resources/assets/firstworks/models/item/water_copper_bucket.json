@@ -1,1 +1,1 @@
-{"parent":"minecraft:item/generated","textures":{"layer0":"minecraft:item/water_bucket"}}
+{"parent":"minecraft:item/generated","textures":{"layer0":"firstworks:item/water_copper_bucket"}}
