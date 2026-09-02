@@ -21,7 +21,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -39,12 +38,12 @@ public final class FirstworksGameTests {
     @GameTest(template = EMPTY, timeoutTicks = 20)
     public static void copperWorkshopCompletesEntirePrimitiveChain(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        Player player = helper.makeMockPlayer(GameType.CREATIVE);
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
 
         BlockPos wheelPos = new BlockPos(2, 1, 2);
         helper.setBlock(wheelPos, ModBlocks.POTTERY_WHEEL.get());
         WorkshopBlockEntity wheel = helper.getBlockEntity(wheelPos);
-        hold(player, new ItemStack(ModItems.REFRACTORY_CLAY.get()));
+        hold(player, new ItemStack(ModItems.REFRACTORY_CLAY.get(), 2));
         helper.useBlock(wheelPos, player);
         helper.useBlock(wheelPos, player);
         check(helper, wheel.getInput().getCount() == 2, "Pottery Wheel did not accept two refractory clay inputs");
@@ -69,7 +68,7 @@ public final class FirstworksGameTests {
         helper.setBlock(bellowsPos, ModBlocks.BELLOWS.get().defaultBlockState().setValue(BellowsBlock.FACING, Direction.EAST));
         WorkshopBlockEntity furnace = helper.getBlockEntity(furnacePos);
 
-        hold(player, new ItemStack(Items.RAW_COPPER));
+        hold(player, new ItemStack(Items.RAW_COPPER, 3));
         use(helper, furnacePos, player, 3);
         hold(player, moldKiln.getOutput().copy());
         helper.useBlock(furnacePos, player);
@@ -115,12 +114,12 @@ public final class FirstworksGameTests {
     @GameTest(template = EMPTY, timeoutTicks = 20)
     public static void manualMachinesRequireAndCompleteRealPlayerWork(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        Player player = helper.makeMockPlayer(GameType.CREATIVE);
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
 
         BlockPos quernPos = new BlockPos(3, 1, 8);
         helper.setBlock(quernPos, ModBlocks.ROTARY_QUERN.get());
         QuernBlockEntity quern = helper.getBlockEntity(quernPos);
-        hold(player, new ItemStack(Items.WHEAT));
+        hold(player, new ItemStack(Items.WHEAT, 4));
         use(helper, quernPos, player, 4);
         check(helper, quern.getInput().getCount() == 4, "Rotary Quern did not load the wheat batch");
         check(helper,
@@ -138,7 +137,7 @@ public final class FirstworksGameTests {
         BlockPos loomPos = new BlockPos(9, 1, 8);
         helper.setBlock(loomPos, ModBlocks.COPPER_LOOM.get());
         LoomBlockEntity loom = helper.getBlockEntity(loomPos);
-        hold(player, new ItemStack(Items.STRING));
+        hold(player, new ItemStack(Items.STRING, 4));
         use(helper, loomPos, player, 4);
         int strokes = loom.getMatchingRecipe()
                 .map(holder -> Math.max(1, (holder.value().strokes() + 1) / 2))
@@ -153,7 +152,7 @@ public final class FirstworksGameTests {
     @GameTest(template = EMPTY, timeoutTicks = 20)
     public static void workshopBlocksOperateAtBothBuildHeightEdges(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        Player player = helper.makeMockPlayer(GameType.CREATIVE);
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
         int minY = level.getMinBuildHeight();
         int maxY = level.getMaxBuildHeight() - 1;
 
@@ -188,9 +187,9 @@ public final class FirstworksGameTests {
             WorkshopBlockEntity wheel = (WorkshopBlockEntity) level.getBlockEntity(wheelPos);
             ItemStack remainder = wheel.getItemHandler(null).insertItem(0, new ItemStack(ModItems.REFRACTORY_CLAY.get(), 2), false);
             check(helper, remainder.isEmpty(), "Pottery Wheel could not load its recipe at Y=" + y);
-            clearHand(player);
-            BlockHitResult wheelHit = new BlockHitResult(Vec3.atCenterOf(wheelPos), Direction.UP, wheelPos, false);
-            for (int i = 0; i < 8; i++) level.getBlockState(wheelPos).useWithoutItem(level, player, wheelHit);
+            for (int i = 0; i < 8; i++) {
+                check(helper, wheel.work(player), "Pottery Wheel refused manual work at Y=" + y + " step=" + i);
+            }
             check(helper, wheel.getOutput().is(ModItems.UNFIRED_CASTING_MOLD.get()),
                     "Pottery Wheel processing failed at Y=" + y);
 
