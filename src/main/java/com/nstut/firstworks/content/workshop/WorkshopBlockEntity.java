@@ -71,18 +71,23 @@ public final class WorkshopBlockEntity extends BlockEntity {
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, WorkshopBlockEntity workshop) {
+        boolean stokeExpired = false;
         if (workshop.stokeTicks > 0) {
             workshop.stokeTicks--;
+            stokeExpired = workshop.stokeTicks == 0;
         }
 
         String station = workshop.station();
         if (!station.equals(WorkshopRecipe.KILN) && !station.equals(WorkshopRecipe.CRUCIBLE_FURNACE)) {
+            if (stokeExpired) {
+                workshop.sync();
+            }
             return;
         }
 
         Optional<RecipeHolder<WorkshopRecipe>> holder = workshop.activeRecipe();
         if (holder.isEmpty() || !workshop.output.isEmpty()) {
-            if (workshop.progress != 0 || workshop.running) {
+            if (workshop.progress != 0 || workshop.running || stokeExpired) {
                 workshop.progress = 0;
                 workshop.running = false;
                 workshop.sync();
@@ -90,11 +95,18 @@ public final class WorkshopBlockEntity extends BlockEntity {
             return;
         }
         if (station.equals(WorkshopRecipe.CRUCIBLE_FURNACE) && workshop.stokeTicks <= 0) {
+            if (stokeExpired) {
+                workshop.sync();
+            }
             return;
         }
 
+        boolean started = false;
         if (!workshop.running) {
             if (workshop.fuel.isEmpty()) {
+                if (stokeExpired) {
+                    workshop.sync();
+                }
                 return;
             }
             workshop.fuel.shrink(1);
@@ -102,13 +114,14 @@ public final class WorkshopBlockEntity extends BlockEntity {
                 workshop.fuel = ItemStack.EMPTY;
             }
             workshop.running = true;
+            started = true;
             level.playSound(null, pos, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 0.55F, 0.85F);
         }
 
         workshop.progress++;
         if (workshop.progress >= holder.get().value().work()) {
             workshop.complete(holder.get().value());
-        } else if (workshop.progress % 20 == 0) {
+        } else if (started || stokeExpired || workshop.progress % 20 == 0) {
             workshop.sync();
         }
     }
