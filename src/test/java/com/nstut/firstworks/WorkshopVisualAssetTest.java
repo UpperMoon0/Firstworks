@@ -60,7 +60,9 @@ public class WorkshopVisualAssetTest {
         for (String path : List.of(
                 "content/BellowsBlock.java",
                 "content/workshop/PotteryWheelBlock.java",
-                "content/workshop/StoneAnvilBlock.java")) {
+                "content/workshop/StoneAnvilBlock.java",
+                "content/workshop/KilnBlock.java",
+                "content/workshop/CrucibleFurnaceBlock.java")) {
             String src = Files.readString(JAVA.resolve(path));
             assertTrue(src.contains("getCollisionShape"), "Missing custom collision shape: " + path);
             assertTrue(src.contains("VoxelShape"), "Workstation collision must use explicit geometry: " + path);
