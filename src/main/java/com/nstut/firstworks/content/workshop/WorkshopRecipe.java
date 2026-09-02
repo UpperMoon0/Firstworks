@@ -15,9 +15,10 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
 
+import java.util.Optional;
 import java.util.Set;
 
-public record WorkshopRecipe(String station, Ingredient ingredient, int inputCount, Ingredient catalyst,
+public record WorkshopRecipe(String station, Ingredient ingredient, int inputCount, Optional<Ingredient> catalyst,
                              int catalystCount, boolean consumeCatalyst, ItemStack result, int work)
         implements Recipe<SingleRecipeInput> {
     public static final String POTTERY_WHEEL = "pottery_wheel";
@@ -31,6 +32,9 @@ public record WorkshopRecipe(String station, Ingredient ingredient, int inputCou
         if (!VALID_STATIONS.contains(station)) {
             throw new IllegalArgumentException("Unknown workshop station: " + station);
         }
+        if (catalyst == null) {
+            throw new IllegalArgumentException("Workshop catalyst optional must not be null");
+        }
     }
 
     @Override
@@ -39,11 +43,16 @@ public record WorkshopRecipe(String station, Ingredient ingredient, int inputCou
     }
 
     public boolean hasCatalyst() {
-        return catalyst.getItems().length > 0;
+        return catalyst.isPresent();
+    }
+
+    public boolean catalystIngredientMatches(ItemStack stack) {
+        return catalyst.map(ingredient -> ingredient.test(stack)).orElse(false);
     }
 
     public boolean catalystMatches(ItemStack stack) {
-        return !hasCatalyst() || catalyst.test(stack) && stack.getCount() >= catalystCount;
+        return catalyst.map(ingredient -> ingredient.test(stack) && stack.getCount() >= catalystCount)
+                .orElse(true);
     }
 
     @Override
@@ -81,7 +90,7 @@ public record WorkshopRecipe(String station, Ingredient ingredient, int inputCou
                 Codec.STRING.fieldOf("station").forGetter(WorkshopRecipe::station),
                 Ingredient.CODEC.fieldOf("ingredient").forGetter(WorkshopRecipe::ingredient),
                 Codec.intRange(1, 64).optionalFieldOf("input_count", 1).forGetter(WorkshopRecipe::inputCount),
-                Ingredient.CODEC.optionalFieldOf("catalyst", Ingredient.EMPTY).forGetter(WorkshopRecipe::catalyst),
+                Ingredient.CODEC.optionalFieldOf("catalyst").forGetter(WorkshopRecipe::catalyst),
                 Codec.intRange(1, 64).optionalFieldOf("catalyst_count", 1).forGetter(WorkshopRecipe::catalystCount),
                 Codec.BOOL.optionalFieldOf("consume_catalyst", false).forGetter(WorkshopRecipe::consumeCatalyst),
                 ItemStack.CODEC.fieldOf("result").forGetter(WorkshopRecipe::result),
@@ -93,15 +102,24 @@ public record WorkshopRecipe(String station, Ingredient ingredient, int inputCou
                     buffer.writeUtf(recipe.station);
                     Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, recipe.ingredient);
                     buffer.writeVarInt(recipe.inputCount);
-                    Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, recipe.catalyst);
+                    buffer.writeBoolean(recipe.catalyst.isPresent());
+                    recipe.catalyst.ifPresent(ingredient -> Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, ingredient));
                     buffer.writeVarInt(recipe.catalystCount);
                     buffer.writeBoolean(recipe.consumeCatalyst);
                     ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
                     buffer.writeVarInt(recipe.work);
                 },
-                buffer -> new WorkshopRecipe(buffer.readUtf(), Ingredient.CONTENTS_STREAM_CODEC.decode(buffer),
-                        buffer.readVarInt(), Ingredient.CONTENTS_STREAM_CODEC.decode(buffer), buffer.readVarInt(),
-                        buffer.readBoolean(), ItemStack.STREAM_CODEC.decode(buffer), buffer.readVarInt()));
+                buffer -> new WorkshopRecipe(
+                        buffer.readUtf(),
+                        Ingredient.CONTENTS_STREAM_CODEC.decode(buffer),
+                        buffer.readVarInt(),
+                        buffer.readBoolean()
+                                ? Optional.of(Ingredient.CONTENTS_STREAM_CODEC.decode(buffer))
+                                : Optional.empty(),
+                        buffer.readVarInt(),
+                        buffer.readBoolean(),
+                        ItemStack.STREAM_CODEC.decode(buffer),
+                        buffer.readVarInt()));
 
         @Override
         public MapCodec<WorkshopRecipe> codec() {
