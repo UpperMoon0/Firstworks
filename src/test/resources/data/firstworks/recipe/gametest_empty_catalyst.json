@@ -1,0 +1,8 @@
+{
+  "type": "firstworks:workshop_processing",
+  "station": "kiln",
+  "ingredient": {"item": "minecraft:coal"},
+  "catalyst": {"tag": "firstworks:gametest_empty_catalysts"},
+  "result": {"id": "minecraft:diamond"},
+  "work": 2
+}
