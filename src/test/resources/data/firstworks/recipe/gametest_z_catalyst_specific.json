@@ -1,0 +1,11 @@
+{
+  "type": "firstworks:workshop_processing",
+  "station": "pottery_wheel",
+  "ingredient": {"item": "minecraft:amethyst_shard"},
+  "input_count": 1,
+  "catalyst": {"item": "minecraft:stick"},
+  "catalyst_count": 1,
+  "consume_catalyst": false,
+  "result": {"id": "minecraft:diamond"},
+  "work": 1
+}
