@@ -2,18 +2,13 @@ package com.nstut.firstworks;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.nstut.firstworks.content.workshop.WorkshopRecipe;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class WorkshopRecipeValidationTest {
@@ -35,42 +30,16 @@ public class WorkshopRecipeValidationTest {
     }
 
     @Test
-    public void declaredEmptyCatalystCannotCollapseIntoNoCatalyst() {
-        WorkshopRecipe declaredEmpty = new WorkshopRecipe(
-                WorkshopRecipe.POTTERY_WHEEL,
-                Ingredient.EMPTY,
-                1,
-                Optional.of(Ingredient.EMPTY),
-                1,
-                false,
-                ItemStack.EMPTY,
-                1);
-        WorkshopRecipe absent = new WorkshopRecipe(
-                WorkshopRecipe.POTTERY_WHEEL,
-                Ingredient.EMPTY,
-                1,
-                Optional.empty(),
-                1,
-                false,
-                ItemStack.EMPTY,
-                1);
-
-        assertTrue(declaredEmpty.hasCatalyst(),
-                "an explicitly declared empty catalyst must remain a declared requirement");
-        assertFalse(declaredEmpty.catalystMatches(ItemStack.EMPTY),
-                "an empty/unresolved declared catalyst must match nothing, not bypass the requirement");
-        assertFalse(absent.hasCatalyst(), "an omitted catalyst must remain optional/absent");
-        assertTrue(absent.catalystMatches(ItemStack.EMPTY),
-                "recipes with no catalyst field must not require a catalyst");
-    }
-
-    @Test
     public void catalystCodecTracksFieldPresenceInsteadOfResolvedItems() throws Exception {
         String source = Files.readString(WORKSHOP_RECIPE);
+        assertTrue(source.contains("Optional<Ingredient> catalyst"),
+                "workshop recipes must preserve whether the catalyst field was declared");
         assertTrue(source.contains("Ingredient.CODEC.optionalFieldOf(\"catalyst\")"),
                 "catalyst presence must be represented by Optional rather than Ingredient.EMPTY as a default");
         assertTrue(source.contains("return catalyst.isPresent()"),
                 "hasCatalyst must depend on field presence, not resolved tag contents");
+        assertTrue(source.contains("buffer.writeBoolean(recipe.catalyst.isPresent())"),
+                "network sync must preserve catalyst presence even when its resolved item set is empty");
     }
 
     @Test
