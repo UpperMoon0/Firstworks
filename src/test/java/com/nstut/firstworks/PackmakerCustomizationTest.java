@@ -19,6 +19,8 @@ public class PackmakerCustomizationTest {
             "src/main/java/com/nstut/firstworks/content/workshop/WorkshopBlock.java");
     private static final Path JEI_PLUGIN = Path.of(
             "src/main/java/com/nstut/firstworks/compat/jei/FirstworksJeiPlugin.java");
+    private static final Path WORKSHOP_JEI_PLUGIN = Path.of(
+            "src/main/java/com/nstut/firstworks/compat/jei/WorkshopJeiPlugin.java");
     private static final Path VANILLA_RECIPE_DIR = Path.of("src/main/resources/data/minecraft/recipe");
 
     @Test
@@ -60,6 +62,24 @@ public class PackmakerCustomizationTest {
                 "Copper Hand Spindle must expose spinning recipes in JEI");
         assertTrue(src.contains("ModBlocks.ROTARY_QUERN.get(), QUERN_GRINDING"),
                 "Rotary Quern must expose quern recipes in JEI");
+    }
+
+    @Test
+    public void workshopJeiRecipesAndCatalystsAreStationScoped() throws Exception {
+        String src = Files.readString(WORKSHOP_JEI_PLUGIN);
+        assertTrue(src.contains("POTTERY_WHEEL_PROCESSING")
+                        && src.contains("KILN_PROCESSING")
+                        && src.contains("STONE_ANVIL_PROCESSING")
+                        && src.contains("CRUCIBLE_FURNACE_PROCESSING"),
+                "workshop JEI integration must expose a recipe type per station");
+        assertTrue(src.contains("filter(recipe -> station.equals(recipe.station()))"),
+                "each JEI station category must receive only its matching workshop recipes");
+        assertTrue(src.contains("ModBlocks.POTTERY_WHEEL.get(), POTTERY_WHEEL_PROCESSING"));
+        assertTrue(src.contains("ModBlocks.KILN.get(), KILN_PROCESSING"));
+        assertTrue(src.contains("ModBlocks.STONE_ANVIL.get(), STONE_ANVIL_PROCESSING"));
+        assertTrue(src.contains("ModBlocks.CRUCIBLE_FURNACE.get(), CRUCIBLE_FURNACE_PROCESSING"));
+        assertTrue(src.contains("ModBlocks.BELLOWS.get(), CRUCIBLE_FURNACE_PROCESSING"),
+                "Bellows must expose only Crucible Furnace processing in JEI");
     }
 
     @Test

@@ -2,6 +2,6 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [" F ", "FLF", " W "],
-  "key": {"F": {"item": "firstworks:copper_fasteners"}, "L": {"tag": "firstworks:looms"}, "W": {"item": "firstworks:copper_wire"}},
+  "key": {"F": {"item": "firstworks:copper_fasteners"}, "L": {"tag": "firstworks:wooden_looms"}, "W": {"item": "firstworks:copper_wire"}},
   "result": {"id": "firstworks:copper_loom"}
 }

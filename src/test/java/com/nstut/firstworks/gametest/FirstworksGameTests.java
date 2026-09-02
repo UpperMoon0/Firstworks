@@ -18,9 +18,11 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -112,6 +114,40 @@ public final class FirstworksGameTests {
     }
 
     @GameTest(template = EMPTY, timeoutTicks = 20)
+    public static void bellowsPlacementFacesTheAdjacentFurnace(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        BlockPos bellowsPos = new BlockPos(4, 1, 4);
+        BlockPos furnacePos = bellowsPos.east();
+        helper.setBlock(furnacePos, ModBlocks.CRUCIBLE_FURNACE.get());
+
+        BlockPos absoluteBellowsPos = helper.absolutePos(bellowsPos);
+        player.setYRot(-90.0F);
+        ItemStack bellowsStack = new ItemStack(ModItems.BELLOWS.get());
+        hold(player, bellowsStack);
+        BlockHitResult placementHit = new BlockHitResult(
+                Vec3.atCenterOf(absoluteBellowsPos), Direction.UP, absoluteBellowsPos, false);
+        BlockPlaceContext placementContext = new BlockPlaceContext(
+                player, InteractionHand.MAIN_HAND, bellowsStack, placementHit);
+        BlockState placedState = ModBlocks.BELLOWS.get().getStateForPlacement(placementContext);
+        if (placedState == null) {
+            helper.fail("Bellows did not produce a placement state");
+            return;
+        }
+        check(helper, placedState.getValue(BellowsBlock.FACING) == Direction.EAST,
+                "Bellows nozzle did not face in the player's placement direction toward the furnace");
+
+        level.setBlock(absoluteBellowsPos, placedState, Block.UPDATE_ALL);
+        clearHand(player);
+        helper.useBlock(bellowsPos, player);
+        WorkshopBlockEntity furnace = helper.getBlockEntity(furnacePos);
+        check(helper, furnace.getStokeTicks() > 0,
+                "Naturally placed Bellows did not stoke the furnace in front of its nozzle");
+
+        helper.succeed();
+    }
+
+    @GameTest(template = EMPTY, timeoutTicks = 20)
     public static void manualMachinesRequireAndCompleteRealPlayerWork(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
@@ -190,6 +226,10 @@ public final class FirstworksGameTests {
         int minY = level.getMinBuildHeight();
         int maxY = level.getMaxBuildHeight() - 1;
 
+        check(helper, !ModBlocks.KILN.get().defaultBlockState().canOcclude(),
+                "Kiln must not occlude neighboring faces around its hollow model");
+        check(helper, !ModBlocks.CRUCIBLE_FURNACE.get().defaultBlockState().canOcclude(),
+                "Crucible Furnace must not occlude neighboring faces around its hollow model");
         check(helper, !level.isOutsideBuildHeight(minY), "Vanilla lower build edge was treated as out of bounds");
         check(helper, !level.isOutsideBuildHeight(maxY), "Vanilla upper build edge was treated as out of bounds");
         check(helper, level.isOutsideBuildHeight(minY - 1), "Layer below vanilla minimum was unexpectedly valid");

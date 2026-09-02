@@ -85,7 +85,7 @@ public final class ModBlocks {
             () -> new PotteryWheelBlock(Block.Properties.ofFullCopy(Blocks.SMOOTH_STONE).noOcclusion()));
     public static final DeferredHolder<Block, KilnBlock> KILN = BLOCKS.register(
             "kiln",
-            () -> new KilnBlock(Block.Properties.ofFullCopy(Blocks.BRICKS)));
+            () -> new KilnBlock(Block.Properties.ofFullCopy(Blocks.BRICKS).noOcclusion()));
     public static final DeferredHolder<Block, StoneAnvilBlock> STONE_ANVIL = BLOCKS.register(
             "stone_anvil",
             () -> new StoneAnvilBlock(Block.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
@@ -94,7 +94,7 @@ public final class ModBlocks {
             () -> new BellowsBlock(Block.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion()));
     public static final DeferredHolder<Block, CrucibleFurnaceBlock> CRUCIBLE_FURNACE = BLOCKS.register(
             "crucible_furnace",
-            () -> new CrucibleFurnaceBlock(Block.Properties.ofFullCopy(Blocks.BRICKS)));
+            () -> new CrucibleFurnaceBlock(Block.Properties.ofFullCopy(Blocks.BRICKS).noOcclusion()));
     public static final DeferredHolder<Block, LoomBlock> COPPER_LOOM = BLOCKS.register(
             "copper_loom",
             () -> new LoomBlock(Block.Properties.ofFullCopy(Blocks.LOOM).noOcclusion()));

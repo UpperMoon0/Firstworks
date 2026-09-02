@@ -8,6 +8,7 @@ import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
+import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -17,16 +18,20 @@ import net.minecraft.world.item.ItemStack;
 import java.util.Arrays;
 
 public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRecipe> {
+    private final RecipeType<WorkshopRecipe> recipeType;
+    private final String station;
     private final IDrawable icon;
     private final IDrawable arrow;
 
-    public WorkshopRecipeCategory(IGuiHelper guiHelper) {
-        icon = guiHelper.createDrawableItemLike(ModItems.KILN.get());
+    public WorkshopRecipeCategory(IGuiHelper guiHelper, RecipeType<WorkshopRecipe> recipeType, String station) {
+        this.recipeType = recipeType;
+        this.station = station;
+        icon = guiHelper.createDrawableItemLike(stationStack(station).getItem());
         arrow = guiHelper.getRecipeArrow();
     }
 
-    @Override public mezz.jei.api.recipe.RecipeType<WorkshopRecipe> getRecipeType() { return WorkshopJeiPlugin.WORKSHOP_PROCESSING; }
-    @Override public Component getTitle() { return Component.translatable("jei.firstworks.workshop_processing"); }
+    @Override public RecipeType<WorkshopRecipe> getRecipeType() { return recipeType; }
+    @Override public Component getTitle() { return stationName(station); }
     @Override public int getWidth() { return 160; }
     @Override public int getHeight() { return 62; }
     @Override public IDrawable getIcon() { return icon; }

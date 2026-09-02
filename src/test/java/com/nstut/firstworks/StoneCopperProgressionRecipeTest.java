@@ -58,6 +58,25 @@ public class StoneCopperProgressionRecipeTest {
     }
 
     @Test
+    public void loomTagsExposeAllVariantsWithoutAllowingCopperSelfUpgrade() throws Exception {
+        String itemLooms = resource("data/firstworks/tags/item/looms.json");
+        String blockLooms = resource("data/firstworks/tags/block/looms.json");
+        String woodenLooms = resource("data/firstworks/tags/item/wooden_looms.json");
+        String copperLoom = resource("data/firstworks/recipe/copper_loom.json");
+
+        assertTrue(itemLooms.contains("firstworks:copper_loom"),
+                "public loom item tag must include the Copper Loom");
+        assertTrue(blockLooms.contains("firstworks:copper_loom"),
+                "public loom block tag must include the Copper Loom");
+        assertFalse(woodenLooms.contains("firstworks:copper_loom"),
+                "wooden loom selector must not allow Copper Loom self-upgrades");
+        assertTrue(copperLoom.contains("firstworks:wooden_looms"),
+                "Copper Loom upgrade must consume a wooden loom selector");
+        assertFalse(copperLoom.contains("\"tag\": \"firstworks:looms\""),
+                "Copper Loom upgrade must not consume the all-variants public loom tag");
+    }
+
+    @Test
     public void stoneCompletionAndAdvancedCeramicsRemainReachable() throws Exception {
         assertTrue(resource("data/firstworks/tags/block/resin_trees.json").contains("minecraft:spruce_logs"));
         assertTrue(resource("data/firstworks/tags/item/strong_bindings.json").contains("firstworks:hafting_compound"));

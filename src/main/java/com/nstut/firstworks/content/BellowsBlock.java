@@ -61,7 +61,8 @@ public final class BellowsBlock extends BaseEntityBlock {
 
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+        // FACING is the physical nozzle direction, unlike front-facing workstations that face the player.
+        return defaultBlockState().setValue(FACING, context.getHorizontalDirection());
     }
 
     @Override
