@@ -6,6 +6,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 import java.util.ArrayDeque;
 import java.util.HashSet;
@@ -38,7 +39,7 @@ public final class ResinTreeSupport {
             for (Direction direction : Direction.values()) {
                 BlockPos neighbor = current.relative(direction);
                 BlockState neighborState = level.getBlockState(neighbor);
-                if (neighborState.is(BlockTags.LEAVES)) {
+                if (isNaturalLeaf(neighborState)) {
                     return true;
                 }
                 if (neighborState.is(ModTags.RESIN_TREES) && !visited.contains(neighbor)) {
@@ -48,6 +49,14 @@ public final class ResinTreeSupport {
         }
 
         return false;
+    }
+
+    private static boolean isNaturalLeaf(BlockState state) {
+        if (!state.is(BlockTags.LEAVES)) {
+            return false;
+        }
+        return !state.hasProperty(BlockStateProperties.PERSISTENT)
+                || !state.getValue(BlockStateProperties.PERSISTENT);
     }
 
     private ResinTreeSupport() {}
