@@ -15,7 +15,6 @@ import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.PickaxeItem;
-import net.minecraft.world.item.ShearsItem;
 import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.Tier;
@@ -124,8 +123,6 @@ public final class ModItems {
     public static final DeferredHolder<Item, Item> LIME = simple("lime");
     public static final DeferredHolder<Item, Item> PLASTER = simple("plaster");
     public static final DeferredHolder<Item, Item> PLASTER_BLOCK = blockItem("plaster_block", ModBlocks.PLASTER_BLOCK);
-    public static final DeferredHolder<Item, Item> COPPER_SHEARS = ITEMS.register(
-            "copper_shears", () -> new ShearsItem(new Item.Properties().durability(180)));
 
     // Tool tiers.
     public static final DeferredHolder<Item, Item> BONE_PICKAXE = pickaxe("bone_pickaxe", ModToolTiers.BONE, 1.0F, -2.8F);

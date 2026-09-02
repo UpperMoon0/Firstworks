@@ -1,7 +1,0 @@
-{
-  "type": "minecraft:crafting_shaped",
-  "category": "equipment",
-  "pattern": [" C", "CB"],
-  "key": {"C": {"item": "firstworks:worked_copper_billet"}, "B": {"tag": "firstworks:strong_bindings"}},
-  "result": {"id": "firstworks:copper_shears"}
-}
