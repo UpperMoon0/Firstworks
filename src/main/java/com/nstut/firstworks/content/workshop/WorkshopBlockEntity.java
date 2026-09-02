@@ -27,6 +27,11 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 public final class WorkshopBlockEntity extends BlockEntity {
+    private static final int INPUT_SLOT = 0;
+    private static final int CATALYST_SLOT = 1;
+    private static final int FUEL_SLOT = 2;
+    private static final int OUTPUT_SLOT = 3;
+
     private ItemStack input = ItemStack.EMPTY;
     private ItemStack catalyst = ItemStack.EMPTY;
     private ItemStack fuel = ItemStack.EMPTY;
@@ -197,38 +202,95 @@ public final class WorkshopBlockEntity extends BlockEntity {
     }
 
     private boolean validCatalyst(ItemStack stack) {
-        return stationRecipes().anyMatch(holder -> holder.value().hasCatalyst() && holder.value().catalyst().test(stack));
+        return stationRecipes().anyMatch(holder -> holder.value().catalystIngredientMatches(stack));
+    }
+
+    private static boolean canStack(ItemStack stored, ItemStack stack) {
+        return stored.isEmpty()
+                || ItemStack.isSameItemSameComponents(stored, stack) && stored.getCount() < stored.getMaxStackSize();
+    }
+
+    private boolean canInsertInput(ItemStack stack) {
+        return validInput(stack) && canStack(input, stack);
+    }
+
+    private boolean canInsertCatalyst(ItemStack stack) {
+        return validCatalyst(stack) && canStack(catalyst, stack);
+    }
+
+    public boolean canInsertFuel(ItemStack stack) {
+        return heated() && isFuel(stack) && canStack(fuel, stack) && output.isEmpty();
+    }
+
+    private boolean recipeNeedsMoreInput(ItemStack stack) {
+        if (input.isEmpty() || !ItemStack.isSameItemSameComponents(input, stack)) {
+            return false;
+        }
+        return stationRecipes().anyMatch(holder -> holder.value().ingredient().test(input)
+                && holder.value().ingredient().test(stack)
+                && input.getCount() < holder.value().inputCount());
+    }
+
+    private boolean loadedRecipeNeedsCatalyst(ItemStack stack) {
+        if (input.isEmpty()) {
+            return false;
+        }
+        return stationRecipes().anyMatch(holder -> holder.value().ingredient().test(input)
+                && input.getCount() >= holder.value().inputCount()
+                && holder.value().catalystIngredientMatches(stack)
+                && catalyst.getCount() < holder.value().catalystCount());
+    }
+
+    private int preferredPlayerInsertionSlot(ItemStack stack) {
+        if (stack.isEmpty() || !output.isEmpty()) {
+            return -1;
+        }
+
+        boolean inputCandidate = canInsertInput(stack);
+        boolean catalystCandidate = canInsertCatalyst(stack);
+        boolean fuelCandidate = canInsertFuel(stack);
+
+        if (inputCandidate && (input.isEmpty() || recipeNeedsMoreInput(stack))) {
+            return INPUT_SLOT;
+        }
+        if (catalystCandidate && loadedRecipeNeedsCatalyst(stack)) {
+            return CATALYST_SLOT;
+        }
+        if (inputCandidate) {
+            return INPUT_SLOT;
+        }
+        if (catalystCandidate) {
+            return CATALYST_SLOT;
+        }
+        return fuelCandidate ? FUEL_SLOT : -1;
     }
 
     public boolean canInsert(ItemStack stack) {
-        if (stack.isEmpty() || !output.isEmpty()) {
-            return false;
-        }
-        if (heated() && isFuel(stack)) {
-            return fuel.isEmpty()
-                    || ItemStack.isSameItemSameComponents(fuel, stack) && fuel.getCount() < fuel.getMaxStackSize();
-        }
-        if (validInput(stack)) {
-            return input.isEmpty()
-                    || ItemStack.isSameItemSameComponents(input, stack) && input.getCount() < input.getMaxStackSize();
-        }
-        return validCatalyst(stack)
-                && (catalyst.isEmpty()
-                || ItemStack.isSameItemSameComponents(catalyst, stack) && catalyst.getCount() < catalyst.getMaxStackSize());
+        return preferredPlayerInsertionSlot(stack) >= 0;
     }
 
     public boolean insert(ItemStack held, boolean creative) {
-        if (!canInsert(held)) {
+        int slot = preferredPlayerInsertionSlot(held);
+        return slot >= 0 && insertOne(slot, held, creative);
+    }
+
+    public boolean insertFuel(ItemStack held, boolean creative) {
+        return canInsertFuel(held) && insertOne(FUEL_SLOT, held, creative);
+    }
+
+    private boolean insertOne(int slot, ItemStack held, boolean creative) {
+        if (held.isEmpty() || !isSlotValid(slot, held)) {
             return false;
         }
 
-        boolean fuelInsertion = heated() && isFuel(held);
-        if (fuelInsertion) {
-            fuel = addOne(fuel, held);
-        } else if (validInput(held)) {
+        if (slot == INPUT_SLOT) {
             input = addOne(input, held);
-        } else {
+        } else if (slot == CATALYST_SLOT) {
             catalyst = addOne(catalyst, held);
+        } else if (slot == FUEL_SLOT) {
+            fuel = addOne(fuel, held);
+        } else {
+            return false;
         }
 
         if (!creative) {
@@ -237,7 +299,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
 
         // Fuel is a reserve, not part of recipe identity. Topping it up must never destroy
         // already-completed work or force a running batch to consume another fuel item.
-        if (!fuelInsertion) {
+        if (slot != FUEL_SLOT) {
             progress = 0;
             running = false;
         }
@@ -404,6 +466,18 @@ public final class WorkshopBlockEntity extends BlockEntity {
         return ClientboundBlockEntityDataPacket.create(this, BlockEntity::getUpdateTag);
     }
 
+    private boolean isSlotValid(int slot, ItemStack stack) {
+        if (stack.isEmpty() || !output.isEmpty()) {
+            return false;
+        }
+        return switch (slot) {
+            case INPUT_SLOT -> canInsertInput(stack);
+            case CATALYST_SLOT -> canInsertCatalyst(stack);
+            case FUEL_SLOT -> canInsertFuel(stack);
+            default -> false;
+        };
+    }
+
     private final class WorkshopItemHandler implements IItemHandler {
         @Override
         public int getSlots() {
@@ -413,10 +487,10 @@ public final class WorkshopBlockEntity extends BlockEntity {
         @Override
         public ItemStack getStackInSlot(int slot) {
             return switch (slot) {
-                case 0 -> input.copy();
-                case 1 -> catalyst.copy();
-                case 2 -> fuel.copy();
-                case 3 -> output.copy();
+                case INPUT_SLOT -> input.copy();
+                case CATALYST_SLOT -> catalyst.copy();
+                case FUEL_SLOT -> fuel.copy();
+                case OUTPUT_SLOT -> output.copy();
                 default -> ItemStack.EMPTY;
             };
         }
@@ -438,15 +512,15 @@ public final class WorkshopBlockEntity extends BlockEntity {
                 ItemStack target = current.isEmpty()
                         ? stack.copyWithCount(accepted)
                         : current.copyWithCount(current.getCount() + accepted);
-                if (slot == 0) {
+                if (slot == INPUT_SLOT) {
                     input = target;
-                } else if (slot == 1) {
+                } else if (slot == CATALYST_SLOT) {
                     catalyst = target;
                 } else {
                     fuel = target;
                 }
 
-                if (slot != 2) {
+                if (slot != FUEL_SLOT) {
                     progress = 0;
                     running = false;
                 }
@@ -457,7 +531,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
 
         @Override
         public ItemStack extractItem(int slot, int amount, boolean simulate) {
-            if (slot != 3 || output.isEmpty() || amount <= 0) {
+            if (slot != OUTPUT_SLOT || output.isEmpty() || amount <= 0) {
                 return ItemStack.EMPTY;
             }
             int count = Math.min(amount, output.getCount());
@@ -479,12 +553,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
 
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
-            return switch (slot) {
-                case 0 -> validInput(stack);
-                case 1 -> validCatalyst(stack);
-                case 2 -> heated() && isFuel(stack);
-                default -> false;
-            };
+            return isSlotValid(slot, stack);
         }
     }
 }
