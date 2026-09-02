@@ -2,8 +2,10 @@ package com.nstut.firstworks;
 
 import com.nstut.firstworks.registry.ModItems;
 import com.nstut.firstworks.registry.ModTags;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -26,6 +28,11 @@ import java.util.Set;
 
 @EventBusSubscriber(modid = Firstworks.MOD_ID)
 public final class ToolBindingRecipes {
+    private static final TagKey<Item> WHEAT_DOUGHS = TagKey.create(
+            Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", "doughs/wheat"));
+    private static final TagKey<Item> WHEAT_FLOURS = TagKey.create(
+            Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", "flours/wheat"));
+
     @SubscribeEvent
     public static void bindVanillaTools(OnDatapackSyncEvent event) {
         boolean bindTools = FirstworksConfig.BIND_VANILLA_TOOL_RECIPES.getAsBoolean();
@@ -66,8 +73,10 @@ public final class ToolBindingRecipes {
                     shapedSimple(ModItems.RAW_HIDE.get(), Ingredient.of(Items.RABBIT_HIDE), "##", "##"));
         }
 
-        if (!grain) {
-            addGrainVanillaRoutes(replacements);
+        // Grain progression is applied at sync time rather than by shipping data/minecraft replacements.
+        // When disabled, Firstworks leaves the winning datapack recipes untouched, preserving modpack overrides.
+        if (grain) {
+            addGrainProgressionRoutes(replacements);
         }
 
         List<RecipeHolder<?>> rewritten = new ArrayList<>(manager.getRecipes().size());
@@ -131,19 +140,19 @@ public final class ToolBindingRecipes {
                 "mix_mortar", "mortar_bound_brick_block").contains(id.getPath());
     }
 
-    private static void addGrainVanillaRoutes(Map<ResourceLocation, Recipe<?>> replacements) {
-        replacements.put(vanilla("bread"), shapedVanilla(Items.BREAD, 1,
-                Map.of('#', Ingredient.of(Items.WHEAT)), "###"));
-        replacements.put(vanilla("cookie"), shapedVanilla(Items.COOKIE, 8,
-                Map.of('#', Ingredient.of(Items.WHEAT), 'X', Ingredient.of(Items.COCOA_BEANS)), "#X#"));
-        replacements.put(vanilla("cake"), shapedVanilla(Items.CAKE, 1,
+    private static void addGrainProgressionRoutes(Map<ResourceLocation, Recipe<?>> replacements) {
+        replacements.put(vanilla("bread"), shapedMisc(Items.BREAD, 1,
+                Map.of('#', Ingredient.of(WHEAT_DOUGHS)), "###"));
+        replacements.put(vanilla("cookie"), shapedMisc(Items.COOKIE, 8,
+                Map.of('#', Ingredient.of(WHEAT_DOUGHS), 'X', Ingredient.of(Items.COCOA_BEANS)), "#X#"));
+        replacements.put(vanilla("cake"), shapedMisc(Items.CAKE, 1,
                 Map.of('A', Ingredient.of(Items.MILK_BUCKET), 'B', Ingredient.of(Items.SUGAR),
-                        'C', Ingredient.of(Items.EGG), '#', Ingredient.of(Items.WHEAT)),
+                        'C', Ingredient.of(Items.EGG), '#', Ingredient.of(WHEAT_FLOURS)),
                 "AAA", "BCB", "###"));
     }
 
-    private static ShapedRecipe shapedVanilla(Item result, int count,
-                                               Map<Character, Ingredient> keys, String... pattern) {
+    private static ShapedRecipe shapedMisc(Item result, int count,
+                                           Map<Character, Ingredient> keys, String... pattern) {
         return new ShapedRecipe("", CraftingBookCategory.MISC,
                 ShapedRecipePattern.of(keys, pattern), new ItemStack(result, count));
     }
