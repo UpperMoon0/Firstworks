@@ -62,6 +62,11 @@ public final class ResinScarBlock extends Block {
         return level.getBlockState(pos.relative(state.getValue(FACING))).is(ModTags.RESIN_TREES);
     }
 
+    public static boolean hasLivingSupport(BlockState state, LevelReader level, BlockPos pos) {
+        BlockPos support = pos.relative(state.getValue(FACING));
+        return ResinTreeSupport.isLivingTree(level, support);
+    }
+
     @Override
     protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState,
                                      LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
@@ -73,7 +78,7 @@ public final class ResinScarBlock extends Block {
 
     @Override
     protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        if (!canSurvive(state, level, pos)) {
+        if (!canSurvive(state, level, pos) || !hasLivingSupport(state, level, pos)) {
             level.removeBlock(pos, false);
             return;
         }
@@ -90,6 +95,10 @@ public final class ResinScarBlock extends Block {
             return InteractionResult.PASS;
         }
         if (!level.isClientSide) {
+            if (!hasLivingSupport(state, level, pos)) {
+                level.removeBlock(pos, false);
+                return InteractionResult.SUCCESS;
+            }
             Block.popResource(level, pos, new ItemStack(ModItems.RESIN.get()));
             level.setBlock(pos, state.setValue(AGE, 0), Block.UPDATE_CLIENTS);
             level.playSound(null, pos, SoundEvents.HONEY_BLOCK_SLIDE, SoundSource.BLOCKS, 0.55F, 1.2F);
