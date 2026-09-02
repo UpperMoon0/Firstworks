@@ -2,7 +2,7 @@
   "type": "firstworks:workshop_processing",
   "station": "pottery_wheel",
   "ingredient": {"item": "firstworks:refractory_clay"},
-  "input_count": 2,
+  "input_count": 1,
   "result": {"id": "firstworks:unfired_tuyere"},
   "work": 6
 }

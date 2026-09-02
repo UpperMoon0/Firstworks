@@ -21,6 +21,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -131,6 +132,8 @@ public final class WorkshopBlockEntity extends BlockEntity {
         return stationRecipes().stream()
                 .filter(holder -> holder.value().ingredient().test(input) && input.getCount() >= holder.value().inputCount())
                 .filter(holder -> holder.value().catalystMatches(catalyst))
+                .sorted(Comparator.comparingInt((RecipeHolder<WorkshopRecipe> holder) -> holder.value().inputCount()).reversed()
+                        .thenComparing(holder -> holder.id().toString()))
                 .findFirst();
     }
 

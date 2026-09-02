@@ -41,6 +41,13 @@ public class StoneCopperProgressionRecipeTest {
     }
 
     @Test
+    public void potteryWheelFormsHaveDistinctInWorldBatchSelectors() throws Exception {
+        assertTrue(resource("data/firstworks/recipe/wheel_tuyere.json").contains("\"input_count\": 1"));
+        assertTrue(resource("data/firstworks/recipe/wheel_casting_mold.json").contains("\"input_count\": 2"));
+        assertTrue(resource("data/firstworks/recipe/wheel_crucible.json").contains("\"input_count\": 3"));
+    }
+
+    @Test
     public void stoneCompletionAndAdvancedCeramicsRemainReachable() throws Exception {
         assertTrue(resource("data/firstworks/tags/block/resin_trees.json").contains("minecraft:spruce_logs"));
         assertTrue(resource("data/firstworks/tags/item/strong_bindings.json").contains("firstworks:hafting_compound"));

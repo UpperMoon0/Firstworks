@@ -23,6 +23,10 @@ Fields:
 - `result`: result item stack.
 - `work`: manual strokes for manual stations or processing ticks for heated stations.
 
+When multiple recipes at one station match the loaded input and catalyst, Firstworks selects the recipe with the largest satisfied `input_count`; recipe id is the deterministic tie-breaker. Packmakers should give intentionally selectable forms distinct batch sizes or catalysts rather than relying on recipe-manager iteration order.
+
+The bundled Pottery Wheel uses the batch itself as an in-world selector: 1 Refractory Clay shapes a tuyère, 2 shapes a casting mold, and 3 shapes a crucible. Adding material resets manual progress, so the player can load the intended batch before beginning to shape it without a GUI.
+
 The Pottery Wheel advances with empty-hand interactions. The Stone Anvil advances when struck with an item in `firstworks:hammers`. The Kiln consumes coal/charcoal and advances over time. The Crucible Furnace consumes coal/charcoal but only advances while receiving Bellows air; use a Bellows adjacent to the furnace to stoke it.
 
 ## Default primitive-copper contract
