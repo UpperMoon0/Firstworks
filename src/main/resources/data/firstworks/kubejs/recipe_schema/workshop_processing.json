@@ -9,6 +9,6 @@
     {"name": "consume_catalyst", "role": "other", "type": "boolean", "function_names": ["consumeCatalyst"], "optional": false},
     {"name": "work", "role": "other", "type": {"type": "int", "min": 1}, "optional": 20}
   ],
-  "unique": ["station", "ingredient"],
+  "unique": ["station", "ingredient", "input_count", "catalyst", "catalyst_count", "result"],
   "constructors": [{"keys": ["result", "station", "ingredient"]}]
 }
