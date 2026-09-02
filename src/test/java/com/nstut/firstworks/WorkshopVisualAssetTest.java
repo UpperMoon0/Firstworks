@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** Guards the 0.0.14 workshop art pass against accidental placeholder regressions. */
 public class WorkshopVisualAssetTest {
     private static final Path ASSETS = Path.of("src/main/resources/assets/firstworks");
+    private static final Path JAVA = Path.of("src/main/java/com/nstut/firstworks");
 
     @Test
     public void workstationModelsAreNotPlaceholderCubes() throws Exception {
@@ -51,6 +52,33 @@ public class WorkshopVisualAssetTest {
             assertTrue(Files.exists(model), "Missing item model: " + name);
             String json = Files.readString(model);
             assertFalse(json.contains("minecraft:item/generated"), "Flat generated item model: " + name);
+        }
+    }
+
+    @Test
+    public void shapedWorkstationsUseGeometryMatchedCollision() throws Exception {
+        for (String path : List.of(
+                "content/BellowsBlock.java",
+                "content/workshop/PotteryWheelBlock.java",
+                "content/workshop/StoneAnvilBlock.java")) {
+            String src = Files.readString(JAVA.resolve(path));
+            assertTrue(src.contains("getCollisionShape"), "Missing custom collision shape: " + path);
+            assertTrue(src.contains("VoxelShape"), "Workstation collision must use explicit geometry: " + path);
+        }
+    }
+
+    @Test
+    public void resinScarShowsFacingAndGrowthStateInWorld() throws Exception {
+        String blockstate = Files.readString(ASSETS.resolve("blockstates/resin_scar.json"));
+        for (int age = 0; age <= 3; age++) {
+            for (String facing : List.of("north", "east", "south", "west")) {
+                assertTrue(blockstate.contains("age=" + age + ",facing=" + facing),
+                        "Missing resin scar state age=" + age + " facing=" + facing);
+            }
+        }
+        for (String model : List.of("resin_scar.json", "resin_scar_1.json", "resin_scar_2.json", "resin_scar_3.json")) {
+            assertTrue(Files.exists(ASSETS.resolve("models/block/" + model)),
+                    "Missing resin scar growth model: " + model);
         }
     }
 }

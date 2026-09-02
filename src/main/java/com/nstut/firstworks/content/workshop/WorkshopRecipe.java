@@ -15,6 +15,8 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
 
+import java.util.Set;
+
 public record WorkshopRecipe(String station, Ingredient ingredient, int inputCount, Ingredient catalyst,
                              int catalystCount, boolean consumeCatalyst, ItemStack result, int work)
         implements Recipe<SingleRecipeInput> {
@@ -22,22 +24,57 @@ public record WorkshopRecipe(String station, Ingredient ingredient, int inputCou
     public static final String KILN = "kiln";
     public static final String STONE_ANVIL = "stone_anvil";
     public static final String CRUCIBLE_FURNACE = "crucible_furnace";
+    private static final Set<String> VALID_STATIONS = Set.of(
+            POTTERY_WHEEL, KILN, STONE_ANVIL, CRUCIBLE_FURNACE);
 
-    @Override public boolean matches(SingleRecipeInput input, Level level) {
+    public WorkshopRecipe {
+        if (!VALID_STATIONS.contains(station)) {
+            throw new IllegalArgumentException("Unknown workshop station: " + station);
+        }
+    }
+
+    @Override
+    public boolean matches(SingleRecipeInput input, Level level) {
         return ingredient.test(input.item()) && input.item().getCount() >= inputCount;
     }
 
-    public boolean hasCatalyst() { return catalyst.getItems().length > 0; }
+    public boolean hasCatalyst() {
+        return catalyst.getItems().length > 0;
+    }
+
     public boolean catalystMatches(ItemStack stack) {
         return !hasCatalyst() || catalyst.test(stack) && stack.getCount() >= catalystCount;
     }
 
-    @Override public ItemStack assemble(SingleRecipeInput input, HolderLookup.Provider registries) { return result.copy(); }
-    @Override public boolean canCraftInDimensions(int width, int height) { return true; }
-    @Override public ItemStack getResultItem(HolderLookup.Provider registries) { return result; }
-    @Override public RecipeSerializer<?> getSerializer() { return ModRecipes.WORKSHOP_PROCESSING_SERIALIZER.get(); }
-    @Override public RecipeType<?> getType() { return ModRecipes.WORKSHOP_PROCESSING_TYPE.get(); }
-    @Override public boolean isSpecial() { return true; }
+    @Override
+    public ItemStack assemble(SingleRecipeInput input, HolderLookup.Provider registries) {
+        return result.copy();
+    }
+
+    @Override
+    public boolean canCraftInDimensions(int width, int height) {
+        return true;
+    }
+
+    @Override
+    public ItemStack getResultItem(HolderLookup.Provider registries) {
+        return result;
+    }
+
+    @Override
+    public RecipeSerializer<?> getSerializer() {
+        return ModRecipes.WORKSHOP_PROCESSING_SERIALIZER.get();
+    }
+
+    @Override
+    public RecipeType<?> getType() {
+        return ModRecipes.WORKSHOP_PROCESSING_TYPE.get();
+    }
+
+    @Override
+    public boolean isSpecial() {
+        return true;
+    }
 
     public static final class Serializer implements RecipeSerializer<WorkshopRecipe> {
         private static final MapCodec<WorkshopRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
@@ -66,7 +103,14 @@ public record WorkshopRecipe(String station, Ingredient ingredient, int inputCou
                         buffer.readVarInt(), Ingredient.CONTENTS_STREAM_CODEC.decode(buffer), buffer.readVarInt(),
                         buffer.readBoolean(), ItemStack.STREAM_CODEC.decode(buffer), buffer.readVarInt()));
 
-        @Override public MapCodec<WorkshopRecipe> codec() { return CODEC; }
-        @Override public StreamCodec<RegistryFriendlyByteBuf, WorkshopRecipe> streamCodec() { return STREAM_CODEC; }
+        @Override
+        public MapCodec<WorkshopRecipe> codec() {
+            return CODEC;
+        }
+
+        @Override
+        public StreamCodec<RegistryFriendlyByteBuf, WorkshopRecipe> streamCodec() {
+            return STREAM_CODEC;
+        }
     }
 }

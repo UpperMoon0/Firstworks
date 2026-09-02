@@ -1,1 +1,27 @@
-{"parent":"minecraft:block/block","textures":{"particle":"minecraft:block/honey_block","resin":"minecraft:block/honey_block"},"elements":[{"from":[6,5,6],"to":[10,11,10],"faces":{"down":{"texture":"#resin"},"up":{"texture":"#resin"},"north":{"texture":"#resin"},"south":{"texture":"#resin"},"west":{"texture":"#resin"},"east":{"texture":"#resin"}}}]}
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "minecraft:block/stripped_spruce_log",
+    "scar": "minecraft:block/stripped_spruce_log"
+  },
+  "elements": [
+    {
+      "from": [4, 3, 0],
+      "to": [12, 13, 0.75],
+      "faces": {
+        "up": {"texture": "#scar"}, "down": {"texture": "#scar"},
+        "north": {"texture": "#scar"}, "south": {"texture": "#scar"},
+        "west": {"texture": "#scar"}, "east": {"texture": "#scar"}
+      }
+    },
+    {
+      "from": [5.25, 5, 0.7],
+      "to": [10.75, 11.25, 1.0],
+      "faces": {
+        "up": {"texture": "#scar"}, "down": {"texture": "#scar"},
+        "north": {"texture": "#scar"}, "south": {"texture": "#scar"},
+        "west": {"texture": "#scar"}, "east": {"texture": "#scar"}
+      }
+    }
+  ]
+}

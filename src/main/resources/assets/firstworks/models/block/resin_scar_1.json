@@ -1,0 +1,18 @@
+{
+  "parent": "firstworks:block/resin_scar",
+  "textures": {"resin": "minecraft:block/honey_block"},
+  "elements": [
+    {
+      "from": [4, 3, 0], "to": [12, 13, 0.75],
+      "faces": {"up":{"texture":"#scar"},"down":{"texture":"#scar"},"north":{"texture":"#scar"},"south":{"texture":"#scar"},"west":{"texture":"#scar"},"east":{"texture":"#scar"}}
+    },
+    {
+      "from": [5.25, 5, 0.7], "to": [10.75, 11.25, 1.0],
+      "faces": {"up":{"texture":"#scar"},"down":{"texture":"#scar"},"north":{"texture":"#scar"},"south":{"texture":"#scar"},"west":{"texture":"#scar"},"east":{"texture":"#scar"}}
+    },
+    {
+      "from": [7, 7, 0.95], "to": [9, 10, 1.35],
+      "faces": {"up":{"texture":"#resin"},"down":{"texture":"#resin"},"north":{"texture":"#resin"},"south":{"texture":"#resin"},"west":{"texture":"#resin"},"east":{"texture":"#resin"}}
+    }
+  ]
+}

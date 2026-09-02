@@ -28,7 +28,12 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.EnumMap;
+import java.util.Map;
 
 /**
  * Common in-world interaction contract for the Stone/Copper workshop stations.
@@ -44,7 +49,9 @@ public abstract class WorkshopBlock extends BaseEntityBlock {
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
     }
 
-    public String station() { return station; }
+    public String station() {
+        return station;
+    }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
@@ -56,11 +63,19 @@ public abstract class WorkshopBlock extends BaseEntityBlock {
         return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 
-    @Override protected RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
-    @Override public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new WorkshopBlockEntity(pos, state); }
+    @Override
+    protected RenderShape getRenderShape(BlockState state) {
+        return RenderShape.MODEL;
+    }
 
     @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new WorkshopBlockEntity(pos, state);
+    }
+
+    @Override
+    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(
+            Level level, BlockState state, BlockEntityType<T> type) {
         return level.isClientSide
                 ? createTickerHelper(type, ModBlockEntities.WORKSHOP.get(), WorkshopBlockEntity::clientTick)
                 : createTickerHelper(type, ModBlockEntities.WORKSHOP.get(), WorkshopBlockEntity::serverTick);
@@ -68,7 +83,9 @@ public abstract class WorkshopBlock extends BaseEntityBlock {
 
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        if (!(level.getBlockEntity(pos) instanceof WorkshopBlockEntity workshop)) return;
+        if (!(level.getBlockEntity(pos) instanceof WorkshopBlockEntity workshop)) {
+            return;
+        }
         Direction facing = state.getValue(FACING);
         if (WorkshopRecipe.KILN.equals(station) && workshop.isRunning()) {
             if (random.nextInt(3) == 0) {
@@ -88,7 +105,8 @@ public abstract class WorkshopBlock extends BaseEntityBlock {
             if (random.nextInt(2) == 0) {
                 level.addParticle(ParticleTypes.SMALL_FLAME,
                         pos.getX() + 0.5, pos.getY() + 0.70, pos.getZ() + 0.5,
-                        (random.nextDouble() - 0.5) * 0.01, 0.012, (random.nextDouble() - 0.5) * 0.01);
+                        (random.nextDouble() - 0.5) * 0.01, 0.012,
+                        (random.nextDouble() - 0.5) * 0.01);
             }
             if (workshop.getStokeTicks() > 0 && random.nextInt(3) == 0) {
                 level.addParticle(ParticleTypes.LAVA,
@@ -106,35 +124,78 @@ public abstract class WorkshopBlock extends BaseEntityBlock {
         }
         if (station.equals(WorkshopRecipe.STONE_ANVIL) && stack.is(ModTags.HAMMERS)) {
             if (!level.isClientSide && workshop.work(player)) {
-                EquipmentSlot slot = hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
-                if (!player.hasInfiniteMaterials()) stack.hurtAndBreak(1, player, slot);
+                if (!player.hasInfiniteMaterials()) {
+                    stack.hurtAndBreak(1, player, slotFor(hand));
+                }
                 level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 0.65F, 1.35F);
             }
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
-        if (!workshop.canInsert(stack)) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-        if (!level.isClientSide) workshop.insert(stack, player.hasInfiniteMaterials());
+        if (!workshop.canInsert(stack)) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+        if (!level.isClientSide) {
+            workshop.insert(stack, player.hasInfiniteMaterials());
+        }
         return ItemInteractionResult.sidedSuccess(level.isClientSide);
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!(level.getBlockEntity(pos) instanceof WorkshopBlockEntity workshop)) return InteractionResult.PASS;
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
+                                               Player player, BlockHitResult hit) {
+        if (!(level.getBlockEntity(pos) instanceof WorkshopBlockEntity workshop)) {
+            return InteractionResult.PASS;
+        }
         if (!level.isClientSide) {
-            if (workshop.takeOutput(player)) return InteractionResult.SUCCESS;
-            if (player.isShiftKeyDown()) return workshop.takeStored(player) ? InteractionResult.SUCCESS : InteractionResult.PASS;
-            if (station.equals(WorkshopRecipe.POTTERY_WHEEL)) workshop.work(player);
+            if (workshop.takeOutput(player)) {
+                return InteractionResult.SUCCESS;
+            }
+            if (player.isShiftKeyDown()) {
+                return workshop.takeStored(player) ? InteractionResult.SUCCESS : InteractionResult.PASS;
+            }
+            if (station.equals(WorkshopRecipe.POTTERY_WHEEL)) {
+                workshop.work(player);
+            }
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState next, boolean moving) {
-        if (state.getBlock() != next.getBlock() && level.getBlockEntity(pos) instanceof WorkshopBlockEntity workshop) {
+        if (state.getBlock() != next.getBlock()
+                && level.getBlockEntity(pos) instanceof WorkshopBlockEntity workshop) {
             for (ItemStack stack : workshop.allStacks()) {
-                if (!stack.isEmpty()) Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);
+                if (!stack.isEmpty()) {
+                    Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);
+                }
             }
         }
         super.onRemove(state, level, pos, next, moving);
+    }
+
+    public static Map<Direction, VoxelShape> makeHorizontalShapes(VoxelShape northShape) {
+        Map<Direction, VoxelShape> shapes = new EnumMap<>(Direction.class);
+        shapes.put(Direction.NORTH, northShape);
+        shapes.put(Direction.EAST, rotate(northShape, 1));
+        shapes.put(Direction.SOUTH, rotate(northShape, 2));
+        shapes.put(Direction.WEST, rotate(northShape, 3));
+        return shapes;
+    }
+
+    private static VoxelShape rotate(VoxelShape original, int turns) {
+        VoxelShape shape = original;
+        for (int i = 0; i < turns; i++) {
+            VoxelShape[] rotated = {Shapes.empty()};
+            shape.forAllBoxes((minX, minY, minZ, maxX, maxY, maxZ) ->
+                    rotated[0] = Shapes.or(rotated[0], Shapes.box(
+                            1.0 - maxZ, minY, minX,
+                            1.0 - minZ, maxY, maxX)));
+            shape = rotated[0].optimize();
+        }
+        return shape;
+    }
+
+    private static EquipmentSlot slotFor(InteractionHand hand) {
+        return hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
     }
 }

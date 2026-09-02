@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PackmakerCustomizationTest {
     private static final Path CONFIG = Path.of("src/main/java/com/nstut/firstworks/FirstworksConfig.java");
@@ -23,7 +23,7 @@ public class PackmakerCustomizationTest {
     }
 
     @Test
-    public void grainOverridesRestoredToVanillaWhenDisabledViaDatapackSync() throws Exception {
+    public void grainOverridesRestoreExactVanillaRoutesWhenDisabled() throws Exception {
         String src = Files.readString(TOOL_BINDING);
         assertTrue(src.contains("OnDatapackSyncEvent"),
                 "grain recipe gating must reuse the datapack-sync rewrite pattern");
@@ -31,8 +31,10 @@ public class PackmakerCustomizationTest {
                 "the grain toggle must drive the rewrite");
         assertTrue(src.contains("addGrainVanillaRoutes"),
                 "disabling grain progression must swap the overrides back to vanilla routes");
-        assertTrue(src.contains("Items.BREAD") && src.contains("Items.WHEAT"),
-                "the restored vanilla route is Wheat → Bread (and Cookies/Cake)");
+        assertTrue(src.contains("shapedVanilla(Items.COOKIE, 8"),
+                "restored vanilla cookies must produce eight cookies");
+        assertTrue(src.contains("\"AAA\", \"BCB\", \"###\""),
+                "restored vanilla cake must consume three wheat across the bottom row");
     }
 
     @Test
@@ -55,6 +57,19 @@ public class PackmakerCustomizationTest {
         assertTrue(src.contains("Comparator.comparingInt") && src.contains("priority()"),
                 "overlapping quern matchers must resolve by priority");
         assertTrue(src.contains("thenComparing"),
-                "priority ties must break deterministically (by recipe id)");
+                "priority ties must break deterministically by recipe id");
+    }
+
+    @Test
+    public void quernVisualSpeedScalesWithoutFixedCatchUpBacklog() throws Exception {
+        String src = Files.readString(QUERN_BE);
+        assertTrue(src.contains("lastVisualWork"),
+                "quern animation must synchronize the latest applied work");
+        assertTrue(src.contains("rotationSteps += workAmount"),
+                "angular travel must remain proportional to work applied per crank");
+        assertTrue(src.contains("diff * 0.65D"),
+                "large rotation targets must accelerate catch-up instead of draining at a fixed rate");
+        assertTrue(src.contains("Mth.clamp(quern.lastVisualWork * 9.0D"),
+                "minimum visual speed must scale with applied work");
     }
 }
