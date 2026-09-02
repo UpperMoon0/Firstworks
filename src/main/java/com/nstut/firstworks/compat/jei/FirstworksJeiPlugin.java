@@ -144,9 +144,11 @@ public final class FirstworksJeiPlugin implements IModPlugin {
                 .filter(LoomBlock.class::isInstance)
                 .forEach(loom -> registration.addRecipeCatalyst(loom, LOOM_WEAVING));
         registration.addRecipeCatalyst(ModItems.HAND_SPINDLE.get(), SPINDLE_SPINNING);
+        registration.addRecipeCatalyst(ModItems.COPPER_HAND_SPINDLE.get(), SPINDLE_SPINNING);
         registration.addRecipeCatalyst(ModBlocks.BRICK_MOLD.get(), BRICK_MOLDING);
         registration.addRecipeCatalyst(ModBlocks.MORTAR_AND_PESTLE.get(), MORTAR_GRINDING);
         registration.addRecipeCatalyst(ModBlocks.QUERN.get(), QUERN_GRINDING);
+        registration.addRecipeCatalyst(ModBlocks.ROTARY_QUERN.get(), QUERN_GRINDING);
     }
 
     static List<ItemStack> fleeceVariants(Item item, int count) {
