@@ -1,5 +1,7 @@
 package com.nstut.firstworks.compat.jade;
 
+import com.nstut.firstworks.content.BellowsBlock;
+import com.nstut.firstworks.content.BellowsBlockEntity;
 import com.nstut.firstworks.content.barrel.BarrelBlock;
 import com.nstut.firstworks.content.barrel.BarrelBlockEntity;
 import com.nstut.firstworks.content.brick_mold.BrickMoldBlock;
@@ -11,6 +13,8 @@ import com.nstut.firstworks.content.mortar.MortarBlock;
 import com.nstut.firstworks.content.mortar.MortarBlockEntity;
 import com.nstut.firstworks.content.quern.QuernBlock;
 import com.nstut.firstworks.content.quern.QuernBlockEntity;
+import com.nstut.firstworks.content.workshop.WorkshopBlock;
+import com.nstut.firstworks.content.workshop.WorkshopBlockEntity;
 import net.minecraft.world.level.block.Block;
 import snownee.jade.api.IWailaClientRegistration;
 import snownee.jade.api.IWailaCommonRegistration;
@@ -27,6 +31,8 @@ public final class FirstworksJadePlugin implements IWailaPlugin {
         registration.registerBlockDataProvider(MortarProgressProvider.INSTANCE, MortarBlockEntity.class);
         registration.registerBlockDataProvider(CharcoalMoundProvider.INSTANCE, Block.class);
         registration.registerBlockDataProvider(QuernProgressProvider.INSTANCE, QuernBlockEntity.class);
+        registration.registerBlockDataProvider(WorkshopProgressProvider.INSTANCE, WorkshopBlockEntity.class);
+        registration.registerBlockDataProvider(BellowsAirProvider.INSTANCE, BellowsBlockEntity.class);
     }
 
     @Override
@@ -38,5 +44,7 @@ public final class FirstworksJadePlugin implements IWailaPlugin {
         registration.registerBlockComponent(CharcoalMoundProvider.INSTANCE, Block.class);
         registration.registerBlockComponent(CharcoalPileProvider.INSTANCE, CharcoalPileBlock.class);
         registration.registerBlockComponent(QuernProgressProvider.INSTANCE, QuernBlock.class);
+        registration.registerBlockComponent(WorkshopProgressProvider.INSTANCE, WorkshopBlock.class);
+        registration.registerBlockComponent(BellowsAirProvider.INSTANCE, BellowsBlock.class);
     }
 }

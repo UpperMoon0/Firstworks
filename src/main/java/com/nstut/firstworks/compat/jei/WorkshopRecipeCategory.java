@@ -36,8 +36,8 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
 
     @Override public RecipeType<WorkshopRecipe> getRecipeType() { return recipeType; }
     @Override public Component getTitle() { return stationName(station); }
-    @Override public int getWidth() { return 160; }
-    @Override public int getHeight() { return 76; }
+    @Override public int getWidth() { return 170; }
+    @Override public int getHeight() { return 104; }
     @Override public IDrawable getIcon() { return icon; }
 
     @Override
@@ -94,12 +94,32 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
         graphics.drawString(font,
                 Component.translatable("jei.firstworks.workshop.station", stationName(recipe.station())),
                 3, 55, 0xFF606060, false);
+        boolean heated = WorkshopRecipe.KILN.equals(recipe.station())
+                || WorkshopRecipe.CRUCIBLE_FURNACE.equals(recipe.station());
         graphics.drawString(font,
-                Component.translatable("jei.firstworks.workshop.work", recipe.work()),
+                Component.translatable(heated
+                                ? "jei.firstworks.workshop.processing_ticks"
+                                : "jei.firstworks.workshop.manual_actions",
+                        recipe.work()),
                 3, 67, 0xFF606060, false);
+
+        int detailsY = 79;
+        if (WorkshopRecipe.POTTERY_WHEEL.equals(recipe.station()) && recipe.inputCount() <= 3) {
+            graphics.drawString(font, Component.translatable("jei.firstworks.workshop.pottery_batch"),
+                    3, detailsY, 0xFF606060, false);
+            detailsY += 12;
+        }
         if (WorkshopRecipe.CRUCIBLE_FURNACE.equals(recipe.station())) {
             graphics.drawString(font, Component.translatable("jei.firstworks.workshop.air"),
-                    83, 67, 0xFF606060, false);
+                    3, detailsY, 0xFF606060, false);
+            detailsY += 12;
+        }
+        if (recipe.hasCatalyst()) {
+            graphics.drawString(font,
+                    Component.translatable(recipe.consumeCatalyst()
+                            ? "jei.firstworks.workshop.catalyst_consumed"
+                            : "jei.firstworks.workshop.catalyst_reusable"),
+                    3, detailsY, 0xFF606060, false);
         }
     }
 
