@@ -1,0 +1,11 @@
+{
+  "parent":"minecraft:block/block",
+  "textures":{"particle":"minecraft:block/terracotta","clay":"minecraft:block/terracotta","rim":"minecraft:block/black_terracotta"},
+  "elements":[
+    {"from":[4,1.5,4],"to":[12,3,12],"faces":{"down":{"texture":"#clay"},"up":{"texture":"#clay"},"north":{"texture":"#clay"},"south":{"texture":"#clay"},"west":{"texture":"#clay"},"east":{"texture":"#clay"}}},
+    {"from":[3.2,3,3.2],"to":[12.8,8.5,12.8],"faces":{"down":{"texture":"#clay"},"up":{"texture":"#clay"},"north":{"texture":"#clay"},"south":{"texture":"#clay"},"west":{"texture":"#clay"},"east":{"texture":"#clay"}}},
+    {"from":[4.5,6,4.5],"to":[11.5,9.2,11.5],"faces":{"down":{"texture":"#rim"},"up":{"texture":"#rim"},"north":{"texture":"#rim"},"south":{"texture":"#rim"},"west":{"texture":"#rim"},"east":{"texture":"#rim"}}},
+    {"from":[2.8,8.3,2.8],"to":[13.2,9.5,13.2],"faces":{"down":{"texture":"#clay"},"up":{"texture":"#clay"},"north":{"texture":"#clay"},"south":{"texture":"#clay"},"west":{"texture":"#clay"},"east":{"texture":"#clay"}}}
+  ],
+  "display":{"gui":{"rotation":[30,225,0],"scale":[0.9,0.9,0.9]},"ground":{"translation":[0,3,0],"scale":[0.35,0.35,0.35]},"fixed":{"scale":[0.6,0.6,0.6]}}
+}

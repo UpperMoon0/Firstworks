@@ -1,0 +1,8 @@
+{
+  "parent":"minecraft:block/block",
+  "textures":{"particle":"minecraft:block/brown_wool","leather":"minecraft:block/brown_wool"},
+  "elements":[
+    {"from":[2.7,3,3.6],"to":[13.3,6.9,12.4],"faces":{"down":{"texture":"#leather"},"up":{"texture":"#leather"},"north":{"texture":"#leather"},"south":{"texture":"#leather"},"west":{"texture":"#leather"},"east":{"texture":"#leather"}}},
+    {"from":[2.3,4.1,4.2],"to":[13.7,5,11.8],"faces":{"down":{"texture":"#leather"},"up":{"texture":"#leather"},"north":{"texture":"#leather"},"south":{"texture":"#leather"},"west":{"texture":"#leather"},"east":{"texture":"#leather"}}}
+  ]
+}

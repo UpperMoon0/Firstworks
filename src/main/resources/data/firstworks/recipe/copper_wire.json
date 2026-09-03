@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [{"item": "firstworks:worked_copper_billet"}],
+  "result": {"id": "firstworks:copper_wire", "count": 4}
+}

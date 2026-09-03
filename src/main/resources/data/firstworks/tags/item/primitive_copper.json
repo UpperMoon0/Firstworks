@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "firstworks:cast_copper_billet",
+    "firstworks:annealed_copper_billet",
+    "firstworks:worked_copper_billet",
+    "firstworks:copper_wire",
+    "firstworks:copper_fasteners",
+    "firstworks:copper_knife"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "parent":"minecraft:block/block",
+  "textures":{"particle":"minecraft:block/stone","stone":"minecraft:block/stone","smooth":"minecraft:block/smooth_stone","wood":"minecraft:block/oak_planks","log":"minecraft:block/stripped_oak_log","copper":"minecraft:block/cut_copper"},
+  "elements":[
+    {"from":[1,0,2],"to":[15,2,5],"faces":{"down":{"texture":"#wood"},"up":{"texture":"#wood"},"north":{"texture":"#wood"},"south":{"texture":"#wood"},"west":{"texture":"#wood"},"east":{"texture":"#wood"}}},
+    {"from":[1,0,11],"to":[15,2,14],"faces":{"down":{"texture":"#wood"},"up":{"texture":"#wood"},"north":{"texture":"#wood"},"south":{"texture":"#wood"},"west":{"texture":"#wood"},"east":{"texture":"#wood"}}},
+    {"from":[2.2,2,2.2],"to":[13.8,5.4,13.8],"faces":{"down":{"texture":"#stone"},"up":{"texture":"#stone"},"north":{"texture":"#stone"},"south":{"texture":"#stone"},"west":{"texture":"#stone"},"east":{"texture":"#stone"}}},
+    {"from":[4,2,1.4],"to":[12,5.4,14.6],"faces":{"down":{"texture":"#stone"},"up":{"texture":"#stone"},"north":{"texture":"#stone"},"south":{"texture":"#stone"},"west":{"texture":"#stone"},"east":{"texture":"#stone"}}},
+    {"from":[1.4,2,4],"to":[14.6,5.4,12],"faces":{"down":{"texture":"#stone"},"up":{"texture":"#stone"},"north":{"texture":"#stone"},"south":{"texture":"#stone"},"west":{"texture":"#stone"},"east":{"texture":"#stone"}}},
+    {"from":[7,5.4,7],"to":[9,9.5,9],"faces":{"down":{"texture":"#copper"},"up":{"texture":"#copper"},"north":{"texture":"#copper"},"south":{"texture":"#copper"},"west":{"texture":"#copper"},"east":{"texture":"#copper"}}},
+    {"from":[0.8,2.2,6.4],"to":[2.4,11.5,9.6],"faces":{"down":{"texture":"#log"},"up":{"texture":"#log"},"north":{"texture":"#log"},"south":{"texture":"#log"},"west":{"texture":"#log"},"east":{"texture":"#log"}}},
+    {"from":[0.4,10.2,5.4],"to":[4,12,10.6],"faces":{"down":{"texture":"#wood"},"up":{"texture":"#wood"},"north":{"texture":"#wood"},"south":{"texture":"#wood"},"west":{"texture":"#wood"},"east":{"texture":"#wood"}}},
+    {"from":[1.7,9.5,7.15],"to":[7.8,10.5,8.85],"faces":{"down":{"texture":"#copper"},"up":{"texture":"#copper"},"north":{"texture":"#copper"},"south":{"texture":"#copper"},"west":{"texture":"#copper"},"east":{"texture":"#copper"}}}
+  ],
+  "display":{"gui":{"rotation":[30,225,0],"scale":[0.65,0.65,0.65]},"ground":{"translation":[0,3,0],"scale":[0.3,0.3,0.3]},"fixed":{"scale":[0.5,0.5,0.5]}}
+}

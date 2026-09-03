@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [" S ", "SSS", " L "],
+  "key": {"S": {"tag": "minecraft:stone_crafting_materials"}, "L": {"tag": "minecraft:logs"}},
+  "result": {"id": "firstworks:pottery_wheel"}
+}

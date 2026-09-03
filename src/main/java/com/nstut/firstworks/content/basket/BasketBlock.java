@@ -17,13 +17,17 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
 /** A deliberately small, automation-friendly container for the Stone Age. */
 public final class BasketBlock extends BaseEntityBlock {
     public static final MapCodec<BasketBlock> CODEC = simpleCodec(BasketBlock::new);
-    private static final VoxelShape SHAPE = box(2, 0, 2, 14, 12, 14);
+    private static final VoxelShape SHAPE = Shapes.or(
+            box(4, 0, 4, 12, 3, 12),
+            box(2, 3, 2, 14, 7, 14),
+            box(1, 7, 1, 15, 10, 15));
 
     public BasketBlock(Properties properties) {
         super(properties);

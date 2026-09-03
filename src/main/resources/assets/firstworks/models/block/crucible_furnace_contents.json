@@ -1,0 +1,8 @@
+{
+  "parent":"minecraft:block/block",
+  "textures":{"particle":"minecraft:block/magma","hot":"minecraft:block/magma","copper":"minecraft:block/copper_block"},
+  "elements":[
+    {"from":[5.75,10.55,5.75],"to":[10.25,10.9,10.25],"faces":{"down":{"texture":"#hot"},"up":{"texture":"#hot"},"north":{"texture":"#hot"},"south":{"texture":"#hot"},"west":{"texture":"#hot"},"east":{"texture":"#hot"}}},
+    {"from":[6.4,10.88,6.4],"to":[9.6,11.03,9.6],"faces":{"down":{"texture":"#copper"},"up":{"texture":"#copper"},"north":{"texture":"#copper"},"south":{"texture":"#copper"},"west":{"texture":"#copper"},"east":{"texture":"#copper"}}}
+  ]
+}

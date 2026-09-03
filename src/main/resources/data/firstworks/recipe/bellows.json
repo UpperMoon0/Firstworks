@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["PHP", "BBB", "PHP"],
+  "key": {
+    "P": {"tag": "minecraft:planks"},
+    "H": {"item": "firstworks:heavy_leather"},
+    "B": {"tag": "firstworks:strong_bindings"}
+  },
+  "result": {"id": "firstworks:bellows"}
+}

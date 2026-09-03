@@ -1,0 +1,7 @@
+{
+  "type": "firstworks:workshop_processing",
+  "station": "stone_anvil",
+  "ingredient": {"item": "firstworks:annealed_copper_billet"},
+  "result": {"id": "firstworks:worked_copper_billet"},
+  "work": 8
+}

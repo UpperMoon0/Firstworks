@@ -2,23 +2,135 @@
   "parent": "minecraft:block/block",
   "textures": {
     "particle": "minecraft:block/bamboo_planks",
-    "basket": "minecraft:block/stripped_bamboo_block"
+    "weave": "minecraft:block/bamboo_mosaic",
+    "frame": "minecraft:block/bamboo_planks",
+    "base": "minecraft:block/stripped_bamboo_block"
   },
   "elements": [
-    { "from": [2,0,2], "to": [14,2,14], "faces": {
-      "down":{"texture":"#basket"}, "up":{"texture":"#basket"}, "north":{"texture":"#basket"},
-      "south":{"texture":"#basket"}, "west":{"texture":"#basket"}, "east":{"texture":"#basket"} } },
-    { "from": [2,2,2], "to": [4,12,14], "faces": {
-      "down":{"texture":"#basket"}, "up":{"texture":"#basket"}, "north":{"texture":"#basket"},
-      "south":{"texture":"#basket"}, "west":{"texture":"#basket"}, "east":{"texture":"#basket"} } },
-    { "from": [12,2,2], "to": [14,12,14], "faces": {
-      "down":{"texture":"#basket"}, "up":{"texture":"#basket"}, "north":{"texture":"#basket"},
-      "south":{"texture":"#basket"}, "west":{"texture":"#basket"}, "east":{"texture":"#basket"} } },
-    { "from": [4,2,2], "to": [12,12,4], "faces": {
-      "down":{"texture":"#basket"}, "up":{"texture":"#basket"}, "north":{"texture":"#basket"},
-      "south":{"texture":"#basket"}, "west":{"texture":"#basket"}, "east":{"texture":"#basket"} } },
-    { "from": [4,2,12], "to": [12,12,14], "faces": {
-      "down":{"texture":"#basket"}, "up":{"texture":"#basket"}, "north":{"texture":"#basket"},
-      "south":{"texture":"#basket"}, "west":{"texture":"#basket"}, "east":{"texture":"#basket"} } }
+    {
+      "comment": "Narrow woven basket base",
+      "from": [4.25, 0, 4.25],
+      "to": [11.75, 2, 11.75],
+      "faces": {
+        "down": { "texture": "#base" },
+        "up": { "texture": "#base" },
+        "north": { "texture": "#base" },
+        "south": { "texture": "#base" },
+        "west": { "texture": "#base" },
+        "east": { "texture": "#base" }
+      }
+    },
+    {
+      "comment": "Flared north woven wall",
+      "from": [3, 2, 1.5],
+      "to": [13, 9, 2.5],
+      "neoforge_data": { "calculate_normals": true },
+      "rotation": { "angle": -22.5, "axis": "x", "origin": [8, 9, 2.5] },
+      "faces": {
+        "down": { "texture": "#weave" },
+        "up": { "texture": "#weave" },
+        "north": { "texture": "#weave" },
+        "south": { "texture": "#weave" },
+        "west": { "texture": "#weave" },
+        "east": { "texture": "#weave" }
+      }
+    },
+    {
+      "comment": "Flared south woven wall",
+      "from": [3, 2, 13.5],
+      "to": [13, 9, 14.5],
+      "neoforge_data": { "calculate_normals": true },
+      "rotation": { "angle": 22.5, "axis": "x", "origin": [8, 9, 13.5] },
+      "faces": {
+        "down": { "texture": "#weave" },
+        "up": { "texture": "#weave" },
+        "north": { "texture": "#weave" },
+        "south": { "texture": "#weave" },
+        "west": { "texture": "#weave" },
+        "east": { "texture": "#weave" }
+      }
+    },
+    {
+      "comment": "Flared west woven wall",
+      "from": [1.5, 2, 3],
+      "to": [2.5, 9, 13],
+      "neoforge_data": { "calculate_normals": true },
+      "rotation": { "angle": 22.5, "axis": "z", "origin": [2.5, 9, 8] },
+      "faces": {
+        "down": { "texture": "#weave" },
+        "up": { "texture": "#weave" },
+        "north": { "texture": "#weave" },
+        "south": { "texture": "#weave" },
+        "west": { "texture": "#weave" },
+        "east": { "texture": "#weave" }
+      }
+    },
+    {
+      "comment": "Flared east woven wall",
+      "from": [13.5, 2, 3],
+      "to": [14.5, 9, 13],
+      "neoforge_data": { "calculate_normals": true },
+      "rotation": { "angle": -22.5, "axis": "z", "origin": [13.5, 9, 8] },
+      "faces": {
+        "down": { "texture": "#weave" },
+        "up": { "texture": "#weave" },
+        "north": { "texture": "#weave" },
+        "south": { "texture": "#weave" },
+        "west": { "texture": "#weave" },
+        "east": { "texture": "#weave" }
+      }
+    },
+    {
+      "comment": "North structural rim",
+      "from": [1, 8.5, 0.75],
+      "to": [15, 10, 2.25],
+      "faces": {
+        "down": { "texture": "#frame" },
+        "up": { "texture": "#frame" },
+        "north": { "texture": "#frame" },
+        "south": { "texture": "#frame" },
+        "west": { "texture": "#frame" },
+        "east": { "texture": "#frame" }
+      }
+    },
+    {
+      "comment": "South structural rim",
+      "from": [1, 8.5, 13.75],
+      "to": [15, 10, 15.25],
+      "faces": {
+        "down": { "texture": "#frame" },
+        "up": { "texture": "#frame" },
+        "north": { "texture": "#frame" },
+        "south": { "texture": "#frame" },
+        "west": { "texture": "#frame" },
+        "east": { "texture": "#frame" }
+      }
+    },
+    {
+      "comment": "West structural rim",
+      "from": [0.75, 8.5, 2.25],
+      "to": [2.25, 10, 13.75],
+      "faces": {
+        "down": { "texture": "#frame" },
+        "up": { "texture": "#frame" },
+        "north": { "texture": "#frame" },
+        "south": { "texture": "#frame" },
+        "west": { "texture": "#frame" },
+        "east": { "texture": "#frame" }
+      }
+    },
+    {
+      "comment": "East structural rim",
+      "from": [13.75, 8.5, 2.25],
+      "to": [15.25, 10, 13.75],
+      "faces": {
+        "down": { "texture": "#frame" },
+        "up": { "texture": "#frame" },
+        "north": { "texture": "#frame" },
+        "south": { "texture": "#frame" },
+        "west": { "texture": "#frame" },
+        "east": { "texture": "#frame" }
+      }
+    }
   ]
 }

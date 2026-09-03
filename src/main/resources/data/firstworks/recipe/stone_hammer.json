@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "tools",
+  "pattern": ["SS", "BS"],
+  "key": {"S": {"tag": "minecraft:stone_crafting_materials"}, "B": {"tag": "firstworks:strong_bindings"}},
+  "result": {"id": "firstworks:stone_hammer"}
+}

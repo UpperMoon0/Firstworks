@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": ["PP", "PP"],
+  "key": {"P": {"item": "firstworks:plaster"}},
+  "result": {"id": "firstworks:plaster_block"}
+}

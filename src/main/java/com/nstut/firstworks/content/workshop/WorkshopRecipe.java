@@ -1,0 +1,157 @@
+package com.nstut.firstworks.content.workshop;
+
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.nstut.firstworks.registry.ModRecipes;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.Level;
+
+import java.util.Optional;
+import java.util.Set;
+
+public record WorkshopRecipe(String station, Ingredient ingredient, int inputCount, Optional<Ingredient> catalyst,
+                             int catalystCount, boolean consumeCatalyst, ItemStack result, int work)
+        implements Recipe<WorkshopRecipeInput> {
+    public static final String POTTERY_WHEEL = "pottery_wheel";
+    public static final String KILN = "kiln";
+    public static final String STONE_ANVIL = "stone_anvil";
+    public static final String CRUCIBLE_FURNACE = "crucible_furnace";
+    private static final Set<String> VALID_STATIONS = Set.of(
+            POTTERY_WHEEL, KILN, STONE_ANVIL, CRUCIBLE_FURNACE);
+
+    public WorkshopRecipe {
+        if (!VALID_STATIONS.contains(station)) {
+            throw new IllegalArgumentException("Unknown workshop station: " + station);
+        }
+        if (ingredient == null) {
+            throw new IllegalArgumentException("Workshop ingredient must not be null");
+        }
+        if (catalyst == null) {
+            throw new IllegalArgumentException("Workshop catalyst optional must not be null");
+        }
+        if (inputCount < 1 || inputCount > 64) {
+            throw new IllegalArgumentException("Workshop input_count must be in range 1..64");
+        }
+        if (catalystCount < 1 || catalystCount > 64) {
+            throw new IllegalArgumentException("Workshop catalyst_count must be in range 1..64");
+        }
+        if (work < 1 || work > 72000) {
+            throw new IllegalArgumentException("Workshop work must be in range 1..72000");
+        }
+        if (result == null || result.isEmpty()) {
+            throw new IllegalArgumentException("Workshop result must not be empty");
+        }
+        if (catalyst.isEmpty() && consumeCatalyst) {
+            throw new IllegalArgumentException("consume_catalyst requires a catalyst");
+        }
+        if (catalyst.isEmpty() && catalystCount != 1) {
+            throw new IllegalArgumentException("catalyst_count requires a catalyst");
+        }
+    }
+
+    @Override
+    public boolean matches(WorkshopRecipeInput input, Level level) {
+        return station.equals(input.station())
+                && ingredient.test(input.input())
+                && input.input().getCount() >= inputCount
+                && catalystMatches(input.catalyst());
+    }
+
+    public boolean hasCatalyst() {
+        return catalyst.isPresent();
+    }
+
+    public boolean catalystIngredientMatches(ItemStack stack) {
+        return catalyst.map(ingredient -> ingredient.test(stack)).orElse(false);
+    }
+
+    public boolean catalystMatches(ItemStack stack) {
+        return catalyst.map(ingredient -> ingredient.test(stack) && stack.getCount() >= catalystCount)
+                .orElse(true);
+    }
+
+    @Override
+    public ItemStack assemble(WorkshopRecipeInput input, HolderLookup.Provider registries) {
+        return result.copy();
+    }
+
+    @Override
+    public boolean canCraftInDimensions(int width, int height) {
+        return true;
+    }
+
+    @Override
+    public ItemStack getResultItem(HolderLookup.Provider registries) {
+        return result;
+    }
+
+    @Override
+    public RecipeSerializer<?> getSerializer() {
+        return ModRecipes.WORKSHOP_PROCESSING_SERIALIZER.get();
+    }
+
+    @Override
+    public RecipeType<?> getType() {
+        return ModRecipes.WORKSHOP_PROCESSING_TYPE.get();
+    }
+
+    @Override
+    public boolean isSpecial() {
+        return true;
+    }
+
+    public static final class Serializer implements RecipeSerializer<WorkshopRecipe> {
+        private static final MapCodec<WorkshopRecipe> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                Codec.STRING.fieldOf("station").forGetter(WorkshopRecipe::station),
+                Ingredient.CODEC.fieldOf("ingredient").forGetter(WorkshopRecipe::ingredient),
+                Codec.intRange(1, 64).optionalFieldOf("input_count", 1).forGetter(WorkshopRecipe::inputCount),
+                Ingredient.CODEC.optionalFieldOf("catalyst").forGetter(WorkshopRecipe::catalyst),
+                Codec.intRange(1, 64).optionalFieldOf("catalyst_count", 1).forGetter(WorkshopRecipe::catalystCount),
+                Codec.BOOL.optionalFieldOf("consume_catalyst", false).forGetter(WorkshopRecipe::consumeCatalyst),
+                ItemStack.CODEC.fieldOf("result").forGetter(WorkshopRecipe::result),
+                Codec.intRange(1, 72000).optionalFieldOf("work", 20).forGetter(WorkshopRecipe::work)
+        ).apply(instance, WorkshopRecipe::new));
+
+        private static final StreamCodec<RegistryFriendlyByteBuf, WorkshopRecipe> STREAM_CODEC = StreamCodec.of(
+                (buffer, recipe) -> {
+                    buffer.writeUtf(recipe.station);
+                    Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, recipe.ingredient);
+                    buffer.writeVarInt(recipe.inputCount);
+                    buffer.writeBoolean(recipe.catalyst.isPresent());
+                    recipe.catalyst.ifPresent(ingredient -> Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, ingredient));
+                    buffer.writeVarInt(recipe.catalystCount);
+                    buffer.writeBoolean(recipe.consumeCatalyst);
+                    ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
+                    buffer.writeVarInt(recipe.work);
+                },
+                buffer -> new WorkshopRecipe(
+                        buffer.readUtf(),
+                        Ingredient.CONTENTS_STREAM_CODEC.decode(buffer),
+                        buffer.readVarInt(),
+                        buffer.readBoolean()
+                                ? Optional.of(Ingredient.CONTENTS_STREAM_CODEC.decode(buffer))
+                                : Optional.empty(),
+                        buffer.readVarInt(),
+                        buffer.readBoolean(),
+                        ItemStack.STREAM_CODEC.decode(buffer),
+                        buffer.readVarInt()));
+
+        @Override
+        public MapCodec<WorkshopRecipe> codec() {
+            return CODEC;
+        }
+
+        @Override
+        public StreamCodec<RegistryFriendlyByteBuf, WorkshopRecipe> streamCodec() {
+            return STREAM_CODEC;
+        }
+    }
+}

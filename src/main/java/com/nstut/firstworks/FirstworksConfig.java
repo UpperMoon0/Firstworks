@@ -42,6 +42,14 @@ public final class FirstworksConfig {
                     "Changing this option requires a datapack reload or game restart.")
             .define("enableMasonryProgression", true);
 
+    public static final ModConfigSpec.BooleanValue ENABLE_GRAIN_PROGRESSION = BUILDER
+            .comment("Route wheat through the Firstworks flour/dough pipeline: override the winning Bread, Cookie, and Cake recipes",
+                    "so they require #c:doughs/wheat / #c:flours/wheat instead of raw wheat.",
+                    "Disable this to stop Firstworks from rewriting those recipe ids; vanilla or another datapack/mod may then supply them.",
+                    "The Quern, Flour, and Dough items remain available either way.",
+                    "Changing this option requires a datapack reload or game restart.")
+            .define("enableGrainProgression", true);
+
     public static final ModConfigSpec.BooleanValue RAIN_FILLS_BARRELS = BUILDER
             .comment("Allow rain to naturally fill open Barrels whose input store holds no fluid or only water.",
                     "Enabled by default; disable to keep open Barrels dry unless filled manually.",

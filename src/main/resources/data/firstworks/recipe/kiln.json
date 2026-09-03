@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["BBB", "B B", "BMB"],
+  "key": {"B": {"item": "minecraft:brick"}, "M": {"item": "firstworks:mortar"}},
+  "result": {"id": "firstworks:kiln"}
+}

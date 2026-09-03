@@ -1,0 +1,9 @@
+{
+  "parent":"minecraft:block/block",
+  "textures":{"particle":"minecraft:block/clay","clay":"minecraft:block/clay","grog":"minecraft:block/dripstone_block"},
+  "elements":[
+    {"from":[2,4,4],"to":[14,10,12],"faces":{"down":{"texture":"#clay"},"up":{"texture":"#clay"},"north":{"texture":"#clay"},"south":{"texture":"#clay"},"west":{"texture":"#clay"},"east":{"texture":"#clay"}}},
+    {"from":[2,9.5,4],"to":[14,10.4,12],"faces":{"down":{"texture":"#grog"},"up":{"texture":"#grog"},"north":{"texture":"#grog"},"south":{"texture":"#grog"},"west":{"texture":"#grog"},"east":{"texture":"#grog"}}}
+  ],
+  "display":{"gui":{"rotation":[30,225,0],"scale":[0.9,0.9,0.9]},"ground":{"translation":[0,3,0],"scale":[0.35,0.35,0.35]},"fixed":{"scale":[0.6,0.6,0.6]}}
+}

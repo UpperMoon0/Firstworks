@@ -1,0 +1,7 @@
+{
+  "type": "firstworks:workshop_processing",
+  "station": "kiln",
+  "ingredient": {"item": "minecraft:calcite"},
+  "result": {"id": "firstworks:lime", "count": 2},
+  "work": 180
+}

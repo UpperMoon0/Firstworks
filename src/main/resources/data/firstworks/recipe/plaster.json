@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {"item": "firstworks:lime"},
+    {"item": "minecraft:sand"},
+    {"item": "firstworks:water_clay_bucket"}
+  ],
+  "result": {"id": "firstworks:plaster", "count": 4}
+}

@@ -1,0 +1,10 @@
+{
+  "type": "firstworks:barrel_processing",
+  "ingredient": {"item": "minecraft:leather"},
+  "input_count": 2,
+  "fluid": "firstworks:tannin_solution",
+  "fluid_amount": 500,
+  "result": {"id": "firstworks:heavy_leather"},
+  "duration": 12000,
+  "sealed": true
+}

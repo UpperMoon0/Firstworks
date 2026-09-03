@@ -2,20 +2,30 @@ package com.nstut.firstworks.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
+import com.nstut.firstworks.Firstworks;
 import com.nstut.firstworks.content.loom.LoomBlock;
 import com.nstut.firstworks.content.loom.LoomBlockEntity;
+import com.nstut.firstworks.registry.ModBlocks;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.client.model.data.ModelData;
 import org.joml.Matrix4f;
 
 public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBlockEntity> {
+    public static final ModelResourceLocation COPPER_BEATER_MODEL = ModelResourceLocation.standalone(Firstworks.id("block/copper_loom_beater"));
     private final ItemRenderer itemRenderer;
 
     public LoomBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
@@ -27,7 +37,7 @@ public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBl
             MultiBufferSource buffers, int packedLight, int packedOverlay) {
         poseStack.pushPose();
         poseStack.translate(0.5, 0, 0.5);
-        poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(
+        poseStack.mulPose(Axis.YP.rotationDegrees(
                 loom.getBlockState().getValue(LoomBlock.FACING).toYRot() + 180.0F));
         poseStack.translate(-0.5, 0, -0.5);
 
@@ -40,12 +50,14 @@ public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBl
             renderWovenThreads(loom, visibleOutput, poseStack, buffers, packedLight, packedOverlay);
         }
         renderShuttle(loom, visibleOutput, partialTick, poseStack, buffers, packedLight, packedOverlay);
+        if (loom.getBlockState().is(ModBlocks.COPPER_LOOM.get())) {
+            renderCopperBeater(loom, partialTick, poseStack, buffers, packedLight);
+        }
         poseStack.popPose();
     }
 
     private void renderWarpThreads(LoomBlockEntity loom, ItemStack output, PoseStack poseStack,
-            MultiBufferSource buffers,
-            int packedLight, int packedOverlay) {
+            MultiBufferSource buffers, int packedLight, int packedOverlay) {
         TextureAtlasSprite sprite = itemRenderer.getModel(output, null, null, 0).getParticleIcon();
         int tint = outputTint(output);
         VertexConsumer vertices = buffers.getBuffer(Sheets.cutoutBlockSheet());
@@ -75,7 +87,7 @@ public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBl
 
     private void renderWovenThreads(LoomBlockEntity loom, ItemStack output, PoseStack poseStack,
             MultiBufferSource buffers, int packedLight, int packedOverlay) {
-        int required = loom.getMatchingRecipe().map(holder -> Math.max(1, holder.value().strokes())).orElse(1);
+        int required = loom.getRequiredStrokes();
         float fraction = loom.getOutput().isEmpty() ? (float) loom.getProgress() / required : 1.0F;
         if (fraction <= 0.0F) return;
 
@@ -195,5 +207,23 @@ public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBl
         vertex(vertices,matrix,x2,y2,z2,u1,v0,color,light,overlay,nx,ny,nz);
         vertex(vertices,matrix,x3,y3,z3,u1,v1,color,light,overlay,nx,ny,nz);
         vertex(vertices,matrix,x4,y4,z4,u0,v1,color,light,overlay,nx,ny,nz);
+    }
+
+    private static void renderCopperBeater(LoomBlockEntity loom, float partialTick, PoseStack pose,
+                                           MultiBufferSource buffers, int light) {
+        Minecraft minecraft = Minecraft.getInstance();
+        BakedModel model = minecraft.getModelManager().getModel(COPPER_BEATER_MODEL);
+        if (model == minecraft.getModelManager().getMissingModel()) return;
+        float stroke = loom.getStrokeAnimation(partialTick);
+        pose.pushPose();
+        pose.translate(0.5, 0.68, 0.46);
+        pose.mulPose(Axis.XP.rotationDegrees(-17.0F * stroke));
+        pose.translate(-0.5, -0.68, -0.46);
+        BlockState state = loom.getBlockState();
+        minecraft.getBlockRenderer().getModelRenderer().renderModel(
+                pose.last(), buffers.getBuffer(ItemBlockRenderTypes.getRenderType(state, false)),
+                state, model, 1.0F, 1.0F, 1.0F, light, OverlayTexture.NO_OVERLAY,
+                ModelData.EMPTY, null);
+        pose.popPose();
     }
 }

@@ -1,6 +1,7 @@
 package com.nstut.firstworks.registry;
 
 import com.nstut.firstworks.Firstworks;
+import com.nstut.firstworks.content.BellowsBlockEntity;
 import com.nstut.firstworks.content.barrel.BarrelBlockEntity;
 import com.nstut.firstworks.content.barrel.BarrelBlock;
 import com.nstut.firstworks.content.brick_mold.BrickMoldBlockEntity;
@@ -9,6 +10,7 @@ import com.nstut.firstworks.content.loom.LoomBlockEntity;
 import com.nstut.firstworks.content.loom.LoomBlock;
 import com.nstut.firstworks.content.mortar.MortarBlockEntity;
 import com.nstut.firstworks.content.quern.QuernBlockEntity;
+import com.nstut.firstworks.content.workshop.WorkshopBlockEntity;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -20,28 +22,16 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> TYPES = DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, Firstworks.MOD_ID);
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BarrelBlockEntity>> BARREL = TYPES.register(
-            "barrel", () -> BlockEntityType.Builder.of(BarrelBlockEntity::new,
-                    BuiltInRegistries.BLOCK.stream().filter(BarrelBlock.class::isInstance).toArray(Block[]::new)).build(null));
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LoomBlockEntity>> LOOM = TYPES.register(
-            "loom", () -> BlockEntityType.Builder.of(LoomBlockEntity::new,
-                    BuiltInRegistries.BLOCK.stream().filter(LoomBlock.class::isInstance).toArray(Block[]::new)).build(null));
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BrickMoldBlockEntity>> BRICK_MOLD = TYPES.register(
-            "brick_mold", () -> BlockEntityType.Builder.of(BrickMoldBlockEntity::new, ModBlocks.BRICK_MOLD.get()).build(null));
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BasketBlockEntity>> BASKET = TYPES.register(
-            "basket", () -> BlockEntityType.Builder.of(BasketBlockEntity::new, ModBlocks.BASKET.get()).build(null));
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MortarBlockEntity>> MORTAR = TYPES.register(
-            "mortar_and_pestle", () -> BlockEntityType.Builder.of(MortarBlockEntity::new,
-                    ModBlocks.MORTAR_AND_PESTLE.get()).build(null));
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<QuernBlockEntity>> QUERN = TYPES.register(
-            "quern", () -> BlockEntityType.Builder.of(QuernBlockEntity::new,
-                    ModBlocks.QUERN.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BarrelBlockEntity>> BARREL = TYPES.register("barrel", () -> BlockEntityType.Builder.of(BarrelBlockEntity::new, BuiltInRegistries.BLOCK.stream().filter(BarrelBlock.class::isInstance).toArray(Block[]::new)).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LoomBlockEntity>> LOOM = TYPES.register("loom", () -> BlockEntityType.Builder.of(LoomBlockEntity::new, BuiltInRegistries.BLOCK.stream().filter(LoomBlock.class::isInstance).toArray(Block[]::new)).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BrickMoldBlockEntity>> BRICK_MOLD = TYPES.register("brick_mold", () -> BlockEntityType.Builder.of(BrickMoldBlockEntity::new, ModBlocks.BRICK_MOLD.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BasketBlockEntity>> BASKET = TYPES.register("basket", () -> BlockEntityType.Builder.of(BasketBlockEntity::new, ModBlocks.BASKET.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MortarBlockEntity>> MORTAR = TYPES.register("mortar_and_pestle", () -> BlockEntityType.Builder.of(MortarBlockEntity::new, ModBlocks.MORTAR_AND_PESTLE.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<QuernBlockEntity>> QUERN = TYPES.register("quern", () -> BlockEntityType.Builder.of(QuernBlockEntity::new, ModBlocks.QUERN.get(), ModBlocks.ROTARY_QUERN.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WorkshopBlockEntity>> WORKSHOP = TYPES.register("workshop", () -> BlockEntityType.Builder.of(WorkshopBlockEntity::new, ModBlocks.POTTERY_WHEEL.get(), ModBlocks.KILN.get(), ModBlocks.STONE_ANVIL.get(), ModBlocks.CRUCIBLE_FURNACE.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BellowsBlockEntity>> BELLOWS = TYPES.register("bellows", () -> BlockEntityType.Builder.of(BellowsBlockEntity::new, ModBlocks.BELLOWS.get()).build(null));
 
-    public static void register(IEventBus bus) {
-        TYPES.register(bus);
-        bus.addListener(ModBlockEntities::registerCapabilities);
-    }
-
+    public static void register(IEventBus bus) { TYPES.register(bus); bus.addListener(ModBlockEntities::registerCapabilities); }
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, BARREL.get(), (barrel, side) -> barrel.getFluidHandler(side));
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BARREL.get(), (barrel, side) -> barrel.getItemHandler(side));
@@ -50,7 +40,7 @@ public final class ModBlockEntities {
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BASKET.get(), (basket, side) -> basket.getItemHandler());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, MORTAR.get(), (mortar, side) -> mortar.getItemHandler(side));
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, QUERN.get(), (quern, side) -> quern.getItemHandler(side));
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, WORKSHOP.get(), (workshop, side) -> workshop.getItemHandler(side));
     }
-
     private ModBlockEntities() {}
 }
