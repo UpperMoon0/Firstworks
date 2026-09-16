@@ -58,12 +58,12 @@ public class PackmakerCustomizationTest {
     }
 
     @Test
-    public void copperMachineUpgradesAreRegisteredAsJeiCatalysts() throws Exception {
+    public void retainedManualMachinesAreRegisteredAsJeiCatalysts() throws Exception {
         String src = Files.readString(JEI_PLUGIN);
-        assertTrue(src.contains("ModItems.COPPER_HAND_SPINDLE.get(), SPINDLE_SPINNING"),
-                "Copper Hand Spindle must expose spinning recipes in JEI");
-        assertTrue(src.contains("ModBlocks.ROTARY_QUERN.get(), QUERN_GRINDING"),
-                "Rotary Quern must expose quern recipes in JEI");
+        assertTrue(src.contains("ModItems.HAND_SPINDLE.get(), SPINDLE_SPINNING"),
+                "Hand Spindle must expose spinning recipes in JEI");
+        assertTrue(src.contains("ModBlocks.QUERN.get(), QUERN_GRINDING"),
+                "Quern must expose quern recipes in JEI");
     }
 
     @Test

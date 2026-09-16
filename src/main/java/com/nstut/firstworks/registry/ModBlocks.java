@@ -95,12 +95,6 @@ public final class ModBlocks {
     public static final DeferredHolder<Block, CrucibleFurnaceBlock> CRUCIBLE_FURNACE = BLOCKS.register(
             "crucible_furnace",
             () -> new CrucibleFurnaceBlock(Block.Properties.ofFullCopy(Blocks.BRICKS).noOcclusion()));
-    public static final DeferredHolder<Block, LoomBlock> COPPER_LOOM = BLOCKS.register(
-            "copper_loom",
-            () -> new LoomBlock(Block.Properties.ofFullCopy(Blocks.LOOM).noOcclusion()));
-    public static final DeferredHolder<Block, QuernBlock> ROTARY_QUERN = BLOCKS.register(
-            "rotary_quern",
-            () -> new QuernBlock(Block.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
     public static final DeferredHolder<Block, Block> PLASTER_BLOCK = BLOCKS.register(
             "plaster_block",
             () -> new Block(Block.Properties.ofFullCopy(Blocks.CALCITE)));

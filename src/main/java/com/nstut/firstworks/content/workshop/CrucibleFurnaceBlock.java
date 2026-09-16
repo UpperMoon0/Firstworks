@@ -20,8 +20,12 @@ public final class CrucibleFurnaceBlock extends WorkshopBlock {
             Block.box(11.8, 2.0, 1.0, 15.0, 11.5, 15.0),
             Block.box(4.2, 2.0, 11.5, 11.8, 11.5, 15.0),
             Block.box(4.2, 2.0, 1.0, 11.8, 5.2, 4.2),
-            Block.box(3.2, 9.5, 3.2, 12.8, 12.5, 12.8),
-            Block.box(6.5, 3.0, 0.0, 9.5, 5.2, 4.8)
+            Block.box(4.5, 8.5, 3.5, 11.5, 9.5, 10.5),
+            Block.box(4.5, 9.5, 3.5, 5.5, 12.5, 10.5),
+            Block.box(10.5, 9.5, 3.5, 11.5, 12.5, 10.5),
+            Block.box(5.5, 9.5, 3.5, 10.5, 12.5, 4.5),
+            Block.box(5.5, 9.5, 9.5, 10.5, 12.5, 10.5),
+            Block.box(6.0, 2.8, -0.3, 10.0, 5.7, 1.0)
     ).optimize());
 
     public CrucibleFurnaceBlock(Properties properties) {

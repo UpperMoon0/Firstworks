@@ -91,15 +91,15 @@ public abstract class WorkshopBlock extends BaseEntityBlock {
         }
         Direction facing = state.getValue(FACING);
         if (WorkshopRecipe.KILN.equals(station) && workshop.isRunning()) {
-            if (random.nextInt(3) == 0) {
-                level.addParticle(ParticleTypes.CAMPFIRE_COSY_SMOKE,
+            if (random.nextInt(5) == 0) {
+                level.addParticle(ParticleTypes.SMOKE,
                         pos.getX() + 0.5, pos.getY() + 1.02, pos.getZ() + 0.5,
                         0.0, 0.025, 0.0);
             }
-            if (random.nextBoolean()) {
+            if (random.nextInt(4) == 0) {
                 level.addParticle(ParticleTypes.SMALL_FLAME,
                         pos.getX() + 0.5 + facing.getStepX() * 0.36,
-                        pos.getY() + 0.32,
+                        pos.getY() + 0.24,
                         pos.getZ() + 0.5 + facing.getStepZ() * 0.36,
                         0.0, 0.004, 0.0);
             }

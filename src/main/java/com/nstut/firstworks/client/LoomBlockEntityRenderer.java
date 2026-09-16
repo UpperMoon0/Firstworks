@@ -25,7 +25,6 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 import org.joml.Matrix4f;
 
 public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBlockEntity> {
-    public static final ModelResourceLocation COPPER_BEATER_MODEL = ModelResourceLocation.standalone(Firstworks.id("block/copper_loom_beater"));
     private final ItemRenderer itemRenderer;
 
     public LoomBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
@@ -50,9 +49,6 @@ public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBl
             renderWovenThreads(loom, visibleOutput, poseStack, buffers, packedLight, packedOverlay);
         }
         renderShuttle(loom, visibleOutput, partialTick, poseStack, buffers, packedLight, packedOverlay);
-        if (loom.getBlockState().is(ModBlocks.COPPER_LOOM.get())) {
-            renderCopperBeater(loom, partialTick, poseStack, buffers, packedLight);
-        }
         poseStack.popPose();
     }
 
@@ -207,23 +203,5 @@ public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBl
         vertex(vertices,matrix,x2,y2,z2,u1,v0,color,light,overlay,nx,ny,nz);
         vertex(vertices,matrix,x3,y3,z3,u1,v1,color,light,overlay,nx,ny,nz);
         vertex(vertices,matrix,x4,y4,z4,u0,v1,color,light,overlay,nx,ny,nz);
-    }
-
-    private static void renderCopperBeater(LoomBlockEntity loom, float partialTick, PoseStack pose,
-                                           MultiBufferSource buffers, int light) {
-        Minecraft minecraft = Minecraft.getInstance();
-        BakedModel model = minecraft.getModelManager().getModel(COPPER_BEATER_MODEL);
-        if (model == minecraft.getModelManager().getMissingModel()) return;
-        float stroke = loom.getStrokeAnimation(partialTick);
-        pose.pushPose();
-        pose.translate(0.5, 0.68, 0.46);
-        pose.mulPose(Axis.XP.rotationDegrees(-17.0F * stroke));
-        pose.translate(-0.5, -0.68, -0.46);
-        BlockState state = loom.getBlockState();
-        minecraft.getBlockRenderer().getModelRenderer().renderModel(
-                pose.last(), buffers.getBuffer(ItemBlockRenderTypes.getRenderType(state, false)),
-                state, model, 1.0F, 1.0F, 1.0F, light, OverlayTexture.NO_OVERLAY,
-                ModelData.EMPTY, null);
-        pose.popPose();
     }
 }

@@ -3,6 +3,7 @@ package com.nstut.firstworks.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.nstut.firstworks.Firstworks;
+import com.nstut.firstworks.registry.ModItems;
 import com.nstut.firstworks.content.workshop.WorkshopBlock;
 import com.nstut.firstworks.content.workshop.WorkshopBlockEntity;
 import com.nstut.firstworks.content.workshop.WorkshopRecipe;
@@ -28,7 +29,11 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 public final class WorkshopBlockEntityRenderer implements BlockEntityRenderer<WorkshopBlockEntity> {
     public static final ModelResourceLocation POTTERY_HEAD = ModelResourceLocation.standalone(Firstworks.id("block/pottery_wheel_head"));
     public static final ModelResourceLocation KILN_EMBERS = ModelResourceLocation.standalone(Firstworks.id("block/kiln_embers"));
+    public static final ModelResourceLocation KILN_BILLET = ModelResourceLocation.standalone(Firstworks.id("block/kiln_billet"));
     public static final ModelResourceLocation CRUCIBLE_CONTENTS = ModelResourceLocation.standalone(Firstworks.id("block/crucible_furnace_contents"));
+
+    public static final ModelResourceLocation CASTING_MOLD = ModelResourceLocation.standalone(Firstworks.id("block/furnace_casting_mold"));
+    public static final ModelResourceLocation CASTING_METAL = ModelResourceLocation.standalone(Firstworks.id("block/furnace_casting_metal"));
 
     public WorkshopBlockEntityRenderer(BlockEntityRendererProvider.Context context) {}
 
@@ -97,10 +102,16 @@ public final class WorkshopBlockEntityRenderer implements BlockEntityRenderer<Wo
         if (workshop.isRunning()) renderPartial(workshop, KILN_EMBERS, pose, buffers, LightTexture.FULL_BRIGHT);
         ItemStack visible = workshop.getOutput().isEmpty() ? workshop.getInput() : workshop.getOutput();
         if (visible.isEmpty()) return;
+        if (visible.is(ModItems.CAST_COPPER_BILLET.get())
+                || visible.is(ModItems.ANNEALED_COPPER_BILLET.get())
+                || visible.is(ModItems.WORKED_COPPER_BILLET.get())) {
+            renderPartial(workshop, KILN_BILLET, pose, buffers,
+                    workshop.isRunning() ? LightTexture.FULL_BRIGHT : light);
+            return;
+        }
         pose.pushPose();
-        pose.translate(0.5, 0.34, 0.265);
-        pose.mulPose(Axis.XP.rotationDegrees(18.0F));
-        pose.scale(0.31F, 0.31F, 0.31F);
+        pose.translate(0.5, 0.47, 0.235);
+        pose.scale(0.40F, 0.40F, 0.40F);
         Minecraft.getInstance().getItemRenderer().renderStatic(visible, ItemDisplayContext.FIXED,
                 workshop.isRunning() ? LightTexture.FULL_BRIGHT : light,
                 OverlayTexture.NO_OVERLAY, pose, buffers, workshop.getLevel(), 0);
@@ -113,27 +124,36 @@ public final class WorkshopBlockEntityRenderer implements BlockEntityRenderer<Wo
             renderPartial(workshop, CRUCIBLE_CONTENTS, pose, buffers, LightTexture.FULL_BRIGHT);
         }
 
-        if (!workshop.getCatalyst().isEmpty()) {
-            pose.pushPose();
-            pose.translate(0.5, 0.79, 0.72);
-            pose.mulPose(Axis.XP.rotationDegrees(90.0F));
-            pose.scale(0.31F, 0.31F, 0.31F);
-            Minecraft.getInstance().getItemRenderer().renderStatic(workshop.getCatalyst(), ItemDisplayContext.FIXED,
-                    light, OverlayTexture.NO_OVERLAY, pose, buffers, workshop.getLevel(), 0);
-            pose.popPose();
+        boolean castingMold = workshop.getCatalyst().is(ModItems.CASTING_MOLD.get());
+        if (castingMold) {
+            renderPartial(workshop, CASTING_MOLD, pose, buffers, light);
+            if (workshop.getOutput().is(ModItems.CAST_COPPER_BILLET.get())
+                    || workshop.isRunning() && workshop.getProgressFraction() > 0.5F) {
+                renderPartial(workshop, CASTING_METAL, pose, buffers,
+                        workshop.isRunning() ? LightTexture.FULL_BRIGHT : light);
+            }
+        } else if (!workshop.getCatalyst().isEmpty()) {
+            renderFurnaceItem(workshop, workshop.getCatalyst(), 0.82, 0.82, pose, buffers, light);
         }
 
-        ItemStack metal = workshop.getOutput().isEmpty() ? workshop.getInput() : workshop.getOutput();
-        if (!metal.isEmpty()) {
-            pose.pushPose();
-            pose.translate(0.5, workshop.getOutput().isEmpty() ? 0.69 : 0.84, workshop.getOutput().isEmpty() ? 0.5 : 0.72);
-            pose.mulPose(Axis.XP.rotationDegrees(90.0F));
-            pose.scale(0.23F, 0.23F, 0.23F);
-            Minecraft.getInstance().getItemRenderer().renderStatic(metal, ItemDisplayContext.FIXED,
-                    workshop.isRunning() ? LightTexture.FULL_BRIGHT : light,
-                    OverlayTexture.NO_OVERLAY, pose, buffers, workshop.getLevel(), 0);
-            pose.popPose();
+        if (!workshop.getOutput().isEmpty()) {
+            if (!castingMold || !workshop.getOutput().is(ModItems.CAST_COPPER_BILLET.get())) {
+                renderFurnaceItem(workshop, workshop.getOutput(), 0.85, 0.82, pose, buffers, light);
+            }
+        } else if (!workshop.getInput().isEmpty() && !workshop.isRunning()) {
+            renderFurnaceItem(workshop, workshop.getInput(), 0.66, 0.44, pose, buffers, light);
         }
+    }
+
+    private void renderFurnaceItem(WorkshopBlockEntity workshop, ItemStack stack, double y, double z,
+                                   PoseStack pose, MultiBufferSource buffers, int light) {
+        pose.pushPose();
+        pose.translate(0.5, y, z);
+        pose.mulPose(Axis.XP.rotationDegrees(90.0F));
+        pose.scale(0.28F, 0.28F, 0.28F);
+        Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.FIXED,
+                light, OverlayTexture.NO_OVERLAY, pose, buffers, workshop.getLevel(), 0);
+        pose.popPose();
     }
 
     private static void renderPartial(WorkshopBlockEntity workshop, ModelResourceLocation modelLocation,
@@ -150,9 +170,9 @@ public final class WorkshopBlockEntityRenderer implements BlockEntityRenderer<Wo
 
     private static void rotateToFacing(PoseStack pose, Direction facing) {
         float rotation = switch (facing) {
-            case EAST -> 90.0F;
+            case EAST -> -90.0F;
             case SOUTH -> 180.0F;
-            case WEST -> 270.0F;
+            case WEST -> -270.0F;
             default -> 0.0F;
         };
         pose.translate(0.5, 0.0, 0.5);

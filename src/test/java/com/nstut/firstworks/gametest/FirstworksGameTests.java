@@ -153,34 +153,34 @@ public final class FirstworksGameTests {
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
 
         BlockPos quernPos = new BlockPos(3, 1, 8);
-        helper.setBlock(quernPos, ModBlocks.ROTARY_QUERN.get());
+        helper.setBlock(quernPos, ModBlocks.QUERN.get());
         QuernBlockEntity quern = helper.getBlockEntity(quernPos);
         hold(player, new ItemStack(Items.WHEAT, 4));
         use(helper, quernPos, player, 4);
-        check(helper, quern.getInput().getCount() == 4, "Rotary Quern did not load the wheat batch");
+        check(helper, quern.getInput().getCount() == 4, "Quern did not load the wheat batch");
         check(helper,
-                ModBlocks.ROTARY_QUERN.get().getTicker(level, helper.getBlockState(quernPos), ModBlockEntities.QUERN.get()) == null,
-                "Rotary Quern unexpectedly has a server-side autonomous ticker");
+                ModBlocks.QUERN.get().getTicker(level, helper.getBlockState(quernPos), ModBlockEntities.QUERN.get()) == null,
+                "Quern unexpectedly has a server-side autonomous ticker");
 
         int requiredWork = quern.requiredWork();
-        int workPerCrank = Math.max(1, FirstworksConfig.QUERN_MANUAL_WORK_PER_CRANK.get() * 4);
+        int workPerCrank = Math.max(1, FirstworksConfig.QUERN_MANUAL_WORK_PER_CRANK.get());
         int cranks = Math.max(1, (requiredWork + workPerCrank - 1) / workPerCrank);
         clearHand(player);
         use(helper, quernPos, player, cranks);
         check(helper, quern.getOutput().is(ModItems.FLOUR.get()) && quern.getOutput().getCount() == 4,
-                "Rotary Quern did not complete the loaded wheat batch from manual cranks");
+                "Quern did not complete the loaded wheat batch from manual cranks");
 
         BlockPos loomPos = new BlockPos(9, 1, 8);
-        helper.setBlock(loomPos, ModBlocks.COPPER_LOOM.get());
+        helper.setBlock(loomPos, ModBlocks.LOOM.get());
         LoomBlockEntity loom = helper.getBlockEntity(loomPos);
         hold(player, new ItemStack(Items.STRING, 4));
         use(helper, loomPos, player, 4);
         int strokes = loom.getMatchingRecipe()
-                .map(holder -> Math.max(1, (holder.value().strokes() + 1) / 2))
-                .orElseThrow(() -> new IllegalStateException("Copper Loom recipe missing at runtime"));
+                .map(holder -> Math.max(1, holder.value().strokes()))
+                .orElseThrow(() -> new IllegalStateException("Loom recipe missing at runtime"));
         clearHand(player);
         use(helper, loomPos, player, strokes);
-        check(helper, loom.getOutput().is(ModItems.CLOTH.get()), "Copper Loom did not complete cloth from real manual strokes");
+        check(helper, loom.getOutput().is(ModItems.CLOTH.get()), "Loom did not complete cloth from real manual strokes");
 
         helper.succeed();
     }
@@ -241,8 +241,8 @@ public final class FirstworksGameTests {
                 ModBlocks.STONE_ANVIL.get(),
                 ModBlocks.BELLOWS.get(),
                 ModBlocks.CRUCIBLE_FURNACE.get(),
-                ModBlocks.COPPER_LOOM.get(),
-                ModBlocks.ROTARY_QUERN.get());
+                ModBlocks.LOOM.get(),
+                ModBlocks.QUERN.get());
         BlockPos origin = helper.absolutePos(new BlockPos(2, 0, 12));
 
         for (int y : new int[]{minY, maxY}) {

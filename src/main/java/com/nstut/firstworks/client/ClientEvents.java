@@ -24,13 +24,14 @@ public final class ClientEvents {
     @SubscribeEvent
     public static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
         event.register(ModelResourceLocation.standalone(Firstworks.id("block/quern_runner")));
-        event.register(ModelResourceLocation.standalone(Firstworks.id("block/rotary_quern_runner")));
         event.register(WorkshopBlockEntityRenderer.POTTERY_HEAD);
         event.register(WorkshopBlockEntityRenderer.KILN_EMBERS);
+        event.register(WorkshopBlockEntityRenderer.KILN_BILLET);
         event.register(WorkshopBlockEntityRenderer.CRUCIBLE_CONTENTS);
+        event.register(WorkshopBlockEntityRenderer.CASTING_MOLD);
+        event.register(WorkshopBlockEntityRenderer.CASTING_METAL);
         event.register(BellowsBlockEntityRenderer.BAG);
         event.register(BellowsBlockEntityRenderer.TOP);
-        event.register(LoomBlockEntityRenderer.COPPER_BEATER_MODEL);
     }
 
     @SubscribeEvent

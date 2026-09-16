@@ -494,7 +494,7 @@ FirstworksEvents.quernGrindingCompleted(event => {
   - 9-slot primitive storage container with full automation and hopper support.
 - **Mortar & Pestle (`firstworks:mortar_and_pestle`)**:
   - Exposes standard NeoForge `IItemHandler` capability (extracts output only).
-- **Quern (`firstworks:quern`, `firstworks:rotary_quern`)**:
+- **Quern (`firstworks:quern`)**:
   - **Top Face**: Inserts raw ingredients into input slot.
   - **Bottom Face**: Extracts completed result from output slot (raw input cannot be extracted by automation).
   - **Side Faces / Unsided**: Accepts input insertion and output extraction.

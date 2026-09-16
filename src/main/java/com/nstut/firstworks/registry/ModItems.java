@@ -114,12 +114,6 @@ public final class ModItems {
     public static final DeferredHolder<Item, Item> CAST_COPPER_BILLET = simple("cast_copper_billet");
     public static final DeferredHolder<Item, Item> ANNEALED_COPPER_BILLET = simple("annealed_copper_billet");
     public static final DeferredHolder<Item, Item> WORKED_COPPER_BILLET = simple("worked_copper_billet");
-    public static final DeferredHolder<Item, Item> COPPER_WIRE = simple("copper_wire");
-    public static final DeferredHolder<Item, Item> COPPER_HAND_SPINDLE = ITEMS.register(
-            "copper_hand_spindle",
-            () -> new HandSpindleItem(new Item.Properties().durability(384), 0.6F));
-    public static final DeferredHolder<Item, Item> COPPER_LOOM = blockItem("copper_loom", ModBlocks.COPPER_LOOM);
-    public static final DeferredHolder<Item, Item> ROTARY_QUERN = blockItem("rotary_quern", ModBlocks.ROTARY_QUERN);
     public static final DeferredHolder<Item, Item> LIME = simple("lime");
     public static final DeferredHolder<Item, Item> PLASTER = simple("plaster");
     public static final DeferredHolder<Item, Item> PLASTER_BLOCK = blockItem("plaster_block", ModBlocks.PLASTER_BLOCK);

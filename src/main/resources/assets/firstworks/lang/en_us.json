@@ -146,7 +146,6 @@
   "jade.firstworks.quern.progress": "Grinding progress: %s%%",
   "jade.firstworks.quern.ready": "Ready: %sx %s",
   "config.jade.plugin_firstworks.quern_progress": "Quern Grinding",
-
   "item.firstworks.resin": "Resin",
   "item.firstworks.resin_tap": "Resin Tap",
   "item.firstworks.hafting_compound": "Hafting Compound",
@@ -170,10 +169,6 @@
   "item.firstworks.cast_copper_billet": "Cast Copper Billet",
   "item.firstworks.annealed_copper_billet": "Annealed Copper Billet",
   "item.firstworks.worked_copper_billet": "Worked Copper Billet",
-  "item.firstworks.copper_wire": "Copper Wire",
-  "item.firstworks.copper_hand_spindle": "Copper Hand Spindle",
-  "block.firstworks.copper_loom": "Copper Loom",
-  "block.firstworks.rotary_quern": "Rotary Quern",
   "item.firstworks.lime": "Lime",
   "item.firstworks.plaster": "Plaster",
   "block.firstworks.plaster_block": "Plaster Block",

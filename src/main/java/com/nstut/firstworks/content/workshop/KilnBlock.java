@@ -16,13 +16,30 @@ public final class KilnBlock extends WorkshopBlock {
     public static final MapCodec<KilnBlock> CODEC = simpleCodec(KilnBlock::new);
     private static final Map<Direction, VoxelShape> SHAPES = makeHorizontalShapes(Shapes.or(
             Block.box(1.0, 0.0, 1.0, 15.0, 2.0, 15.0),
-            Block.box(1.0, 2.0, 1.0, 4.0, 12.0, 15.0),
-            Block.box(12.0, 2.0, 1.0, 15.0, 12.0, 15.0),
-            Block.box(4.0, 2.0, 11.0, 12.0, 12.0, 15.0),
-            Block.box(4.0, 2.0, 1.0, 12.0, 4.2, 4.0),
-            Block.box(3.0, 10.0, 1.0, 13.0, 13.0, 15.0),
-            Block.box(5.0, 12.2, 5.0, 11.0, 15.2, 11.0),
-            Block.box(6.0, 14.8, 6.0, 10.0, 16.0, 10.0)
+            Block.box(1.0, 2.0, 1.0, 4.0, 11.0, 15.0),
+            Block.box(12.0, 2.0, 1.0, 15.0, 11.0, 15.0),
+            Block.box(4.0, 2.0, 12.0, 12.0, 11.0, 15.0),
+            Block.box(4.0, 2.0, 1.0, 12.0, 3.0, 12.0),
+            Block.box(1.0, 11.0, 1.0, 6.0, 13.0, 15.0),
+            Block.box(10.0, 11.0, 1.0, 15.0, 13.0, 15.0),
+            Block.box(6.0, 11.0, 1.0, 10.0, 13.0, 6.0),
+            Block.box(6.0, 11.0, 10.0, 10.0, 13.0, 15.0),
+            Block.box(5.0, 13.0, 5.0, 6.0, 15.0, 11.0),
+            Block.box(10.0, 13.0, 5.0, 11.0, 15.0, 11.0),
+            Block.box(6.0, 13.0, 5.0, 10.0, 15.0, 6.0),
+            Block.box(6.0, 13.0, 10.0, 10.0, 15.0, 11.0),
+            Block.box(4.75, 15.0, 4.75, 6.0, 16.0, 11.25),
+            Block.box(10.0, 15.0, 4.75, 11.25, 16.0, 11.25),
+            Block.box(6.0, 15.0, 4.75, 10.0, 16.0, 6.0),
+            Block.box(6.0, 15.0, 10.0, 10.0, 16.0, 11.25),
+            Block.box(4.0, 3.0, 3.0, 4.5, 10.9, 12.0),
+            Block.box(11.5, 3.0, 3.0, 12.0, 10.9, 12.0),
+            Block.box(4.5, 3.0, 11.5, 11.5, 10.9, 12.0),
+            Block.box(4.5, 3.0, 3.0, 11.5, 3.3, 11.5),
+            Block.box(4.5, 4.4, 2.0, 11.5, 5.0, 10.5),
+            Block.box(4.0, 3.0, 1.0, 4.5, 11.0, 3.0),
+            Block.box(11.5, 3.0, 1.0, 12.0, 11.0, 3.0),
+            Block.box(4.5, 10.4, 1.4, 11.5, 11.0, 3.0)
     ).optimize());
 
     public KilnBlock(Properties properties) {

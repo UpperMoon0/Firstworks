@@ -18,7 +18,7 @@ public class WorkshopVisualAssetTest {
     public void workstationModelsAreNotPlaceholderCubes() throws Exception {
         for (String name : List.of(
                 "bellows", "pottery_wheel", "kiln", "stone_anvil",
-                "crucible_furnace", "copper_loom", "rotary_quern")) {
+                "crucible_furnace")) {
             Path model = ASSETS.resolve("models/block/" + name + ".json");
             assertTrue(Files.exists(model), "Missing workstation model: " + name);
             String json = Files.readString(model);
@@ -34,9 +34,7 @@ public class WorkshopVisualAssetTest {
                 "models/block/bellows_top.json",
                 "models/block/pottery_wheel_head.json",
                 "models/block/kiln_embers.json",
-                "models/block/crucible_furnace_contents.json",
-                "models/block/copper_loom_beater.json",
-                "models/block/rotary_quern_runner.json")) {
+                "models/block/crucible_furnace_contents.json")) {
             assertTrue(Files.exists(ASSETS.resolve(path)), "Missing animated model part: " + path);
         }
     }
@@ -45,7 +43,7 @@ public class WorkshopVisualAssetTest {
     public void workshopInventoryModelsAreThreeDimensional() throws Exception {
         for (String name : List.of(
                 "bellows", "pottery_wheel", "kiln", "stone_anvil", "crucible_furnace",
-                "copper_loom", "rotary_quern", "unfired_casting_mold", "casting_mold",
+                "unfired_casting_mold", "casting_mold",
                 "unfired_crucible", "crucible", "unfired_tuyere", "tuyere",
                 "unfired_refractory_brick", "refractory_brick")) {
             Path model = ASSETS.resolve("models/item/" + name + ".json");

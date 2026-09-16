@@ -19,14 +19,13 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 
 public final class QuernBlockEntityRenderer implements BlockEntityRenderer<QuernBlockEntity> {
     public static final ModelResourceLocation RUNNER_MODEL = ModelResourceLocation.standalone(Firstworks.id("block/quern_runner"));
-    public static final ModelResourceLocation ROTARY_RUNNER_MODEL = ModelResourceLocation.standalone(Firstworks.id("block/rotary_quern_runner"));
 
     public QuernBlockEntityRenderer(BlockEntityRendererProvider.Context context) {}
 
     @Override
     public void render(QuernBlockEntity quern, float partial, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
         BlockState state = quern.getBlockState();
-        ModelResourceLocation runnerLocation = state.is(ModBlocks.ROTARY_QUERN.get()) ? ROTARY_RUNNER_MODEL : RUNNER_MODEL;
+        ModelResourceLocation runnerLocation = RUNNER_MODEL;
         BakedModel runnerModel = Minecraft.getInstance().getModelManager().getModel(runnerLocation);
 
         if (runnerModel != null && runnerModel != Minecraft.getInstance().getModelManager().getMissingModel()) {
@@ -51,7 +50,7 @@ public final class QuernBlockEntityRenderer implements BlockEntityRenderer<Quern
         if (!quern.getInput().isEmpty() || !quern.getOutput().isEmpty()) {
             var stack = quern.getOutput().isEmpty() ? quern.getInput() : quern.getOutput();
             pose.pushPose();
-            pose.translate(0.5, state.is(ModBlocks.ROTARY_QUERN.get()) ? 0.47 : 0.42, 0.5);
+            pose.translate(0.5, 0.42, 0.5);
             pose.scale(0.35F, 0.35F, 0.35F);
             Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.FIXED, light,
                     OverlayTexture.NO_OVERLAY, pose, buffers, quern.getLevel(), 0);

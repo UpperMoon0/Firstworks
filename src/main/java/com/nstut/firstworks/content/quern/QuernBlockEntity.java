@@ -87,8 +87,7 @@ public final class QuernBlockEntity extends BlockEntity {
             return false;
         }
 
-        boolean rotary = getBlockState().is(ModBlocks.ROTARY_QUERN.get());
-        int workAmount = FirstworksConfig.QUERN_MANUAL_WORK_PER_CRANK.get() * (rotary ? 4 : 1);
+        int workAmount = FirstworksConfig.QUERN_MANUAL_WORK_PER_CRANK.get();
         progress += workAmount;
         lastVisualWork = Math.max(1, workAmount);
         rotationSteps += workAmount;

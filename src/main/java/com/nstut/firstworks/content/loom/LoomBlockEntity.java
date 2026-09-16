@@ -83,9 +83,7 @@ public class LoomBlockEntity extends BlockEntity {
     }
 
     private int requiredStrokes(LoomRecipe recipe) {
-        return getBlockState().is(ModBlocks.COPPER_LOOM.get())
-                ? Math.max(1, (recipe.strokes() + 1) / 2)
-                : Math.max(1, recipe.strokes());
+        return Math.max(1, recipe.strokes());
     }
 
     public int getRequiredStrokes() {
