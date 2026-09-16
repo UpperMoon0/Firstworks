@@ -11,6 +11,8 @@ import com.nstut.firstworks.content.mortar.MortarBlockEntity;
 import com.nstut.firstworks.content.MortarGrindingRecipe;
 import com.nstut.firstworks.content.quern.QuernBlockEntity;
 import com.nstut.firstworks.content.quern.QuernGrindingRecipe;
+import com.nstut.firstworks.content.workshop.WorkshopBlockEntity;
+import com.nstut.firstworks.content.workshop.WorkshopRecipe;
 import dev.latvian.mods.kubejs.script.ScriptType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -79,6 +81,7 @@ public final class KubeJSCompat {
         FirstworksKubeEvents.MORTAR_GRINDING_COMPLETED.post(ScriptType.SERVER,
                 new MortarGrindingKubeEvent(level, mortar, recipeId, recipe, input, result));
     }
+
     public static boolean fireQuernGrindingStarting(ServerLevel level, QuernBlockEntity quern,
             ResourceLocation recipeId, QuernGrindingRecipe recipe, ItemStack input, ItemStack result) {
         return FirstworksKubeEvents.QUERN_GRINDING_STARTING.post(ScriptType.SERVER,
@@ -89,6 +92,20 @@ public final class KubeJSCompat {
             ResourceLocation recipeId, QuernGrindingRecipe recipe, ItemStack input, ItemStack result) {
         FirstworksKubeEvents.QUERN_GRINDING_COMPLETED.post(ScriptType.SERVER,
                 new QuernGrindingKubeEvent(level, quern, recipeId, recipe, input, result));
+    }
+
+    public static boolean fireWorkshopProcessingStarting(ServerLevel level, WorkshopBlockEntity workshop,
+            ResourceLocation recipeId, WorkshopRecipe recipe, ItemStack input, ItemStack catalyst, ItemStack result) {
+        return FirstworksKubeEvents.WORKSHOP_PROCESSING_STARTING.post(ScriptType.SERVER,
+                new WorkshopProcessingKubeEvent(level, workshop, recipe.station(), recipeId, recipe,
+                        input, catalyst, result)).interruptFalse();
+    }
+
+    public static void fireWorkshopProcessingCompleted(ServerLevel level, WorkshopBlockEntity workshop,
+            ResourceLocation recipeId, WorkshopRecipe recipe, ItemStack input, ItemStack catalyst, ItemStack result) {
+        FirstworksKubeEvents.WORKSHOP_PROCESSING_COMPLETED.post(ScriptType.SERVER,
+                new WorkshopProcessingKubeEvent(level, workshop, recipe.station(), recipeId, recipe,
+                        input, catalyst, result));
     }
 
     private KubeJSCompat() {}

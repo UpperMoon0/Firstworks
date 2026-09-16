@@ -41,14 +41,16 @@ public final class ToolBindingRecipes {
         boolean textiles = FirstworksConfig.ENABLE_TEXTILE_PROGRESSION.getAsBoolean();
         boolean masonry = FirstworksConfig.ENABLE_MASONRY_PROGRESSION.getAsBoolean();
         boolean grain = FirstworksConfig.ENABLE_GRAIN_PROGRESSION.getAsBoolean();
+        boolean primitiveCopper = FirstworksConfig.ENABLE_PRIMITIVE_COPPER_PROGRESSION.getAsBoolean();
         boolean replaceLeather = FirstworksConfig.REPLACE_ANIMAL_LEATHER.getAsBoolean();
         rewrite(event.getPlayerList().getServer().getRecipeManager(), bindPrimitive, bindMetal, textiles,
-                masonry, grain, replaceLeather);
+                masonry, grain, primitiveCopper, replaceLeather);
         com.nstut.firstworks.content.barrel.BarrelBlockEntity.invalidateAllBarrels();
     }
 
     private static void rewrite(RecipeManager manager, boolean bindPrimitive, boolean bindMetal,
-                                boolean textiles, boolean masonry, boolean grain, boolean replaceLeather) {
+                                boolean textiles, boolean masonry, boolean grain, boolean primitiveCopper,
+                                boolean replaceLeather) {
         Ingredient primitiveBinding = Ingredient.of(ModTags.PRIMITIVE_BINDINGS);
         Ingredient rope = Ingredient.of(ModTags.STRONG_BINDINGS);
         Map<ResourceLocation, Recipe<?>> replacements = new HashMap<>();
@@ -83,7 +85,7 @@ public final class ToolBindingRecipes {
         int changed = 0;
         int removed = 0;
         for (RecipeHolder<?> holder : manager.getRecipes()) {
-            if (isVanillaCopperSmeltingRecipe(holder.id())) {
+            if (primitiveCopper && isVanillaCopperSmeltingRecipe(holder.id())) {
                 removed++;
                 continue;
             }

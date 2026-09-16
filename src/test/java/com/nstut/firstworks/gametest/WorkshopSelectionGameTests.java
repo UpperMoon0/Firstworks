@@ -57,6 +57,39 @@ public final class WorkshopSelectionGameTests {
     }
 
     @GameTest(template = EMPTY, timeoutTicks = 20)
+    public static void taggedCrucibleFuelAndWorkshopPriorityAreBehavioral(GameTestHelper helper) {
+        BlockPos furnacePos = new BlockPos(2, 1, 2);
+        helper.setBlock(furnacePos, ModBlocks.CRUCIBLE_FURNACE.get());
+        WorkshopBlockEntity furnace = helper.getBlockEntity(furnacePos);
+        ItemStack packFuel = new ItemStack(Items.BLAZE_POWDER);
+        check(helper, furnace.canInsertFuel(packFuel),
+                "Crucible Furnace rejected a fuel added by the test datapack tag");
+        check(helper, furnace.getItemHandler(null).insertItem(2, packFuel.copy(), false).isEmpty(),
+                "Automation rejected a fuel added by #firstworks:crucible_furnace_fuels");
+        check(helper, furnace.getFuel().is(Items.BLAZE_POWDER),
+                "Tagged Crucible Furnace fuel was not stored in the reserve slot");
+
+        BlockPos wheelPos = new BlockPos(6, 1, 2);
+        helper.setBlock(wheelPos, ModBlocks.POTTERY_WHEEL.get());
+        WorkshopBlockEntity wheel = helper.getBlockEntity(wheelPos);
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        check(helper, wheel.getItemHandler(null)
+                .insertItem(0, new ItemStack(Items.GOLD_NUGGET), false).isEmpty(),
+                "Pottery Wheel rejected overlapping priority-test input");
+        var selected = wheel.activeRecipe().orElseThrow(
+                () -> new IllegalStateException("No workshop recipe selected for priority test"));
+        check(helper, selected.value().priority() == 10,
+                "Workshop did not prefer the highest-priority overlapping recipe");
+        check(helper, selected.id().getPath().equals("gametest_workshop_priority_high"),
+                "Workshop priority selected the wrong recipe id");
+        check(helper, wheel.work(player), "Pottery Wheel refused the selected priority recipe");
+        check(helper, wheel.getOutput().is(Items.DIAMOND),
+                "Workshop priority recipe produced the wrong output");
+
+        helper.succeed();
+    }
+
+    @GameTest(template = EMPTY, timeoutTicks = 20)
     public static void standardRecipeManagerHonorsWorkshopStationAndCatalyst(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         var recipes = level.getRecipeManager();

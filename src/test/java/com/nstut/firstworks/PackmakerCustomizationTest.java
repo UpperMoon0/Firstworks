@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class PackmakerCustomizationTest {
     private static final Path CONFIG = Path.of("src/main/java/com/nstut/firstworks/FirstworksConfig.java");
     private static final Path TOOL_BINDING = Path.of("src/main/java/com/nstut/firstworks/ToolBindingRecipes.java");
+    private static final Path MOD_TAGS = Path.of("src/main/java/com/nstut/firstworks/registry/ModTags.java");
     private static final Path QUERN_RECIPE = Path.of("src/main/java/com/nstut/firstworks/content/quern/QuernGrindingRecipe.java");
     private static final Path QUERN_BE = Path.of("src/main/java/com/nstut/firstworks/content/quern/QuernBlockEntity.java");
     private static final Path WORKSHOP_BE = Path.of(
@@ -23,6 +24,16 @@ public class PackmakerCustomizationTest {
             "src/main/java/com/nstut/firstworks/compat/jei/WorkshopJeiPlugin.java");
     private static final Path WORKSHOP_JEI_CATEGORY = Path.of(
             "src/main/java/com/nstut/firstworks/compat/jei/WorkshopRecipeCategory.java");
+    private static final Path KUBE_EVENTS = Path.of(
+            "src/main/java/com/nstut/firstworks/compat/kubejs/FirstworksKubeEvents.java");
+    private static final Path KUBE_COMPAT = Path.of(
+            "src/main/java/com/nstut/firstworks/compat/kubejs/KubeJSCompat.java");
+    private static final Path OPTIONAL_INTEGRATIONS = Path.of(
+            "src/main/java/com/nstut/firstworks/compat/OptionalIntegrations.java");
+    private static final Path WORKSHOP_EVENT = Path.of(
+            "src/main/java/com/nstut/firstworks/compat/kubejs/WorkshopProcessingKubeEvent.java");
+    private static final Path CRUCIBLE_FUEL_TAG = Path.of(
+            "src/main/resources/data/firstworks/tags/item/crucible_furnace_fuels.json");
     private static final Path VANILLA_RECIPE_DIR = Path.of("src/main/resources/data/minecraft/recipe");
 
     @Test
@@ -32,6 +43,20 @@ public class PackmakerCustomizationTest {
                 "FirstworksConfig must expose enableGrainProgression");
         assertTrue(config.contains(".define(\"enableGrainProgression\", true)"),
                 "grain progression must default to enabled");
+    }
+
+    @Test
+    public void primitiveCopperProgressionHasConfigToggle() throws Exception {
+        String config = Files.readString(CONFIG);
+        String rewrite = Files.readString(TOOL_BINDING);
+        assertTrue(config.contains("ENABLE_PRIMITIVE_COPPER_PROGRESSION"),
+                "FirstworksConfig must expose enablePrimitiveCopperProgression");
+        assertTrue(config.contains(".define(\"enablePrimitiveCopperProgression\", true)"),
+                "primitive copper progression must default to enabled");
+        assertTrue(rewrite.contains("ENABLE_PRIMITIVE_COPPER_PROGRESSION"),
+                "datapack-sync rewrite must read the primitive copper toggle");
+        assertTrue(rewrite.contains("primitiveCopper && isVanillaCopperSmeltingRecipe(holder.id())"),
+                "vanilla copper bypass recipes must only be removed while primitive copper progression is enabled");
     }
 
     @Test
@@ -83,14 +108,27 @@ public class PackmakerCustomizationTest {
     }
 
     @Test
-    public void workshopJeiShowsRequiredManualToolsFuelAndAir() throws Exception {
+    public void workshopJeiShowsRequiredManualToolsTaggedFuelAndAir() throws Exception {
         String src = Files.readString(WORKSHOP_JEI_CATEGORY);
         assertTrue(src.contains("Ingredient.of(ModTags.HAMMERS)"),
                 "Stone Anvil JEI recipes must show the pack-extensible hammer requirement");
-        assertTrue(src.contains("new ItemStack(Items.COAL)") && src.contains("new ItemStack(Items.CHARCOAL)"),
-                "heated workshop JEI recipes must show their accepted fuel items");
+        assertTrue(src.contains("Ingredient.of(ModTags.CRUCIBLE_FURNACE_FUELS)"),
+                "heated workshop JEI recipes must show the same pack-extensible fuel tag accepted at runtime");
         assertTrue(src.contains("new ItemStack(ModItems.BELLOWS.get())"),
                 "Crucible Furnace JEI recipes must show Bellows as an air-control requirement");
+    }
+
+    @Test
+    public void crucibleFuelIsPublicAndDatapackExtensible() throws Exception {
+        String tags = Files.readString(MOD_TAGS);
+        String entity = Files.readString(WORKSHOP_BE);
+        String defaults = Files.readString(CRUCIBLE_FUEL_TAG);
+        assertTrue(tags.contains("CRUCIBLE_FURNACE_FUELS"),
+                "Crucible Furnace fuel must have a public ModTags key");
+        assertTrue(entity.contains("stack.is(ModTags.CRUCIBLE_FURNACE_FUELS)"),
+                "runtime fuel acceptance must use the public tag instead of hardcoded items");
+        assertTrue(defaults.contains("minecraft:coal") && defaults.contains("minecraft:charcoal"),
+                "the shipped fuel tag must preserve coal and charcoal defaults");
     }
 
     @Test
@@ -102,7 +140,31 @@ public class PackmakerCustomizationTest {
         assertTrue(entity.contains("canInsertFuel") && entity.contains("insertFuel"),
                 "heated workshops must expose an explicit fuel insertion path");
         assertTrue(block.contains("player.isShiftKeyDown() && workshop.canInsertFuel(stack)"),
-                "sneak-right-click must force coal/charcoal into the fuel reserve when roles overlap");
+                "sneak-right-click must force a valid tagged fuel into the fuel reserve when roles overlap");
+    }
+
+    @Test
+    public void workshopProcessingHasSymmetricKubeJsLifecycleEvents() throws Exception {
+        String events = Files.readString(KUBE_EVENTS);
+        String compat = Files.readString(KUBE_COMPAT);
+        String optional = Files.readString(OPTIONAL_INTEGRATIONS);
+        String workshop = Files.readString(WORKSHOP_BE);
+        String payload = Files.readString(WORKSHOP_EVENT);
+
+        assertTrue(events.contains("workshopProcessingStarting") && events.contains("WORKSHOP_PROCESSING_STARTING"),
+                "workshop processing must expose a cancellable starting event");
+        assertTrue(events.contains("workshopProcessingCompleted") && events.contains("WORKSHOP_PROCESSING_COMPLETED"),
+                "workshop processing must expose a completion event");
+        assertTrue(compat.contains("fireWorkshopProcessingStarting") && compat.contains("fireWorkshopProcessingCompleted"));
+        assertTrue(optional.contains("fireWorkshopProcessingStarting") && optional.contains("fireWorkshopProcessingCompleted"));
+        assertTrue(workshop.contains("OptionalIntegrations.fireWorkshopProcessingStarting"),
+                "workshop execution must call the starting hook before progress begins");
+        assertTrue(workshop.contains("OptionalIntegrations.fireWorkshopProcessingCompleted"),
+                "workshop execution must call the completion hook after producing output");
+        for (String getter : new String[]{"getLevel()", "getPos()", "getWorkshop()", "getStation()",
+                "getRecipeId()", "getRecipe()", "getInput()", "getCatalyst()", "getResult()"}) {
+            assertTrue(payload.contains(getter), "Workshop KubeJS payload missing " + getter);
+        }
     }
 
     @Test

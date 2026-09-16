@@ -16,6 +16,8 @@ public class WorkshopRecipeValidationTest {
             "src/main/java/com/nstut/firstworks/content/workshop/WorkshopRecipe.java");
     private static final Path WORKSHOP_INPUT = Path.of(
             "src/main/java/com/nstut/firstworks/content/workshop/WorkshopRecipeInput.java");
+    private static final Path WORKSHOP_BE = Path.of(
+            "src/main/java/com/nstut/firstworks/content/workshop/WorkshopBlockEntity.java");
     private static final Path WORKSHOP_SCHEMA = Path.of(
             "src/main/resources/data/firstworks/kubejs/recipe_schema/workshop_processing.json");
     private static final Path QUERN_SCHEMA = Path.of(
@@ -72,10 +74,33 @@ public class WorkshopRecipeValidationTest {
     }
 
     @Test
-    public void kubeJsSchemasCoverWorkshopSelectorsAndQuernPriority() throws Exception {
+    public void workshopRecipeSupportsPriorityAndStableTieBreakers() throws Exception {
+        String recipe = Files.readString(WORKSHOP_RECIPE);
+        String entity = Files.readString(WORKSHOP_BE);
+        assertTrue(recipe.contains("int priority"), "WorkshopRecipe must carry an explicit priority field");
+        assertTrue(recipe.contains("optionalFieldOf(\"priority\", 0)"),
+                "workshop priority must default to 0 for compatibility");
+        assertTrue(recipe.contains("buffer.writeVarInt(recipe.priority)"),
+                "workshop priority must be synchronized to clients");
+        assertTrue(entity.contains("holder.value().priority()") && entity.contains(".reversed()"),
+                "highest-priority workshop recipe must be selected first");
+        assertTrue(entity.contains("holder.value().inputCount()")
+                        && entity.contains("holder.value().hasCatalyst() ? 0 : 1")
+                        && entity.contains("holder.id().toString()"),
+                "priority ties must retain deterministic batch/catalyst/id ordering");
+    }
+
+    @Test
+    public void kubeJsSchemaMatchesCodecRangesAndPriority() throws Exception {
         String workshop = Files.readString(WORKSHOP_SCHEMA);
-        assertTrue(workshop.contains("\"unique\": [\"station\", \"ingredient\", \"input_count\", \"catalyst\", \"catalyst_count\", \"result\"]"),
-                "KubeJS workshop ids must distinguish batch/catalyst variants instead of colliding");
+        assertTrue(workshop.contains("\"name\": \"priority\""),
+                "KubeJS workshop schema must expose recipe priority");
+        assertTrue(workshop.contains("\"min\": 1, \"max\": 64"),
+                "KubeJS workshop schema must expose the 1..64 item-count bounds");
+        assertTrue(workshop.contains("\"min\": 1, \"max\": 72000"),
+                "KubeJS workshop schema must expose the 1..72000 work bound");
+        assertTrue(workshop.contains("\"unique\": [\"station\", \"ingredient\", \"input_count\", \"catalyst\", \"catalyst_count\", \"priority\", \"result\"]"),
+                "KubeJS workshop ids must distinguish prioritized batch/catalyst variants instead of colliding");
 
         String quern = Files.readString(QUERN_SCHEMA);
         assertTrue(quern.contains("\"name\": \"priority\""),

@@ -43,6 +43,7 @@ Starting in **0.0.11**, Firstworks registers all gameplay options as a **`SERVER
 | `enableTextileProgression` | Boolean | `true` | `true / false` | Replaces wool drops with raw fleece, disables String-to-Wool, and requires Cloth/Clean Wool for beds. |
 | `enableMasonryProgression` | Boolean | `true` | `true / false` | Requires brick molding, firing, wet mortar mixing, and mortar-bound brick blocks. |
 | `enableGrainProgression` | Boolean | `true` | `true / false` | When enabled, rewrites the winning `minecraft:bread`, `minecraft:cookie`, and `minecraft:cake` recipes to require `#c:doughs/wheat` / `#c:flours/wheat`. When disabled, Firstworks leaves those recipe IDs untouched so vanilla or another datapack/mod can own them. |
+| `enablePrimitiveCopperProgression` | Boolean | `true` | `true / false` | When enabled, removes the six vanilla raw/ore copper smelting and blasting recipe IDs. When disabled, Firstworks leaves the winning vanilla/datapack recipes untouched while keeping its copper workshop mechanics available. |
 | `rainFillsBarrels` | Boolean | `true` | `true / false` | Allows rain to gradually fill open barrels with water during precipitation events. |
 | `rainFillAmount` | Integer | `100` | `1 – 4000` | Millibuckets of water gathered per precipitation event. |
 | `charcoalCarbonizeDuration` | Integer | `6000` | `20 – 72000` | Ticks required for a sealed mound to carbonize (default: 5 minutes / 6000 ticks). |
@@ -72,6 +73,7 @@ Firstworks exposes data-driven tags for extensible pack integration. Below are t
 | `#firstworks:hammers` | `firstworks:stone_hammer` | Hammer-role tools that advance Stone Anvil work. |
 | `#firstworks:refractory_materials` | `firstworks:grog`, `firstworks:refractory_clay`, `firstworks:refractory_brick` | Shared refractory-material classification for workshop extension. |
 | `#firstworks:primitive_copper` | `firstworks:cast_copper_billet`, `firstworks:annealed_copper_billet`, `minecraft:copper_ingot`, `firstworks:copper_fasteners`, `firstworks:copper_knife` | Firstworks primitive-copper chain and products that precede mature metallurgy. |
+| `#firstworks:crucible_furnace_fuels` | `minecraft:coal`, `minecraft:charcoal` | Items accepted as Crucible Furnace reserve fuel. Add coke, peat, charcoal variants, or other pack fuels here. |
 | `#firstworks:charcoal_igniters` | `firstworks:fire_starter`, `minecraft:flint_and_steel` | Items capable of igniting charcoal mounds. |
 | `#firstworks:raw_hides` | `firstworks:raw_hide` | Raw hide items removed during animal drop normalization before adding `firstworks:raw_hide`. Packs integrating third-party animal mods should add items like `naturalist:hide` here. |
 | `#firstworks:tree_bark` | `firstworks:tree_bark` | Stripped bark items used for brewing tannin solution in barrels. |
@@ -265,11 +267,24 @@ Stone/Copper workshop stations use one shared recipe type with a station selecto
   "catalyst_count": 1,
   "consume_catalyst": false,
   "result": { "id": "firstworks:cast_copper_billet" },
-  "work": 240
+  "work": 240,
+  "priority": 0
 }
 ```
 
-Supported `station` values are `pottery_wheel`, `stone_anvil`, and `crucible_furnace`. Unknown values fail recipe loading. The `catalyst` field is genuinely optional: omit it for a catalyst-free recipe. If the field is present but resolves to an empty ingredient/tag, it remains a required catalyst and the recipe matches nothing rather than silently bypassing the requirement.
+| Field | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `station` | String | *(required)* | `pottery_wheel`, `stone_anvil`, or `crucible_furnace`. Unknown values fail recipe loading. |
+| `ingredient` | Ingredient | *(required)* | Primary input matcher. |
+| `input_count` | Int `1–64` | `1` | Required/consumed primary-input count. |
+| `catalyst` | Ingredient | *(omitted)* | Optional tool/mold/catalyst. Declared-empty ingredients remain required and therefore match nothing. |
+| `catalyst_count` | Int `1–64` | `1` | Required catalyst count. Non-default values require a declared catalyst. |
+| `consume_catalyst` | Boolean | `false` | Whether the declared catalyst is consumed. `true` requires a catalyst. |
+| `result` | Item Stack | *(required)* | Output produced on completion. |
+| `work` | Int `1–72000` | `20` | Manual actions for manual stations or ticks for the Crucible Furnace. |
+| `priority` | Int | `0` | Explicit overlap priority. Highest value wins; ties then use larger `input_count`, catalyst-specific over catalyst-free, then recipe id. |
+
+This same contract is enforced by the KubeJS recipe schema, including the upper bounds above. `priority` should be preferred for intentional overrides instead of relying on lexicographical recipe-id naming.
 
 ---
 
@@ -363,7 +378,8 @@ ServerEvents.recipes(event => {
     station: 'stone_anvil',
     ingredient: { item: 'firstworks:annealed_copper_billet' },
     result: { id: 'minecraft:copper_ingot' },
-    work: 8
+    work: 8,
+    priority: 0
   }).id('example:work_copper')
 })
 ```
@@ -472,7 +488,30 @@ FirstworksEvents.quernGrindingStarting(event => {
 FirstworksEvents.quernGrindingCompleted(event => {
   console.info(`Quern completed ${event.recipeId} at ${event.pos}`)
 })
+
+// 7. Workshop Processing
+FirstworksEvents.workshopProcessingStarting(event => {
+  // Guaranteed properties:
+  // event.level      (ServerLevel)
+  // event.pos        (BlockPos)
+  // event.workshop   (WorkshopBlockEntity)
+  // event.station    (String: pottery_wheel / stone_anvil / crucible_furnace)
+  // event.recipeId   (ResourceLocation)
+  // event.recipe     (WorkshopRecipe)
+  // event.input      (ItemStack copy)
+  // event.catalyst   (ItemStack copy)
+  // event.result     (ItemStack copy)
+  // event.cancel()
+  //
+  // Fires before the first manual work unit, or before a Crucible Furnace
+  // consumes reserve fuel. Cancelling therefore has no fuel/progress side effect.
+})
+FirstworksEvents.workshopProcessingCompleted(event => {
+  console.info(`Workshop ${event.station} completed ${event.recipeId} at ${event.pos}`)
+})
 ```
+
+For ticking Crucible Furnaces, a cancelled workshop start is latched until relevant workshop state changes or the furnace is restoked, avoiding an event every server tick. Manual stations may retry on the next explicit player work action.
 
 ---
 
@@ -502,7 +541,7 @@ FirstworksEvents.quernGrindingCompleted(event => {
 - **Workshop stations (`pottery_wheel`, `stone_anvil`, `crucible_furnace`)**:
   - All faces expose the same four-slot handler: slot 0 input, slot 1 catalyst, slot 2 fuel, slot 3 output.
   - Automation may insert into the first three valid slots and may extract only completed output from slot 3.
-  - Normal player right-click favors recipe input/catalyst roles. On heated stations, sneak-right-click coal/charcoal forces the held item into slot 2, so fuel remains reachable even when a pack recipe also uses that item as input or catalyst.
+  - Normal player right-click favors recipe input/catalyst roles. On heated stations, sneak-right-click any item in `#firstworks:crucible_furnace_fuels` forces it into slot 2, so fuel remains reachable even when a pack recipe also uses that item as input or catalyst.
   - Adding recipe input or catalyst preserves active progress and running state when the selected recipe id remains unchanged; if the insertion changes the selected recipe, processing resets before the new recipe begins. Reserve-fuel top-ups also preserve progress and do not consume another fuel item while the current batch is already running.
 
 ---
@@ -573,6 +612,7 @@ Because all Firstworks routes match by common tag (`#c:flours/wheat`, `#c:doughs
 - **JEI Categories**:
   - Barrel Processing, Hand Spinning, Loom Weaving, Brick Molding, Mortar Grinding, Quern Grinding, **Workshop Processing**, and dynamic Charcoal Mound Information guide.
   - The base Hand Spindle is a catalyst for Hand Spinning, the Quern is a catalyst for Quern Grinding, the Loom block family is discovered for Loom Weaving, and the Pottery Wheel, Stone Anvil, Crucible Furnace, and Bellows are catalysts for their Workshop Processing views.
+  - Crucible Furnace recipe views enumerate `#firstworks:crucible_furnace_fuels`, so pack-added fuels appear in JEI without code changes.
 
 ---
 
@@ -605,4 +645,8 @@ Because all Firstworks routes match by common tag (`#c:flours/wheat`, `#c:doughs
 2. **Quern Recipe Priority**: `firstworks:quern_grinding` gains an optional `priority` field (default `0`). When multiple quern recipes match the same ingredient, the highest `priority` wins (ties break by recipe id). The previous requirement that quern ingredient matchers be mutually exclusive is relaxed — overlapping matchers now resolve deterministically.
 3. **Quern Visual Speed**: the grinding stone's rotation advances with the work applied per crank (`quernManualWorkPerCrank`); there are still no per-source labor or duration fields on recipes.
 4. **Workshop Catalyst Semantics**: `firstworks:workshop_processing` distinguishes an omitted catalyst from a declared catalyst whose ingredient/tag resolves empty. Declared-empty catalysts match nothing instead of becoming catalyst-free recipes.
-5. **Workshop Role Routing**: player insertion now resolves recipe roles before fuel; sneak-right-click coal/charcoal on a heated workshop station explicitly targets the fuel reserve. Automation retains fixed slots 0=input, 1=catalyst, 2=fuel, 3=output.
+5. **Workshop Role Routing**: player insertion now resolves recipe roles before fuel; sneak-right-click a `#firstworks:crucible_furnace_fuels` item on a heated workshop station explicitly targets the fuel reserve. Automation retains fixed slots 0=input, 1=catalyst, 2=fuel, 3=output. Same-recipe input/catalyst top-ups preserve heated progress.
+6. **Primitive Copper Progression Toggle**: `enablePrimitiveCopperProgression` defaults to `true`. Disabling it leaves the winning vanilla/datapack copper smelting and blasting recipes untouched while retaining Firstworks copper mechanics.
+7. **Crucible Fuel Tag**: Crucible Furnace reserve fuel is now controlled by `#firstworks:crucible_furnace_fuels`, which contains Coal and Charcoal by default and is shared by runtime insertion and JEI.
+8. **Workshop Priority and Bounds**: `firstworks:workshop_processing` adds optional integer `priority` (default `0`). `input_count` / `catalyst_count` are `1–64`, `work` is `1–72000`, and the KubeJS schema exposes the same limits.
+9. **Workshop KubeJS Lifecycle**: `workshopProcessingStarting` is cancellable before progress/fuel consumption and `workshopProcessingCompleted` fires after output production, with level/position/station/recipe/input/catalyst/result context.

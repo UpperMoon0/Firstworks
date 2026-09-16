@@ -16,6 +16,7 @@ public final class ModTags {
     public static final TagKey<Item> HAMMERS = TagKey.create(Registries.ITEM, Firstworks.id("hammers"));
     public static final TagKey<Item> REFRACTORY_MATERIALS = TagKey.create(Registries.ITEM, Firstworks.id("refractory_materials"));
     public static final TagKey<Item> PRIMITIVE_COPPER = TagKey.create(Registries.ITEM, Firstworks.id("primitive_copper"));
+    public static final TagKey<Item> CRUCIBLE_FURNACE_FUELS = TagKey.create(Registries.ITEM, Firstworks.id("crucible_furnace_fuels"));
     public static final TagKey<Block> RESIN_TREES = TagKey.create(Registries.BLOCK, Firstworks.id("resin_trees"));
     public static final TagKey<Block> CHARCOAL_SEALANTS = TagKey.create(Registries.BLOCK, Firstworks.id("charcoal_sealants"));
     public static final TagKey<Block> CHARCOAL_WOODS = TagKey.create(Registries.BLOCK, Firstworks.id("charcoal_woods"));

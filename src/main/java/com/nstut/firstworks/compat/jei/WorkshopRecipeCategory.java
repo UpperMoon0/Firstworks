@@ -15,11 +15,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 
 import java.util.Arrays;
-import java.util.List;
 
 public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRecipe> {
     private final RecipeType<WorkshopRecipe> recipeType;
@@ -83,7 +81,7 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
     private static void addFuelSlot(IRecipeLayoutBuilder builder, int x) {
         builder.addSlot(RecipeIngredientRole.CATALYST, x, 31)
                 .setStandardSlotBackground()
-                .addItemStacks(List.of(new ItemStack(Items.COAL), new ItemStack(Items.CHARCOAL)));
+                .addItemStacks(Arrays.stream(Ingredient.of(ModTags.CRUCIBLE_FURNACE_FUELS).getItems()).toList());
     }
 
     @Override

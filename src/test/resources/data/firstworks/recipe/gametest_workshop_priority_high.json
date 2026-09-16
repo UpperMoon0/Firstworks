@@ -1,0 +1,8 @@
+{
+  "type": "firstworks:workshop_processing",
+  "station": "pottery_wheel",
+  "ingredient": {"item": "minecraft:gold_nugget"},
+  "result": {"id": "minecraft:diamond"},
+  "work": 1,
+  "priority": 10
+}

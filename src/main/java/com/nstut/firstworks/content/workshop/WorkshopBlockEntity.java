@@ -1,19 +1,21 @@
 package com.nstut.firstworks.content.workshop;
 
+import com.nstut.firstworks.compat.OptionalIntegrations;
 import com.nstut.firstworks.registry.ModBlockEntities;
 import com.nstut.firstworks.registry.ModRecipes;
+import com.nstut.firstworks.registry.ModTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -40,6 +42,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
     private int progress;
     private int stokeTicks;
     private boolean running;
+    private boolean processCancelled;
     private long actionSteps;
 
     private double clientPrevRotation;
@@ -87,14 +90,15 @@ public final class WorkshopBlockEntity extends BlockEntity {
 
         Optional<RecipeHolder<WorkshopRecipe>> holder = workshop.activeRecipe();
         if (holder.isEmpty() || !workshop.output.isEmpty()) {
-            if (workshop.progress != 0 || workshop.running || stokeExpired) {
+            if (workshop.progress != 0 || workshop.running || workshop.processCancelled || stokeExpired) {
                 workshop.progress = 0;
                 workshop.running = false;
+                workshop.processCancelled = false;
                 workshop.sync();
             }
             return;
         }
-        if (station.equals(WorkshopRecipe.CRUCIBLE_FURNACE) && workshop.stokeTicks <= 0) {
+        if (workshop.stokeTicks <= 0) {
             if (stokeExpired) {
                 workshop.sync();
             }
@@ -109,6 +113,9 @@ public final class WorkshopBlockEntity extends BlockEntity {
                 }
                 return;
             }
+            if (!workshop.tryBegin(holder.get())) {
+                return;
+            }
             workshop.fuel.shrink(1);
             if (workshop.fuel.isEmpty()) {
                 workshop.fuel = ItemStack.EMPTY;
@@ -120,7 +127,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
 
         workshop.progress++;
         if (workshop.progress >= holder.get().value().work()) {
-            workshop.complete(holder.get().value());
+            workshop.complete(holder.get());
         } else if (started || stokeExpired || workshop.progress % 20 == 0) {
             workshop.sync();
         }
@@ -130,6 +137,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
         if (!station().equals(WorkshopRecipe.CRUCIBLE_FURNACE)) {
             return false;
         }
+        processCancelled = false;
         stokeTicks = Math.max(stokeTicks, Math.max(1, ticks));
         sync();
         return true;
@@ -145,6 +153,12 @@ public final class WorkshopBlockEntity extends BlockEntity {
             return false;
         }
 
+        // Manual work is an explicit retry boundary; unlike the ticking furnace it cannot spam a veto handler.
+        processCancelled = false;
+        if (!tryBegin(holder.get())) {
+            return false;
+        }
+
         progress++;
         actionSteps++;
         if (level != null) {
@@ -153,14 +167,34 @@ public final class WorkshopBlockEntity extends BlockEntity {
                     SoundSource.BLOCKS, 0.45F, station.equals(WorkshopRecipe.POTTERY_WHEEL) ? 1.15F : 1.35F);
         }
         if (progress >= holder.get().value().work()) {
-            complete(holder.get().value());
+            complete(holder.get());
         } else {
             sync();
         }
         return true;
     }
 
-    private void complete(WorkshopRecipe recipe) {
+    private boolean tryBegin(RecipeHolder<WorkshopRecipe> holder) {
+        if (progress != 0 || running) {
+            return true;
+        }
+        if (processCancelled) {
+            return false;
+        }
+        if (level instanceof ServerLevel server
+                && OptionalIntegrations.fireWorkshopProcessingStarting(server, this, holder.id(), holder.value(),
+                        input.copy(), catalyst.copy(), holder.value().result())) {
+            processCancelled = true;
+            sync();
+            return false;
+        }
+        return true;
+    }
+
+    private void complete(RecipeHolder<WorkshopRecipe> holder) {
+        WorkshopRecipe recipe = holder.value();
+        ItemStack eventInput = input.copy();
+        ItemStack eventCatalyst = catalyst.copy();
         input.shrink(recipe.inputCount());
         if (input.isEmpty()) {
             input = ItemStack.EMPTY;
@@ -174,6 +208,11 @@ public final class WorkshopBlockEntity extends BlockEntity {
         output = recipe.result().copy();
         progress = 0;
         running = false;
+        processCancelled = false;
+        if (level instanceof ServerLevel server) {
+            OptionalIntegrations.fireWorkshopProcessingCompleted(server, this, holder.id(), recipe,
+                    eventInput, eventCatalyst, output);
+        }
         if (level != null) {
             level.playSound(null, worldPosition, SoundEvents.PLAYER_LEVELUP, SoundSource.BLOCKS, 0.22F, 1.65F);
         }
@@ -188,8 +227,10 @@ public final class WorkshopBlockEntity extends BlockEntity {
                 .filter(holder -> holder.value().ingredient().test(input)
                         && input.getCount() >= holder.value().inputCount())
                 .filter(holder -> holder.value().catalystMatches(catalyst))
-                .sorted(Comparator.comparingInt((RecipeHolder<WorkshopRecipe> holder) -> holder.value().inputCount())
+                .sorted(Comparator.comparingInt((RecipeHolder<WorkshopRecipe> holder) -> holder.value().priority())
                         .reversed()
+                        .thenComparing(Comparator.comparingInt(
+                                (RecipeHolder<WorkshopRecipe> holder) -> holder.value().inputCount()).reversed())
                         .thenComparingInt(holder -> holder.value().hasCatalyst() ? 0 : 1)
                         .thenComparing(holder -> holder.id().toString()))
                 .findFirst();
@@ -209,7 +250,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
     }
 
     private boolean isFuel(ItemStack stack) {
-        return stack.is(Items.CHARCOAL) || stack.is(Items.COAL);
+        return stack.is(ModTags.CRUCIBLE_FURNACE_FUELS);
     }
 
     private boolean heated() {
@@ -317,6 +358,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
             held.shrink(1);
         }
 
+        processCancelled = false;
         resetProcessingIfRecipeChanged(slot, previousRecipe);
         sync();
         return true;
@@ -346,6 +388,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
         }
         player.getInventory().placeItemBackInInventory(output.copy());
         output = ItemStack.EMPTY;
+        processCancelled = false;
         sync();
         return true;
     }
@@ -367,6 +410,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
         player.getInventory().placeItemBackInInventory(stack.copy());
         progress = 0;
         running = false;
+        processCancelled = false;
         sync();
         return true;
     }
@@ -452,6 +496,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
         tag.putInt("Progress", progress);
         tag.putInt("StokeTicks", stokeTicks);
         tag.putBoolean("Running", running);
+        tag.putBoolean("ProcessCancelled", processCancelled);
         tag.putLong("ActionSteps", actionSteps);
     }
 
@@ -465,6 +510,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
         progress = tag.getInt("Progress");
         stokeTicks = tag.getInt("StokeTicks");
         running = tag.getBoolean("Running");
+        processCancelled = tag.getBoolean("ProcessCancelled");
         long loadedActionSteps = tag.getLong("ActionSteps");
         if (level != null && level.isClientSide) {
             if (clientObservedActionSteps != Long.MIN_VALUE && loadedActionSteps != clientObservedActionSteps) {
@@ -546,6 +592,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
                     fuel = target;
                 }
 
+                processCancelled = false;
                 resetProcessingIfRecipeChanged(slot, previousRecipe);
                 sync();
             }
@@ -564,6 +611,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
                 if (output.isEmpty()) {
                     output = ItemStack.EMPTY;
                 }
+                processCancelled = false;
                 sync();
             }
             return result;
