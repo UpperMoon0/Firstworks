@@ -14,10 +14,13 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -52,6 +55,36 @@ public final class WorkshopSelectionGameTests {
         check(helper, wheel.work(player), "Pottery Wheel refused catalyst-specific recipe work");
         check(helper, wheel.getOutput().is(Items.DIAMOND),
                 "Pottery Wheel completed the wrong equal-batch workshop recipe");
+
+        helper.succeed();
+    }
+
+    @GameTest(template = EMPTY, timeoutTicks = 20)
+    public static void potteryBatchGestureNeverMultipliesCatalystOnlyItems(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos wheelPos = new BlockPos(10, 1, 4);
+        helper.setBlock(wheelPos, ModBlocks.POTTERY_WHEEL.get());
+        WorkshopBlockEntity wheel = helper.getBlockEntity(wheelPos);
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.NETHER_STAR, 5));
+        player.setShiftKeyDown(true);
+
+        BlockPos absoluteWheelPos = helper.absolutePos(wheelPos);
+        BlockHitResult outerRingHit = new BlockHitResult(
+                new Vec3(absoluteWheelPos.getX() + 0.92D,
+                        absoluteWheelPos.getY() + 0.90D,
+                        absoluteWheelPos.getZ() + 0.50D),
+                Direction.UP, absoluteWheelPos, false);
+        level.getBlockState(absoluteWheelPos).useItemOn(
+                player.getMainHandItem(), level, player, InteractionHand.MAIN_HAND, outerRingHit);
+        player.setShiftKeyDown(false);
+
+        check(helper, wheel.getInput().isEmpty(),
+                "Pottery Wheel outer-ring batch gesture routed a catalyst-only item into primary input");
+        check(helper, wheel.getCatalyst().is(Items.NETHER_STAR) && wheel.getCatalyst().getCount() == 1,
+                "Pottery Wheel outer-ring batch gesture multiplied a catalyst-only item");
+        check(helper, player.getMainHandItem().getCount() == 4,
+                "Pottery Wheel consumed more than one catalyst-only item from the held stack");
 
         helper.succeed();
     }
