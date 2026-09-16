@@ -126,22 +126,24 @@ public abstract class WorkshopBlock extends BaseEntityBlock {
         }
 
         // Pottery keeps the recipe API batch-based, but the bundled GUI-free interaction no longer
-        // requires counting repeated insertion clicks. Sneak-place a valid ingredient on the top
-        // plate: center / middle / outer ring loads a 1 / 2 / 3 item batch respectively. Normal
-        // insertion remains available for arbitrary pack recipes and larger custom batch sizes.
+        // requires counting repeated insertion clicks. Sneak-place a valid PRIMARY INPUT on the top
+        // plate: center / middle / outer ring loads a 1 / 2 / 3 item batch respectively. Slot-specific
+        // validation is intentional here: catalyst-only items must never trigger the batch gesture.
         if (station.equals(WorkshopRecipe.POTTERY_WHEEL)
                 && player.isShiftKeyDown()
                 && hit.getDirection() == Direction.UP
                 && workshop.getInput().isEmpty()
-                && workshop.canInsert(stack)) {
+                && workshop.getItemHandler(null).isItemValid(0, stack)) {
             int targetBatch = potteryBatchForHit(pos, hit);
             if (player.hasInfiniteMaterials() || stack.getCount() >= targetBatch) {
                 if (!level.isClientSide) {
-                    int inserted = 0;
-                    while (inserted < targetBatch && workshop.insert(stack, player.hasInfiniteMaterials())) {
-                        inserted++;
-                    }
+                    ItemStack offered = stack.copyWithCount(targetBatch);
+                    ItemStack remainder = workshop.getItemHandler(null).insertItem(0, offered, false);
+                    int inserted = targetBatch - remainder.getCount();
                     if (inserted > 0) {
+                        if (!player.hasInfiniteMaterials()) {
+                            stack.shrink(inserted);
+                        }
                         level.playSound(null, pos, SoundEvents.BRUSH_GENERIC, SoundSource.BLOCKS,
                                 0.45F, 0.90F + inserted * 0.08F);
                     }
@@ -151,7 +153,7 @@ public abstract class WorkshopBlock extends BaseEntityBlock {
         }
 
         // Normal right-click favors recipe roles. Sneak-right-click provides an explicit,
-        // GUI-free escape hatch when coal/charcoal also appears in a custom recipe role.
+        // GUI-free escape hatch when a tagged Crucible fuel also appears in a custom recipe role.
         if (player.isShiftKeyDown() && workshop.canInsertFuel(stack)) {
             if (!level.isClientSide) {
                 workshop.insertFuel(stack, player.hasInfiniteMaterials());
