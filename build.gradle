@@ -49,6 +49,7 @@ neoForge {
         }
         gameTestServer {
             type = 'gameTestServer'
+            gameDirectory = layout.buildDirectory.dir('gametest-run').get().asFile
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
         data {
@@ -67,6 +68,15 @@ neoForge {
             sourceSet(sourceSets.test)
         }
     }
+}
+
+def prepareGameTestKubeJsScripts = tasks.register('prepareGameTestKubeJsScripts', Sync) {
+    from 'src/test/kubejs'
+    into layout.buildDirectory.dir('gametest-run/kubejs')
+}
+
+tasks.named('runGameTestServer').configure {
+    dependsOn prepareGameTestKubeJsScripts
 }
 
 tasks.withType(JavaCompile).configureEach {
