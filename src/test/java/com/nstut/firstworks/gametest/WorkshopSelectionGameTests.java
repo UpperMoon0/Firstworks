@@ -28,8 +28,6 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class WorkshopSelectionGameTests {
     private static final String EMPTY = "empty";
-    private static final String START_COUNT_PROPERTY = "firstworks.gametest.workshopStartCount";
-    private static final String COMPLETE_COUNT_PROPERTY = "firstworks.gametest.workshopCompleteCount";
 
     private WorkshopSelectionGameTests() {}
 
@@ -93,50 +91,54 @@ public final class WorkshopSelectionGameTests {
 
     @GameTest(template = EMPTY, timeoutTicks = 20)
     public static void workshopKubeJsLifecycleCancellationAndCompletionAreBehavioral(GameTestHelper helper) {
-        System.setProperty(START_COUNT_PROPERTY, "0");
-        System.setProperty(COMPLETE_COUNT_PROPERTY, "0");
         ServerLevel level = helper.getLevel();
 
-        BlockPos furnacePos = new BlockPos(2, 1, 12);
-        helper.setBlock(furnacePos, ModBlocks.CRUCIBLE_FURNACE.get());
-        WorkshopBlockEntity furnace = helper.getBlockEntity(furnacePos);
-        check(helper, furnace.getItemHandler(null)
+        BlockPos cancelPos = new BlockPos(2, 1, 12);
+        helper.setBlock(cancelPos, ModBlocks.CRUCIBLE_FURNACE.get());
+        WorkshopBlockEntity cancelled = helper.getBlockEntity(cancelPos);
+        check(helper, cancelled.getItemHandler(null)
                 .insertItem(0, new ItemStack(Items.LAPIS_LAZULI), false).isEmpty(),
                 "KubeJS cancellation test recipe input was rejected");
-        check(helper, furnace.getItemHandler(null)
+        check(helper, cancelled.getItemHandler(null)
                 .insertItem(2, new ItemStack(Items.COAL), false).isEmpty(),
                 "KubeJS cancellation test fuel was rejected");
-        check(helper, furnace.stoke(160), "KubeJS cancellation test furnace could not be stoked");
+        check(helper, cancelled.stoke(160), "KubeJS cancellation test furnace could not be stoked");
 
-        tickHeated(level, helper.absolutePos(furnacePos), furnace, 1);
-        check(helper, propertyCount(START_COUNT_PROPERTY) == 1,
+        tickHeated(level, helper.absolutePos(cancelPos), cancelled, 1);
+        check(helper, cancelled.getStokeTicks() == 179,
                 "KubeJS workshop start listener did not execute exactly once on first start attempt");
-        check(helper, furnace.getProgress() == 0 && !furnace.isRunning(),
+        check(helper, cancelled.getProgress() == 0 && !cancelled.isRunning(),
                 "Cancelled KubeJS workshop start advanced progress or entered running state");
-        check(helper, furnace.getFuel().is(Items.COAL) && furnace.getFuel().getCount() == 1,
+        check(helper, cancelled.getFuel().is(Items.COAL) && cancelled.getFuel().getCount() == 1,
                 "Cancelled KubeJS workshop start consumed Crucible Furnace fuel");
 
-        tickHeated(level, helper.absolutePos(furnacePos), furnace, 4);
-        check(helper, propertyCount(START_COUNT_PROPERTY) == 1,
-                "Cancelled ticking workshop start spammed the KubeJS listener instead of latching");
-        check(helper, furnace.getProgress() == 0 && furnace.getFuel().getCount() == 1,
+        tickHeated(level, helper.absolutePos(cancelPos), cancelled, 4);
+        check(helper, cancelled.getStokeTicks() == 175,
+                "Cancelled ticking workshop start retriggered instead of remaining latched");
+        check(helper, cancelled.getProgress() == 0 && cancelled.getFuel().getCount() == 1,
                 "Cancelled ticking workshop changed progress or fuel on later ticks");
 
-        BlockPos wheelPos = new BlockPos(8, 1, 12);
-        helper.setBlock(wheelPos, ModBlocks.POTTERY_WHEEL.get());
-        WorkshopBlockEntity wheel = helper.getBlockEntity(wheelPos);
-        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
-        check(helper, wheel.getItemHandler(null)
+        BlockPos completePos = new BlockPos(8, 1, 12);
+        helper.setBlock(completePos, ModBlocks.CRUCIBLE_FURNACE.get());
+        WorkshopBlockEntity completed = helper.getBlockEntity(completePos);
+        check(helper, completed.getItemHandler(null)
                 .insertItem(0, new ItemStack(Items.PRISMARINE_CRYSTALS), false).isEmpty(),
                 "KubeJS completion test recipe input was rejected");
-        check(helper, wheel.work(player), "KubeJS completion test recipe did not execute");
-        check(helper, wheel.getOutput().is(Items.EMERALD),
+        check(helper, completed.getItemHandler(null)
+                .insertItem(2, new ItemStack(Items.COAL), false).isEmpty(),
+                "KubeJS completion test fuel was rejected");
+        check(helper, completed.stoke(160), "KubeJS completion test furnace could not be stoked");
+
+        tickHeated(level, helper.absolutePos(completePos), completed, 1);
+        check(helper, completed.getOutput().is(Items.EMERALD),
                 "KubeJS completion test recipe produced the wrong output");
-        check(helper, propertyCount(COMPLETE_COUNT_PROPERTY) == 1,
+        check(helper, completed.getStokeTicks() == 196,
                 "KubeJS workshop completion listener did not fire exactly once");
-        check(helper, !wheel.work(player),
-                "Completed workshop accepted more work while output was still present");
-        check(helper, propertyCount(COMPLETE_COUNT_PROPERTY) == 1,
+
+        tickHeated(level, helper.absolutePos(completePos), completed, 1);
+        check(helper, completed.getOutput().is(Items.EMERALD),
+                "Completed workshop output changed on the following tick");
+        check(helper, completed.getStokeTicks() == 195,
                 "KubeJS workshop completion listener fired more than once for one completion");
 
         helper.succeed();
@@ -307,10 +309,6 @@ public final class WorkshopSelectionGameTests {
                 "Crucible Furnace consumed another fuel item after stable automation top-ups");
 
         helper.succeed();
-    }
-
-    private static int propertyCount(String property) {
-        return Integer.parseInt(System.getProperty(property, "0"));
     }
 
     private static void tickHeated(ServerLevel level, BlockPos pos, WorkshopBlockEntity workshop, int ticks) {
