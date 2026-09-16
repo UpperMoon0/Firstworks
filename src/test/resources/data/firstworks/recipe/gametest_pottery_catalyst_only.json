@@ -1,0 +1,8 @@
+{
+  "type": "firstworks:workshop_processing",
+  "station": "pottery_wheel",
+  "ingredient": {"item": "minecraft:diamond_block"},
+  "catalyst": {"item": "minecraft:nether_star"},
+  "result": {"id": "minecraft:emerald"},
+  "work": 1
+}
