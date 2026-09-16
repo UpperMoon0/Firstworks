@@ -1,6 +1,6 @@
 {
   "type": "firstworks:workshop_processing",
-  "station": "pottery_wheel",
+  "station": "crucible_furnace",
   "ingredient": {"item": "minecraft:prismarine_crystals"},
   "result": {"id": "minecraft:emerald"},
   "work": 1
