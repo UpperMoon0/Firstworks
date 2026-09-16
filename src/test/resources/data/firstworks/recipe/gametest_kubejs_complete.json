@@ -1,0 +1,7 @@
+{
+  "type": "firstworks:workshop_processing",
+  "station": "pottery_wheel",
+  "ingredient": {"item": "minecraft:prismarine_crystals"},
+  "result": {"id": "minecraft:emerald"},
+  "work": 1
+}
