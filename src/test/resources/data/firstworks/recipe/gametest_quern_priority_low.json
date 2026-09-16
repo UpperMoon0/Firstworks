@@ -1,0 +1,7 @@
+{
+  "type": "firstworks:quern_grinding",
+  "ingredient": {"item": "minecraft:quartz"},
+  "result": {"id": "minecraft:dirt"},
+  "work": 1,
+  "priority": 1
+}

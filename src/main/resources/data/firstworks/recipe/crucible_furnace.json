@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["RCR", "RTR", "RRR"],
+  "key": {
+    "R": {"item": "firstworks:refractory_brick"},
+    "C": {"item": "firstworks:crucible"},
+    "T": {"item": "firstworks:tuyere"}
+  },
+  "result": {"id": "firstworks:crucible_furnace"}
+}

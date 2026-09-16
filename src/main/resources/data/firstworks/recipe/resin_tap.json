@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "tools",
+  "pattern": [" F", "BS"],
+  "key": {
+    "F": {"item": "minecraft:flint"},
+    "B": {"tag": "firstworks:primitive_bindings"},
+    "S": {"item": "minecraft:stick"}
+  },
+  "result": {"id": "firstworks:resin_tap"}
+}

@@ -2,50 +2,44 @@ package com.nstut.firstworks;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.nstut.firstworks.registry.ModItems;
 import org.junit.jupiter.api.Test;
 
 import java.io.FileReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FoodProgressionRecipeTest {
+    private static final Path TOOL_BINDING = Path.of(
+            "src/main/java/com/nstut/firstworks/ToolBindingRecipes.java");
+    private static final Path VANILLA_RECIPE_DIR = Path.of("src/main/resources/data/minecraft/recipe");
 
     @Test
-    public void testBreadRecipeRequiresDoughTag() throws Exception {
-        Path path = Path.of("src/main/resources/data/minecraft/recipe/bread.json");
-        assertTrue(Files.exists(path), "bread.json override must exist");
-        try (FileReader reader = new FileReader(path.toFile())) {
-            JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
-            String raw = json.toString();
-            assertFalse(raw.contains("minecraft:wheat"), "Bread recipe must not accept raw wheat");
-            assertTrue(raw.contains("c:doughs/wheat"), "Bread recipe must require c:doughs/wheat");
-        }
+    public void grainProgressionRewritesWinningRecipesAtRuntime() throws Exception {
+        String source = Files.readString(TOOL_BINDING);
+        assertTrue(source.contains("if (grain)"),
+                "grain progression rewrites must only run while the toggle is enabled");
+        assertTrue(source.contains("addGrainProgressionRoutes(replacements)"),
+                "enabled grain progression must install its runtime recipe replacements");
+        assertTrue(source.contains("Ingredient.of(WHEAT_DOUGHS)"),
+                "Bread/Cookie progression must use the common wheat dough tag");
+        assertTrue(source.contains("Ingredient.of(WHEAT_FLOURS)"),
+                "Cake progression must use the common wheat flour tag");
+        assertTrue(source.contains("shapedMisc(Items.COOKIE, 8"),
+                "Cookie progression must retain the vanilla eight-cookie output");
+        assertTrue(source.contains("\"AAA\", \"BCB\", \"###\""),
+                "Cake progression must retain the vanilla three-row shape");
     }
 
     @Test
-    public void testCookieRecipeRequiresDoughTag() throws Exception {
-        Path path = Path.of("src/main/resources/data/minecraft/recipe/cookie.json");
-        assertTrue(Files.exists(path), "cookie.json override must exist");
-        try (FileReader reader = new FileReader(path.toFile())) {
-            JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
-            String raw = json.toString();
-            assertFalse(raw.contains("minecraft:wheat"), "Cookie recipe must not accept raw wheat");
-            assertTrue(raw.contains("c:doughs/wheat"), "Cookie recipe must require c:doughs/wheat");
-        }
-    }
-
-    @Test
-    public void testCakeRecipeRequiresFlourTag() throws Exception {
-        Path path = Path.of("src/main/resources/data/minecraft/recipe/cake.json");
-        assertTrue(Files.exists(path), "cake.json override must exist");
-        try (FileReader reader = new FileReader(path.toFile())) {
-            JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
-            String raw = json.toString();
-            assertFalse(raw.contains("minecraft:wheat"), "Cake recipe must not accept raw wheat");
-            assertTrue(raw.contains("c:flours/wheat"), "Cake recipe must require c:flours/wheat");
+    public void grainProgressionDoesNotShipHardMinecraftOverrides() {
+        for (String id : new String[]{"bread", "cookie", "cake"}) {
+            assertFalse(Files.exists(VANILLA_RECIPE_DIR.resolve(id + ".json")),
+                    "0.0.14 must not ship a hard minecraft:" + id
+                            + " replacement; disabling progression must preserve the winning datapack recipe");
         }
     }
 
@@ -84,12 +78,13 @@ public class FoodProgressionRecipeTest {
             "src/main/resources/data/firstworks/recipe/bread_from_smoking_dough.json"
         };
 
-        for (String r : cookingRecipes) {
-            Path path = Path.of(r);
-            assertTrue(Files.exists(path), "Cooking recipe must exist: " + r);
+        for (String recipePath : cookingRecipes) {
+            Path path = Path.of(recipePath);
+            assertTrue(Files.exists(path), "Cooking recipe must exist: " + recipePath);
             try (FileReader reader = new FileReader(path.toFile())) {
                 JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
-                assertTrue(json.toString().contains("c:doughs/wheat"), "Cooking recipe must use c:doughs/wheat: " + r);
+                assertTrue(json.toString().contains("c:doughs/wheat"),
+                        "Cooking recipe must use c:doughs/wheat: " + recipePath);
                 assertEquals("minecraft:bread", json.getAsJsonObject("result").get("id").getAsString());
             }
         }

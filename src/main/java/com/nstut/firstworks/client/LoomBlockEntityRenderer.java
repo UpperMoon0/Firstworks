@@ -2,17 +2,26 @@ package com.nstut.firstworks.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
+import com.nstut.firstworks.Firstworks;
 import com.nstut.firstworks.content.loom.LoomBlock;
 import com.nstut.firstworks.content.loom.LoomBlockEntity;
+import com.nstut.firstworks.registry.ModBlocks;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.client.model.data.ModelData;
 import org.joml.Matrix4f;
 
 public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBlockEntity> {
@@ -27,7 +36,7 @@ public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBl
             MultiBufferSource buffers, int packedLight, int packedOverlay) {
         poseStack.pushPose();
         poseStack.translate(0.5, 0, 0.5);
-        poseStack.mulPose(com.mojang.math.Axis.YP.rotationDegrees(
+        poseStack.mulPose(Axis.YP.rotationDegrees(
                 loom.getBlockState().getValue(LoomBlock.FACING).toYRot() + 180.0F));
         poseStack.translate(-0.5, 0, -0.5);
 
@@ -44,8 +53,7 @@ public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBl
     }
 
     private void renderWarpThreads(LoomBlockEntity loom, ItemStack output, PoseStack poseStack,
-            MultiBufferSource buffers,
-            int packedLight, int packedOverlay) {
+            MultiBufferSource buffers, int packedLight, int packedOverlay) {
         TextureAtlasSprite sprite = itemRenderer.getModel(output, null, null, 0).getParticleIcon();
         int tint = outputTint(output);
         VertexConsumer vertices = buffers.getBuffer(Sheets.cutoutBlockSheet());
@@ -75,7 +83,7 @@ public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBl
 
     private void renderWovenThreads(LoomBlockEntity loom, ItemStack output, PoseStack poseStack,
             MultiBufferSource buffers, int packedLight, int packedOverlay) {
-        int required = loom.getMatchingRecipe().map(holder -> Math.max(1, holder.value().strokes())).orElse(1);
+        int required = loom.getRequiredStrokes();
         float fraction = loom.getOutput().isEmpty() ? (float) loom.getProgress() / required : 1.0F;
         if (fraction <= 0.0F) return;
 

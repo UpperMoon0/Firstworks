@@ -1,0 +1,12 @@
+{
+  "type": "firstworks:mortar_grinding",
+  "ingredient": {
+    "item": "minecraft:brick"
+  },
+  "input_count": 1,
+  "result": {
+    "id": "firstworks:grog",
+    "count": 1
+  },
+  "duration": 40
+}

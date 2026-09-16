@@ -1,0 +1,11 @@
+{
+  "type": "firstworks:workshop_processing",
+  "station": "crucible_furnace",
+  "ingredient": {"item": "minecraft:raw_copper"},
+  "input_count": 3,
+  "catalyst": {"item": "firstworks:casting_mold"},
+  "catalyst_count": 1,
+  "consume_catalyst": false,
+  "result": {"id": "firstworks:cast_copper_billet"},
+  "work": 240
+}

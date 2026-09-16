@@ -2,8 +2,10 @@ package com.nstut.firstworks;
 
 import com.nstut.firstworks.registry.ModItems;
 import com.nstut.firstworks.registry.ModTags;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -26,6 +28,11 @@ import java.util.Set;
 
 @EventBusSubscriber(modid = Firstworks.MOD_ID)
 public final class ToolBindingRecipes {
+    private static final TagKey<Item> WHEAT_DOUGHS = TagKey.create(
+            Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", "doughs/wheat"));
+    private static final TagKey<Item> WHEAT_FLOURS = TagKey.create(
+            Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", "flours/wheat"));
+
     @SubscribeEvent
     public static void bindVanillaTools(OnDatapackSyncEvent event) {
         boolean bindTools = FirstworksConfig.BIND_VANILLA_TOOL_RECIPES.getAsBoolean();
@@ -33,12 +40,17 @@ public final class ToolBindingRecipes {
         boolean bindMetal = bindTools && FirstworksConfig.BIND_METAL_VANILLA_TOOLS.getAsBoolean();
         boolean textiles = FirstworksConfig.ENABLE_TEXTILE_PROGRESSION.getAsBoolean();
         boolean masonry = FirstworksConfig.ENABLE_MASONRY_PROGRESSION.getAsBoolean();
+        boolean grain = FirstworksConfig.ENABLE_GRAIN_PROGRESSION.getAsBoolean();
+        boolean primitiveCopper = FirstworksConfig.ENABLE_PRIMITIVE_COPPER_PROGRESSION.getAsBoolean();
         boolean replaceLeather = FirstworksConfig.REPLACE_ANIMAL_LEATHER.getAsBoolean();
-        rewrite(event.getPlayerList().getServer().getRecipeManager(), bindPrimitive, bindMetal, textiles, masonry, replaceLeather);
+        rewrite(event.getPlayerList().getServer().getRecipeManager(), bindPrimitive, bindMetal, textiles,
+                masonry, grain, primitiveCopper, replaceLeather);
         com.nstut.firstworks.content.barrel.BarrelBlockEntity.invalidateAllBarrels();
     }
 
-    private static void rewrite(RecipeManager manager, boolean bindPrimitive, boolean bindMetal, boolean textiles, boolean masonry, boolean replaceLeather) {
+    private static void rewrite(RecipeManager manager, boolean bindPrimitive, boolean bindMetal,
+                                boolean textiles, boolean masonry, boolean grain, boolean primitiveCopper,
+                                boolean replaceLeather) {
         Ingredient primitiveBinding = Ingredient.of(ModTags.PRIMITIVE_BINDINGS);
         Ingredient rope = Ingredient.of(ModTags.STRONG_BINDINGS);
         Map<ResourceLocation, Recipe<?>> replacements = new HashMap<>();
@@ -59,13 +71,24 @@ public final class ToolBindingRecipes {
         }
 
         if (replaceLeather) {
-            replacements.put(vanilla("leather"), shapedSimple(ModItems.RAW_HIDE.get(), Ingredient.of(Items.RABBIT_HIDE), "##", "##"));
+            replacements.put(vanilla("leather"),
+                    shapedSimple(ModItems.RAW_HIDE.get(), Ingredient.of(Items.RABBIT_HIDE), "##", "##"));
+        }
+
+        // Grain progression is applied at sync time rather than by shipping data/minecraft replacements.
+        // When disabled, Firstworks leaves the winning datapack recipes untouched, preserving modpack overrides.
+        if (grain) {
+            addGrainProgressionRoutes(replacements);
         }
 
         List<RecipeHolder<?>> rewritten = new ArrayList<>(manager.getRecipes().size());
         int changed = 0;
         int removed = 0;
         for (RecipeHolder<?> holder : manager.getRecipes()) {
+            if (primitiveCopper && isVanillaCopperSmeltingRecipe(holder.id())) {
+                removed++;
+                continue;
+            }
             if (textiles && isVanillaTextileRecipe(holder.id())) {
                 removed++;
                 continue;
@@ -82,6 +105,7 @@ public final class ToolBindingRecipes {
                 removed++;
                 continue;
             }
+
             Recipe<?> replacement = replacements.get(holder.id());
             if (replacement == null) {
                 rewritten.add(holder);
@@ -92,8 +116,16 @@ public final class ToolBindingRecipes {
         }
         if (changed > 0 || removed > 0) {
             manager.replaceRecipes(rewritten);
-            Firstworks.LOGGER.info("Reworked {} tool recipes and removed {} bypass progression recipes", changed, removed);
+            Firstworks.LOGGER.info("Reworked {} progression recipes and removed {} bypass recipes", changed, removed);
         }
+    }
+
+    private static boolean isVanillaCopperSmeltingRecipe(ResourceLocation id) {
+        return id.getNamespace().equals("minecraft") && Set.of(
+                "copper_ingot_from_smelting_raw_copper", "copper_ingot_from_blasting_raw_copper",
+                "copper_ingot_from_smelting_copper_ore", "copper_ingot_from_blasting_copper_ore",
+                "copper_ingot_from_smelting_deepslate_copper_ore", "copper_ingot_from_blasting_deepslate_copper_ore"
+        ).contains(id.getPath());
     }
 
     private static final Set<String> BED_RECIPES = Set.of(
@@ -122,8 +154,25 @@ public final class ToolBindingRecipes {
                 "mix_mortar", "mortar_bound_brick_block").contains(id.getPath());
     }
 
+    private static void addGrainProgressionRoutes(Map<ResourceLocation, Recipe<?>> replacements) {
+        replacements.put(vanilla("bread"), shapedMisc(Items.BREAD, 1,
+                Map.of('#', Ingredient.of(WHEAT_DOUGHS)), "###"));
+        replacements.put(vanilla("cookie"), shapedMisc(Items.COOKIE, 8,
+                Map.of('#', Ingredient.of(WHEAT_DOUGHS), 'X', Ingredient.of(Items.COCOA_BEANS)), "#X#"));
+        replacements.put(vanilla("cake"), shapedMisc(Items.CAKE, 1,
+                Map.of('A', Ingredient.of(Items.MILK_BUCKET), 'B', Ingredient.of(Items.SUGAR),
+                        'C', Ingredient.of(Items.EGG), '#', Ingredient.of(WHEAT_FLOURS)),
+                "AAA", "BCB", "###"));
+    }
+
+    private static ShapedRecipe shapedMisc(Item result, int count,
+                                           Map<Character, Ingredient> keys, String... pattern) {
+        return new ShapedRecipe("", CraftingBookCategory.MISC,
+                ShapedRecipePattern.of(keys, pattern), new ItemStack(result, count));
+    }
+
     private static void addTier(Map<ResourceLocation, Recipe<?>> recipes, String tier, Ingredient material,
-            Ingredient binding, Item pickaxe, Item axe, Item shovel, Item hoe, Item sword) {
+                                Ingredient binding, Item pickaxe, Item axe, Item shovel, Item hoe, Item sword) {
         recipes.put(vanilla(tier + "_pickaxe"), shaped(pickaxe, material, binding, "MMM", "BS ", " S "));
         recipes.put(vanilla(tier + "_axe"), shaped(axe, material, binding, "MM ", "MSB", " S "));
         recipes.put(vanilla(tier + "_shovel"), shaped(shovel, material, binding, " M ", "BS ", " S "));

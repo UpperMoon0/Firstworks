@@ -1,0 +1,7 @@
+{
+  "type": "firstworks:quern_grinding",
+  "ingredient": {"item": "minecraft:brick"},
+  "input_count": 1,
+  "result": {"id": "firstworks:grog", "count": 2},
+  "work": 40
+}

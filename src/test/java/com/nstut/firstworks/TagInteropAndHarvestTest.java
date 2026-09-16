@@ -8,7 +8,9 @@ import java.io.FileReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TagInteropAndHarvestTest {
     private static final Path RECIPE_DIR = Path.of("src/main/resources/data/firstworks/recipe");
@@ -53,19 +55,12 @@ public class TagInteropAndHarvestTest {
                 "src/main/java/com/nstut/firstworks/GameplayEvents.java"));
         String method = methodBody(source, "gatherRawOchre");
 
-        // Regression guard from the PR #10 review: ochre harvesting must cost
-        // exactly one durability point. The dedicated KnifeItem installs no Tool
-        // component (see primitiveKnivesExtendTieredItemNotSwordItem), so ordinary
-        // block breaking applies no knife durability; the only durability applied
-        // here is this single explicit call. A second call, or a wrong amount,
-        // would silently over-damage primitive knives.
         long exactCalls = countOccurrences(method, "hurtAndBreak(1,");
         assertEquals(1, exactCalls,
                 "ochre harvest must apply exactly one durability point, not double-damage");
         assertEquals(exactCalls, countOccurrences(method, "hurtAndBreak("),
                 "ochre harvest must not apply any other durability amount");
 
-        // The single durability call must live inside the raw-ochre drop block.
         int dropIdx = method.indexOf("RAW_OCHRE");
         int dmgIdx = method.indexOf("hurtAndBreak");
         assertTrue(dropIdx >= 0 && dmgIdx > dropIdx,
@@ -78,26 +73,21 @@ public class TagInteropAndHarvestTest {
     public void primitiveKnivesExtendTieredItemNotSwordItem() throws Exception {
         String knife = Files.readString(Path.of("src/main/java/com/nstut/firstworks/content/KnifeItem.java"));
         String items = Files.readString(Path.of("src/main/java/com/nstut/firstworks/registry/ModItems.java"));
-        // Architectural separation the review asked for: knives share the tier base
-        // with SwordItem but are not swords.
+
         assertTrue(knife.contains("class KnifeItem extends TieredItem"));
         assertFalse(knife.contains("extends SwordItem"));
-        // Handing the tier to TieredItem restores tier durability, repair material
-        // (Bone/Flint), and enchantability — none of which plain Item provides.
-        // TieredItem.isValidRepairItem delegates to tier.getRepairIngredient() and
-        // getEnchantmentValue() to tier.getEnchantmentValue().
         assertTrue(knife.contains("super(tier,"), "tier must be delegated to TieredItem");
-        // Combat costs exactly one durability per successful hit (SwordItem-equivalent).
         assertTrue(knife.contains("postHurtEnemy"));
         assertTrue(knife.contains("hurtAndBreak(1,"), "combat must cost exactly one durability");
-        // Ordinary block breaking must cost 0: a knife installs no Tool component
-        // (which is what supplies damagePerBlock in 1.21), and is not a SwordItem.
-        // This is the real guarantee — a mineBlock override would be a red herring.
         assertFalse(knife.contains("createToolProperties"), "knife must not install a Tool component");
         assertFalse(knife.contains("Tool.of("), "knife must not install a Tool component");
         assertFalse(knife.contains("new Tool("), "knife must not install a Tool component");
-        assertTrue(items.contains("new KnifeItem(ModToolTiers.BONE"));
-        assertTrue(items.contains("new KnifeItem(ModToolTiers.FLINT"));
+
+        // Registration may use the shared helper, but each tier must remain explicit at the call site
+        // and the helper itself must construct KnifeItem directly.
+        assertTrue(items.contains("knife(\"bone_knife\", ModToolTiers.BONE"));
+        assertTrue(items.contains("knife(\"flint_knife\", ModToolTiers.FLINT"));
+        assertTrue(items.contains("new KnifeItem(tier, damage, speed)"));
     }
 
     private static JsonObject read(String fileName) throws Exception {

@@ -24,6 +24,12 @@ public final class ClientEvents {
     @SubscribeEvent
     public static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
         event.register(ModelResourceLocation.standalone(Firstworks.id("block/quern_runner")));
+        event.register(WorkshopBlockEntityRenderer.POTTERY_HEAD);
+        event.register(WorkshopBlockEntityRenderer.CRUCIBLE_CONTENTS);
+        event.register(WorkshopBlockEntityRenderer.CASTING_MOLD);
+        event.register(WorkshopBlockEntityRenderer.CASTING_METAL);
+        event.register(BellowsBlockEntityRenderer.BAG);
+        event.register(BellowsBlockEntityRenderer.TOP);
     }
 
     @SubscribeEvent
@@ -55,6 +61,8 @@ public final class ClientEvents {
         event.registerBlockEntityRenderer(ModBlockEntities.BRICK_MOLD.get(), BrickMoldBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.MORTAR.get(), MortarBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.QUERN.get(), QuernBlockEntityRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.WORKSHOP.get(), WorkshopBlockEntityRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.BELLOWS.get(), BellowsBlockEntityRenderer::new);
     }
 
     @SubscribeEvent

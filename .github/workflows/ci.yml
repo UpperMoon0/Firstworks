@@ -1,13 +1,21 @@
-﻿name: CI
+name: CI
 
 on:
   pull_request:
     branches:
       - main
 
+concurrency:
+  group: firstworks-ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
@@ -20,4 +28,5 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - run: chmod +x ./gradlew
-      - run: ./gradlew clean test build
+      - name: Verify JVM tests, build, and GameTests
+        run: ./gradlew --build-cache build runGameTestServer

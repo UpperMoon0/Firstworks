@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"firstworks:block/stone_anvil"},"facing=east":{"model":"firstworks:block/stone_anvil","y":90},"facing=south":{"model":"firstworks:block/stone_anvil","y":180},"facing=west":{"model":"firstworks:block/stone_anvil","y":270}}}

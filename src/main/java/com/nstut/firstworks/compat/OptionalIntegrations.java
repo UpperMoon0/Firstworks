@@ -12,6 +12,8 @@ import com.nstut.firstworks.content.mortar.MortarBlockEntity;
 import com.nstut.firstworks.content.MortarGrindingRecipe;
 import com.nstut.firstworks.content.quern.QuernBlockEntity;
 import com.nstut.firstworks.content.quern.QuernGrindingRecipe;
+import com.nstut.firstworks.content.workshop.WorkshopBlockEntity;
+import com.nstut.firstworks.content.workshop.WorkshopRecipe;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -81,6 +83,7 @@ public final class OptionalIntegrations {
             ResourceLocation recipeId, MortarGrindingRecipe recipe, ItemStack input, ItemStack result) {
         if (KUBE_JS_LOADED) KubeJSCompat.fireMortarGrindingCompleted(level, mortar, recipeId, recipe, input, result);
     }
+
     public static boolean fireQuernGrindingStarting(ServerLevel level, QuernBlockEntity quern,
             ResourceLocation recipeId, QuernGrindingRecipe recipe, ItemStack input, ItemStack result) {
         return KUBE_JS_LOADED
@@ -91,6 +94,19 @@ public final class OptionalIntegrations {
             ResourceLocation recipeId, QuernGrindingRecipe recipe, ItemStack input, ItemStack result) {
         if (KUBE_JS_LOADED) {
             KubeJSCompat.fireQuernGrindingCompleted(level, quern, recipeId, recipe, input, result);
+        }
+    }
+
+    public static boolean fireWorkshopProcessingStarting(ServerLevel level, WorkshopBlockEntity workshop,
+            ResourceLocation recipeId, WorkshopRecipe recipe, ItemStack input, ItemStack catalyst, ItemStack result) {
+        return KUBE_JS_LOADED
+                && KubeJSCompat.fireWorkshopProcessingStarting(level, workshop, recipeId, recipe, input, catalyst, result);
+    }
+
+    public static void fireWorkshopProcessingCompleted(ServerLevel level, WorkshopBlockEntity workshop,
+            ResourceLocation recipeId, WorkshopRecipe recipe, ItemStack input, ItemStack catalyst, ItemStack result) {
+        if (KUBE_JS_LOADED) {
+            KubeJSCompat.fireWorkshopProcessingCompleted(level, workshop, recipeId, recipe, input, catalyst, result);
         }
     }
 

@@ -29,9 +29,16 @@
       },
       "function_names": ["work"],
       "optional": 60
+    },
+    {
+      "name": "priority",
+      "role": "other",
+      "type": "int",
+      "function_names": ["priority"],
+      "optional": 0
     }
   ],
-  "unique": ["ingredient"],
+  "unique": ["ingredient", "input_count", "priority", "result"],
   "constructors": [
     {
       "keys": ["result", "ingredient"]

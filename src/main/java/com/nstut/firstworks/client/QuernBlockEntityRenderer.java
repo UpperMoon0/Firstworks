@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.nstut.firstworks.Firstworks;
 import com.nstut.firstworks.content.quern.QuernBlockEntity;
+import com.nstut.firstworks.registry.ModBlocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -22,14 +23,15 @@ public final class QuernBlockEntityRenderer implements BlockEntityRenderer<Quern
     public QuernBlockEntityRenderer(BlockEntityRendererProvider.Context context) {}
 
     @Override
-    public void render(QuernBlockEntity q, float partial, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
-        BlockState state = q.getBlockState();
-        BakedModel runnerModel = Minecraft.getInstance().getModelManager().getModel(RUNNER_MODEL);
+    public void render(QuernBlockEntity quern, float partial, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
+        BlockState state = quern.getBlockState();
+        ModelResourceLocation runnerLocation = RUNNER_MODEL;
+        BakedModel runnerModel = Minecraft.getInstance().getModelManager().getModel(runnerLocation);
 
         if (runnerModel != null && runnerModel != Minecraft.getInstance().getModelManager().getMissingModel()) {
             pose.pushPose();
             pose.translate(0.5, 0.0, 0.5);
-            pose.mulPose(Axis.YP.rotationDegrees(q.getRotation(partial)));
+            pose.mulPose(Axis.YP.rotationDegrees(quern.getRotation(partial)));
             pose.translate(-0.5, 0.0, -0.5);
             Minecraft.getInstance().getBlockRenderer().getModelRenderer().renderModel(
                     pose.last(),
@@ -45,12 +47,13 @@ public final class QuernBlockEntityRenderer implements BlockEntityRenderer<Quern
             pose.popPose();
         }
 
-        if (!q.getInput().isEmpty() || !q.getOutput().isEmpty()) {
-            var stack = q.getOutput().isEmpty() ? q.getInput() : q.getOutput();
+        if (!quern.getInput().isEmpty() || !quern.getOutput().isEmpty()) {
+            var stack = quern.getOutput().isEmpty() ? quern.getInput() : quern.getOutput();
             pose.pushPose();
             pose.translate(0.5, 0.42, 0.5);
             pose.scale(0.35F, 0.35F, 0.35F);
-            Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.FIXED, light, OverlayTexture.NO_OVERLAY, pose, buffers, q.getLevel(), 0);
+            Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.FIXED, light,
+                    OverlayTexture.NO_OVERLAY, pose, buffers, quern.getLevel(), 0);
             pose.popPose();
         }
     }

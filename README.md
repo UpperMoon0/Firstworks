@@ -1,14 +1,15 @@
 # Firstworks
 
-Firstworks is a standalone NeoForge 1.21.1 mod about primitive, in-world processing. Its wooden Barrels, hand-operated Looms, Brick Molds, Mortars, and Charcoal Mounds turn early-game materials into tangible workshop projects without machine menus or instant conversions.
+Firstworks is a standalone NeoForge 1.21.1 mod about primitive, in-world processing. Barrels, hand-operated textile tools, clay and masonry stations, resin tapping, Pottery Wheels, Stone Anvils, Bellows, Crucible Furnaces, Querns, and Charcoal Mounds turn early-game materials into tangible workshop projects without machine menus or instant conversions.
 
-Firstworks has no hard dependencies on Create or other tech mods, while offering clean integration for automation, Jade tooltips, JEI recipe views, and KubeJS customization.
+The mod has no hard dependency on Create or other tech mods. Its recipes, tags, progression switches, automation surfaces, Jade tooltips, JEI categories, and KubeJS lifecycle hooks are designed to be reusable by modpacks and datapacks.
 
 ---
 
 ## Modpack & Datapack Developers
 
-Looking to configure recipes, custom wood types, KubeJS events, animal drop profiles, or server settings?
+Looking to configure recipes, progression gates, custom wood types, KubeJS events, animal drop profiles, public material tags, or server settings?
+
 👉 **[Read the Full Packmaker & Datapack Developer Guide](docs/PACKMAKERS.md)**
 
 ---
@@ -18,57 +19,85 @@ Looking to configure recipes, custom wood types, KubeJS events, animal drop prof
 ### 🪵 Primitive Barrel Processing
 - **In-World Crafting**: Craft Barrels from matching planks and slabs across every vanilla wood family.
 - **Dual Fluid Stores**: Separate input and output fluid stores share a 4000 mB capacity, preventing recipe contamination.
-- **Rain Collection**: Open barrels gradually collect rainwater during precipitation (can be disabled or tuned in config).
+- **Rain Collection**: Open barrels gradually collect rainwater during precipitation (configurable).
 - **Automation Ready**: Top face for input items/fluid, bottom face for output items/fluid, side faces for bi-directional transfer. Sealing the lid locks transfer.
 - **Redstone Control**: Rising redstone pulses toggle the lid open and closed.
 
 ### 🧵 Textile Crafting & Hand Weaving
 - **Hand Spindle**: Hold in main hand with Retted Fibre in off-hand to hand-spin Twine.
-- **Looms**: Load 4 Twine or String into a wooden Loom and work the shuttle with 16 empty-hand strokes to weave Cloth.
-- **Automation**: Empty-handed Create Deployers can operate the Loom shuttle.
+- **Looms**: Load Twine or String into a wooden Loom and manually work the shuttle to weave Cloth.
+- **Automation**: Empty-handed Create Deployers can operate the Loom shuttle when Create is present.
 - **Sheep & Fleece**: Sheep drop color-aware Raw Fleece. Wash fleece in water-filled Barrels to make Clean Wool for textile beds.
 
-### 🧱 Primitive Masonry & Clay Molding
-- **Wooden Brick Mold**: Place clay into the mold, press twice with an empty hand, and retrieve unfired bricks.
-- **Campfire Firing**: Fire unfired bricks and unfired clay buckets over campfires.
-- **Wet Mortar**: Mix sand and water in sealed barrels to create wet mortar for binding structural brick blocks.
+### 🌲 Resin, Bindings & Primitive Tools
+- **Renewable Resin Tapping**: Use a Resin Tap on supported trees to create harvestable resin scars instead of relying on one-off crafting sources.
+- **Pack-Friendly Trees & Tools**: Public resin-tree and tapping-tool tags allow packs to add compatible woods and tools without code.
+- **Hafting Compound**: Resin feeds stronger primitive bindings and the early tool progression.
+- **Primitive Knives**: Flint, Bone, and Copper Knives support fibre harvesting, hide processing, and early crafting.
+- **Cordage & Bindings**: Hand-twist Plant Fibre into Crude Cordage; progressively stronger bindings gate tool construction.
 
-### 🔥 Earthen Charcoal Mounds
-- **Physical Construction**: Stack connected logs (configurable via `charcoalMinLogs`–`charcoalMaxLogs`; defaults to 4–64) and encase them with dirt, grass, mud, or clay, leaving one opening.
-- **Diegetic Feedback**: Light the opening with a Fire Starter or flint and steel to see smoke and flame bursts. Seal the opening to hear a muffled dirt-thud "whumpf" and transition into carbonization.
-- **Physical Charcoal Piles**: Finished mounds replace logs bottom-up with layered `Charcoal Pile` blocks (`firstworks:charcoal_pile`) storing 1–4 charcoal per block.
+### 🧱 Clay, Refractory & Masonry Work
+- **Wooden Brick Mold**: Place clay into the mold, press it by hand, and retrieve unfired bricks.
+- **Pottery Wheel**: Shape data-driven workshop recipes directly in-world, including refractory crucibles, tuyères, and casting molds. The top plate supports 1/2/3-item primary-input batch placement by hit radius.
+- **Vanilla Furnace Firing**: Fire ceramics and refractory parts in standard furnaces rather than a separate machine GUI.
+- **Refractory Chain**: Produce grog, refractory clay, refractory bricks, fired crucibles, tuyères, and reusable casting molds for primitive metallurgy.
+- **Wet Mortar**: Mix sand and water in sealed Barrels to create wet mortar for structural brick construction.
 
-### 🥣 Mortar & Pestle
-- Place on any surface, add grindable materials (Raw Ochre, Charcoal, Bone), and right-click to grind. Features an animated in-world pestle.
+### 🔨 Primitive Copper Workshop
+- **Crucible Furnace**: Cast raw copper into billets using a reusable casting mold and fuel from the public `#firstworks:crucible_furnace_fuels` tag.
+- **Bellows Airflow**: Crucible processing requires active adjacent Bellows air. Repeated strokes can bank a finite airflow reserve.
+- **Annealing**: Cast billets are annealed through vanilla furnace recipes.
+- **Stone Anvil**: Manually work annealed billets with a hammer into vanilla Copper Ingots.
+- **Downstream Copper**: Copper Ingots feed Copper Fasteners and the Copper Knife.
+- **Pack Control**: `enablePrimitiveCopperProgression` can restore vanilla/datapack copper smelting while leaving the Firstworks workshop mechanics available.
 
 ### 🪨 Quern Workstation
-- **Bulk Milling**: Load grain, minerals, or pigments into the central feed eye of the octagonal millstone.
-- **Manual Cranking**: Right-click with an empty hand to turn the wooden crank peg (+5 work per crank by default, configurable) with tactile sounds, particles, and smooth stone rotation.
-- **Hand Operated**: The Quern is intentionally player-powered. Item insertion and output extraction can be automated, but processing itself cannot.
-- **Progression Role**: Mortar & Pestle handles precision grinding, the Quern provides manual bulk grinding, and mechanized mills belong to later technological progression.
-- **Flour & Dough**: Mill wheat into Flour (`#c:flours/wheat`) in the Quern, knead with water buckets, clay water buckets, or vanilla water bottles into Wheat Dough (`#c:doughs/wheat`), and bake over campfires, smokers, or furnaces into Bread, or craft into Cookies. Cake uses flour with milk, sugar, and eggs.
-- **Transfer Automation**: Top face accepts input ingredients and the bottom face extracts finished products. Compatible with Jade, JEI, datapacks, and KubeJS.
+- **Bulk Milling**: Load grain, minerals, pigments, or pack-defined ingredients into the central feed eye.
+- **Manual Cranking**: Right-click with an empty hand to turn the crank; work per crank is configurable.
+- **Hand Operated**: Item insertion and output extraction can be automated, but processing itself remains manual.
+- **Recipe Priority**: Data-driven Quern recipes support explicit priority for intentional overlap handling.
+- **Flour & Dough**: Mill wheat into Flour (`#c:flours/wheat`), knead it into Wheat Dough (`#c:doughs/wheat`), then bake or craft it into early foods.
 
-### 🔪 Primitive Knives, Cordage & Tools
-- **Flint & Bone Knives**: Used for guaranteed plant fibre harvesting from grass, hide scraping, and early crafting.
-- **Cordage & Bindings**: Hand-twist Plant Fibre into Crude Cordage. Wooden and stone tools require primitive bindings; metal and diamond tools require Rope.
-- **Standing Torches**: Floor-supported rustic torch stands (light level 14).
-- **Clay Buckets**: Fire-hardened vessels capable of carrying water and tannin solution.
+### 🥣 Mortar & Pestle
+- Place on any surface, add grindable materials such as Raw Ochre, Charcoal, or Bone, and right-click to grind with an animated in-world pestle.
+
+### 🔥 Earthen Charcoal Mounds
+- **Physical Construction**: Stack connected logs and encase them with suitable earthen blocks, leaving one opening.
+- **Diegetic Feedback**: Ignite the opening, then seal the mound to begin carbonization with smoke, sound, and visual state changes.
+- **Physical Charcoal Piles**: Finished mounds replace logs bottom-up with layered Charcoal Pile blocks storing charcoal directly in-world.
+
+### 🧱 Lime & Plaster Construction
+- Smelt calcite into Lime, combine it into Plaster, and craft reversible Plaster Blocks for an early construction-material loop.
 
 ### 📦 Woven Baskets
-- 9-slot primitive storage container crafted from woven fibres, with full automation and hopper support.
+- 9-slot primitive storage crafted from woven fibres, with hopper and automation support.
 
 ### 🥩 Data-Driven Animal Materials & Hide Tanning
-- Vertebrate animals drop bones and raw hide based on customizable data-driven animal material profiles.
-- Soak Raw Hides in water, scrape them with a primitive knife, brew Tannin Solution from tree bark, tan scraped hides, and dry them into finished leather.
+- Vertebrate animals drop bones and raw hide from customizable animal material profiles.
+- Soak Raw Hides, scrape them with primitive knives, brew Tannin Solution from tree bark, tan scraped hides, and dry them into Leather or Heavy Leather progression materials.
+
+### 🕯️ Other Early Survival Pieces
+- **Standing Torches**: Floor-supported rustic torch stands.
+- **Clay Buckets**: Fire-hardened vessels capable of carrying water and tannin solution.
+
+---
+
+## Workshop API
+
+Pottery Wheels, Stone Anvils, and Crucible Furnaces share the data-driven `firstworks:workshop_processing` recipe type. Recipes can declare primary input, optional catalyst, result, work requirement, catalyst consumption, and explicit overlap `priority`.
+
+Workshop stations expose separate input, catalyst, fuel, and output roles for automation. Same-recipe input/catalyst top-ups preserve active Crucible Furnace progress, and reserve-fuel top-ups do not restart the batch.
+
+For full JSON schemas, supported ranges, public tags, progression toggles, and KubeJS examples, see **[docs/PACKMAKERS.md](docs/PACKMAKERS.md)**.
 
 ---
 
 ## Integrations
 
-- **Jade**: Live in-world tooltips for Barrels, Looms, Brick Molds, Mortar & Pestle, Querns, Charcoal Mounds, and Charcoal Piles.
-- **JEI**: Dedicated categories for Barrel Processing, Hand Spinning, Loom Weaving, Brick Molding, Mortar Grinding, Quern Grinding, and dynamic Charcoal Mound Information.
-- **KubeJS**: Custom wood type registration (`Firstworks.registerWoodType`), recipe support via `event.custom({...})`, and event handlers for process start/completion.
+- **Jade**: Live in-world status for Barrels, Looms, Brick Molds, Mortar & Pestle, Querns, Charcoal Mounds/Piles, Pottery Wheels, Stone Anvils, Crucible Furnaces, and Bellows airflow.
+- **JEI**: Dedicated categories for Barrel Processing, Hand Spinning, Loom Weaving, Brick Molding, Mortar Grinding, Quern Grinding, Workshop Processing, and dynamic Charcoal Mound information. Workshop views include station catalysts, reusable/consumed catalyst state, Bellows requirements, and tagged Crucible fuels.
+- **KubeJS**: Custom wood registration, custom recipes, and process start/completion lifecycle hooks, with cancellable start events including `workshopProcessingStarting` and completion events including `workshopProcessingCompleted`.
+- **Automation**: Stable item/fluid handlers are exposed for pack machinery while manual-only mechanics remain explicitly manual.
 
 ---
 
@@ -78,13 +107,15 @@ Firstworks uses **`SERVER`** configuration so gameplay options synchronize to mu
 - Modpack defaults: `defaultconfigs/firstworks-server.toml`
 - Per-world settings: `saves/<world>/serverconfig/firstworks-server.toml`
 
-See the [Packmaker Guide](docs/PACKMAKERS.md) for full configuration tables and defaults.
+Major progression systems can be individually enabled or disabled, including textile, masonry, grain, tool-binding, and primitive-copper progression. See the [Packmaker Guide](docs/PACKMAKERS.md) for the complete configuration table and defaults.
 
 ---
 
 ## Building from Source
 
 Run `./gradlew build` (or `gradlew.bat build` on Windows). The compiled JAR is output to `build/libs/`.
+
+CI additionally runs the NeoForge GameTest server to exercise progression and workshop behavior.
 
 ---
 

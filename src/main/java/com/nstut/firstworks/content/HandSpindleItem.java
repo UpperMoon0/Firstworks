@@ -25,49 +25,75 @@ import net.minecraft.world.level.Level;
 import java.util.List;
 import java.util.Optional;
 
-public final class HandSpindleItem extends Item {
+public class HandSpindleItem extends Item {
     private static final int MAX_USE_DURATION = 72_000;
+    private final float durationScale;
 
     public HandSpindleItem(Properties properties) {
+        this(properties, 1.0F);
+    }
+
+    public HandSpindleItem(Properties properties, float durationScale) {
         super(properties.stacksTo(1));
+        this.durationScale = Math.max(0.1F, durationScale);
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack spindle = player.getItemInHand(hand);
-        if (hand != InteractionHand.MAIN_HAND) return InteractionResultHolder.fail(spindle);
-        Optional<RecipeHolder<SpinningRecipe>> recipe = findRecipe(level, player.getOffhandItem());
-        if (recipe.isEmpty()) return InteractionResultHolder.fail(spindle);
-        RecipeHolder<SpinningRecipe> holder = recipe.get();
-        if (level instanceof ServerLevel serverLevel
-                && OptionalIntegrations.fireSpindleSpinningStarting(serverLevel, player, holder.id(), holder.value(),
-                        player.getOffhandItem().copyWithCount(holder.value().inputCount()), holder.value().result())) {
+        if (hand != InteractionHand.MAIN_HAND) {
             return InteractionResultHolder.fail(spindle);
         }
+
+        Optional<RecipeHolder<SpinningRecipe>> recipe = findRecipe(level, player.getOffhandItem());
+        if (recipe.isEmpty()) {
+            return InteractionResultHolder.fail(spindle);
+        }
+
+        RecipeHolder<SpinningRecipe> holder = recipe.get();
+        if (level instanceof ServerLevel serverLevel
+                && OptionalIntegrations.fireSpindleSpinningStarting(
+                serverLevel, player, holder.id(), holder.value(),
+                player.getOffhandItem().copyWithCount(holder.value().inputCount()), holder.value().result())) {
+            return InteractionResultHolder.fail(spindle);
+        }
+
         player.startUsingItem(hand);
         return InteractionResultHolder.consume(spindle);
     }
 
     @Override
     public void onUseTick(Level level, LivingEntity entity, ItemStack stack, int remainingUseDuration) {
-        if (!(entity instanceof Player player)) return;
+        if (!(entity instanceof Player player)) {
+            return;
+        }
+
         Optional<RecipeHolder<SpinningRecipe>> active = findRecipe(level, player.getOffhandItem());
         if (active.isEmpty()) {
             player.stopUsingItem();
             return;
         }
+
         int elapsed = MAX_USE_DURATION - remainingUseDuration;
         if (elapsed > 0 && elapsed % 8 == 0) {
             level.playSound(null, player.getX(), player.getY(), player.getZ(),
                     SoundEvents.UI_LOOM_SELECT_PATTERN, SoundSource.PLAYERS, 0.35F, 1.25F);
             if (level instanceof ServerLevel serverLevel) {
                 serverLevel.sendParticles(ParticleTypes.CLOUD,
-                        player.getX(), player.getEyeY() - 0.45, player.getZ(), 1, 0.08, 0.08, 0.08, 0.005);
+                        player.getX(), player.getEyeY() - 0.45, player.getZ(),
+                        1, 0.08, 0.08, 0.08, 0.005);
             }
         }
+
         RecipeHolder<SpinningRecipe> holder = active.get();
-        if (elapsed < Math.max(1, holder.value().duration())) return;
-        if (!level.isClientSide) complete((ServerLevel) level, player, holder);
+        int required = Math.max(1, Math.round(holder.value().duration() * durationScale));
+        if (elapsed < required) {
+            return;
+        }
+
+        if (!level.isClientSide) {
+            complete((ServerLevel) level, player, holder);
+        }
         player.stopUsingItem();
     }
 
@@ -75,28 +101,45 @@ public final class HandSpindleItem extends Item {
         SpinningRecipe recipe = holder.value();
         ItemStack input = player.getOffhandItem();
         ItemStack consumed = input.copyWithCount(recipe.inputCount());
-        if (!player.hasInfiniteMaterials()) input.shrink(recipe.inputCount());
+        if (!player.hasInfiniteMaterials()) {
+            input.shrink(recipe.inputCount());
+        }
+
         ItemStack result = recipe.result().copy();
         player.getInventory().placeItemBackInInventory(result.copy());
         level.playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.UI_LOOM_TAKE_RESULT, SoundSource.PLAYERS, 0.75F, 1.1F);
+
         ItemStack spindle = player.getMainHandItem();
         player.awardStat(Stats.ITEM_USED.get(spindle.getItem()));
         OptionalIntegrations.fireSpindleSpinningCompleted(level, player, holder.id(), recipe, consumed, result);
-        if (!player.hasInfiniteMaterials()) spindle.hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
+        if (!player.hasInfiniteMaterials()) {
+            spindle.hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
+        }
     }
 
     private static Optional<RecipeHolder<SpinningRecipe>> findRecipe(Level level, ItemStack input) {
-        if (input.isEmpty()) return Optional.empty();
-        return level.getRecipeManager().getRecipeFor(ModRecipes.SPINNING_TYPE.get(),
-                new SingleRecipeInput(input), level);
+        if (input.isEmpty()) {
+            return Optional.empty();
+        }
+        return level.getRecipeManager().getRecipeFor(
+                ModRecipes.SPINNING_TYPE.get(), new SingleRecipeInput(input), level);
     }
 
-    @Override public int getUseDuration(ItemStack stack, LivingEntity entity) { return MAX_USE_DURATION; }
-    @Override public UseAnim getUseAnimation(ItemStack stack) { return UseAnim.BOW; }
+    @Override
+    public int getUseDuration(ItemStack stack, LivingEntity entity) {
+        return MAX_USE_DURATION;
+    }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("tooltip.firstworks.hand_spindle.use").withStyle(ChatFormatting.GRAY));
+    public UseAnim getUseAnimation(ItemStack stack) {
+        return UseAnim.BOW;
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, TooltipContext context,
+                                List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.translatable("tooltip.firstworks.hand_spindle.use")
+                .withStyle(ChatFormatting.GRAY));
     }
 }

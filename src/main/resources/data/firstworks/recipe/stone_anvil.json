@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["SSS", " S ", "SSS"],
+  "key": {"S": {"tag": "minecraft:stone_crafting_materials"}},
+  "result": {"id": "firstworks:stone_anvil"}
+}

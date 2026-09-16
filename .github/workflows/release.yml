@@ -39,8 +39,8 @@ jobs:
       - name: Make Gradle executable
         run: chmod +x ./gradlew
 
-      - name: Build Firstworks
-        run: ./gradlew clean test build
+      - name: Verify and build Firstworks
+        run: ./gradlew --build-cache build runGameTestServer
 
       - name: Ensure Git tag exists
         id: ensure_tag

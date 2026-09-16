@@ -1,0 +1,103 @@
+package com.nstut.firstworks;
+
+import org.junit.jupiter.api.Test;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class StoneCopperProgressionRecipeTest {
+    private static String resource(String path) throws Exception {
+        return Files.readString(Path.of("src/main/resources", path));
+    }
+
+    @Test
+    public void vanillaCopperIngotsMakeFastenersAndRetainedTools() throws Exception {
+        String fasteners = resource("data/firstworks/recipe/copper_fasteners.json");
+        assertTrue(fasteners.contains("minecraft:copper_ingot"));
+
+        String knife = resource("data/firstworks/recipe/copper_knife.json");
+        assertTrue(knife.contains("minecraft:copper_ingot"));
+        assertTrue(knife.contains("firstworks:strong_bindings"));
+    }
+
+    @Test
+    public void genericCopperBloatIsNotShipped() {
+        for (String id : new String[]{
+                "copper_pickaxe", "copper_axe", "copper_shovel", "copper_hoe", "copper_sword", "copper_bucket",
+                "copper_shears"}) {
+            assertFalse(Files.exists(Path.of("src/main/resources/data/firstworks/recipe", id + ".json")),
+                    "Redundant copper recipe should not be shipped: " + id);
+        }
+    }
+
+    @Test
+    public void primitiveCopperRequiresCastingAnnealingAndWorking() throws Exception {
+        String casting = resource("data/firstworks/recipe/furnace_cast_copper.json");
+        assertTrue(casting.contains("\"station\": \"crucible_furnace\""));
+        assertTrue(casting.contains("firstworks:casting_mold"));
+        assertTrue(casting.contains("minecraft:raw_copper"));
+
+        String annealing = resource("data/firstworks/recipe/smelt_anneal_copper.json");
+        assertTrue(annealing.contains("firstworks:cast_copper_billet"));
+        assertTrue(annealing.contains("firstworks:annealed_copper_billet"));
+
+        String working = resource("data/firstworks/recipe/anvil_work_copper.json");
+        assertTrue(working.contains("firstworks:annealed_copper_billet"));
+        assertTrue(working.contains("minecraft:copper_ingot"));
+    }
+
+    @Test
+    public void potteryWheelFormsHaveDistinctInWorldBatchSelectors() throws Exception {
+        assertTrue(resource("data/firstworks/recipe/wheel_tuyere.json").contains("\"input_count\": 1"));
+        assertTrue(resource("data/firstworks/recipe/wheel_casting_mold.json").contains("\"input_count\": 2"));
+        assertTrue(resource("data/firstworks/recipe/wheel_crucible.json").contains("\"input_count\": 3"));
+    }
+
+    @Test
+    public void removedUpgradesAreNotShipped() throws Exception {
+        for (String id : new String[]{"rotary_quern", "copper_loom", "copper_wire", "copper_hand_spindle"}) {
+            assertFalse(Files.exists(Path.of("src/main/resources/data/firstworks/recipe", id + ".json")));
+            assertFalse(resource("data/firstworks/tags/item/looms.json").contains("firstworks:" + id));
+        }
+    }
+
+    @Test
+    public void stoneCompletionAndAdvancedCeramicsRemainReachable() throws Exception {
+        assertTrue(resource("data/firstworks/tags/block/resin_trees.json").contains("minecraft:spruce_logs"));
+        assertTrue(resource("data/firstworks/tags/item/strong_bindings.json").contains("firstworks:hafting_compound"));
+        assertTrue(resource("data/firstworks/recipe/hafting_compound.json").contains("firstworks:resin"));
+        assertTrue(resource("data/firstworks/recipe/quern_grog.json").contains("minecraft:brick"));
+        assertTrue(resource("data/firstworks/recipe/smelt_crucible.json").contains("firstworks:unfired_crucible"));
+        assertTrue(resource("data/firstworks/recipe/heavy_leather.json").contains("firstworks:tannin_solution"));
+    }
+
+    @Test
+    public void bellowsHasNoCopperBootstrapCycle() throws Exception {
+        String bellows = resource("data/firstworks/recipe/bellows.json");
+        assertTrue(bellows.contains("firstworks:heavy_leather"));
+        assertTrue(bellows.contains("firstworks:strong_bindings"));
+        assertFalse(bellows.contains("firstworks:copper_fasteners"));
+    }
+    @Test
+    public void hammerHasAHandleAndMortarUnlocksCopperBeforeQuern() throws Exception {
+        var hammer = com.google.gson.JsonParser.parseString(resource("data/firstworks/recipe/stone_hammer.json")).getAsJsonObject();
+        assertTrue(hammer.getAsJsonObject("key").getAsJsonObject("H").get("item").getAsString().equals("minecraft:stick"));
+        assertTrue(hammer.getAsJsonArray("pattern").get(2).getAsString().contains("H"));
+        String quern = resource("data/firstworks/recipe/quern.json");
+        assertTrue(quern.contains("firstworks:copper_fasteners"));
+        var mortar = com.google.gson.JsonParser.parseString(resource("data/firstworks/recipe/grind_grog.json")).getAsJsonObject();
+        var grinding = com.google.gson.JsonParser.parseString(resource("data/firstworks/recipe/quern_grog.json")).getAsJsonObject();
+        assertTrue(mortar.get("type").getAsString().equals("firstworks:mortar_grinding"));
+        for (var recipe : java.util.List.of(mortar, grinding)) {
+            assertTrue(recipe.getAsJsonObject("ingredient").get("item").getAsString().equals("minecraft:brick"));
+            assertTrue(recipe.get("input_count").getAsInt() == 1);
+            assertTrue(recipe.getAsJsonObject("result").get("id").getAsString().equals("firstworks:grog"));
+        }
+        assertTrue(mortar.getAsJsonObject("result").get("count").getAsInt() == 1);
+        assertTrue(grinding.getAsJsonObject("result").get("count").getAsInt() == 2);
+    }
+
+}

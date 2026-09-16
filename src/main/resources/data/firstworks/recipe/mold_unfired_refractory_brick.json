@@ -1,0 +1,7 @@
+{
+  "type": "firstworks:brick_molding",
+  "ingredient": {"item": "firstworks:refractory_clay"},
+  "input_count": 1,
+  "presses": 2,
+  "result": {"id": "firstworks:unfired_refractory_brick"}
+}

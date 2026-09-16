@@ -47,7 +47,11 @@ neoForge {
             server()
             programArgument '--nogui'
         }
-        gameTestServer { type = 'gameTestServer' }
+        gameTestServer {
+            type = 'gameTestServer'
+            gameDirectory = layout.buildDirectory.dir('gametest-run').get().asFile
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
         data {
             data()
             programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
@@ -64,6 +68,15 @@ neoForge {
             sourceSet(sourceSets.test)
         }
     }
+}
+
+def prepareGameTestKubeJsScripts = tasks.register('prepareGameTestKubeJsScripts', Sync) {
+    from 'src/test/kubejs'
+    into layout.buildDirectory.dir('gametest-run/kubejs')
+}
+
+tasks.named('runGameTestServer').configure {
+    dependsOn prepareGameTestKubeJsScripts
 }
 
 tasks.withType(JavaCompile).configureEach {

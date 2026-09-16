@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"firstworks:block/pottery_wheel"},"facing=east":{"model":"firstworks:block/pottery_wheel","y":90},"facing=south":{"model":"firstworks:block/pottery_wheel","y":180},"facing=west":{"model":"firstworks:block/pottery_wheel","y":270}}}

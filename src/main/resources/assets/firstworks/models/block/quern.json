@@ -3,7 +3,6 @@
   "textures": {
     "particle": "minecraft:block/stone",
     "stone": "minecraft:block/stone",
-    "andesite": "minecraft:block/andesite",
     "wood": "minecraft:block/oak_planks",
     "log": "minecraft:block/oak_log"
   },
@@ -35,9 +34,9 @@
       }
     },
     {
-      "comment": "Octagonal bedstone north-south cross",
-      "from": [4.5, 2, 1.5],
-      "to": [11.5, 6, 14.5],
+      "comment": "Bedstone core",
+      "from": [3.5, 2, 3.5],
+      "to": [12.5, 5.6, 12.5],
       "faces": {
         "down":  { "texture": "#stone" },
         "up":    { "texture": "#stone" },
@@ -48,9 +47,9 @@
       }
     },
     {
-      "comment": "Octagonal bedstone east-west cross",
-      "from": [1.5, 2, 4.5],
-      "to": [14.5, 6, 11.5],
+      "comment": "Bedstone north facet",
+      "from": [5, 2, 1.5],
+      "to": [11, 5.59, 5],
       "faces": {
         "down":  { "texture": "#stone" },
         "up":    { "texture": "#stone" },
@@ -61,9 +60,9 @@
       }
     },
     {
-      "comment": "Octagonal bedstone diagonal filler",
-      "from": [3, 2, 3],
-      "to": [13, 6, 13],
+      "comment": "Bedstone south facet",
+      "from": [5, 2, 11],
+      "to": [11, 5.59, 14.5],
       "faces": {
         "down":  { "texture": "#stone" },
         "up":    { "texture": "#stone" },
@@ -74,58 +73,97 @@
       }
     },
     {
-      "comment": "Andesite catching rim north",
-      "from": [4, 2, 14.5],
-      "to": [12, 6.5, 15.5],
+      "comment": "Bedstone west facet",
+      "from": [1.5, 2, 5],
+      "to": [5, 5.59, 11],
       "faces": {
-        "up":    { "texture": "#andesite" },
-        "north": { "texture": "#andesite" },
-        "south": { "texture": "#andesite" },
-        "west":  { "texture": "#andesite" },
-        "east":  { "texture": "#andesite" }
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
       }
     },
     {
-      "comment": "Andesite catching rim south",
-      "from": [4, 2, 0.5],
-      "to": [12, 6.5, 1.5],
+      "comment": "Bedstone east facet",
+      "from": [11, 2, 5],
+      "to": [14.5, 5.59, 11],
       "faces": {
-        "up":    { "texture": "#andesite" },
-        "north": { "texture": "#andesite" },
-        "south": { "texture": "#andesite" },
-        "west":  { "texture": "#andesite" },
-        "east":  { "texture": "#andesite" }
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
       }
     },
     {
-      "comment": "Andesite catching rim west",
-      "from": [0.5, 2, 4],
-      "to": [1.5, 6.5, 12],
+      "comment": "Bedstone north-east diagonal facet",
+      "from": [10.65, 2, 1.55],
+      "to": [13.05, 5.58, 6.75],
+      "neoforge_data": { "calculate_normals": true },
+      "rotation": { "angle": -45, "axis": "y", "origin": [11.85, 3.8, 4.15] },
       "faces": {
-        "up":    { "texture": "#andesite" },
-        "north": { "texture": "#andesite" },
-        "south": { "texture": "#andesite" },
-        "west":  { "texture": "#andesite" },
-        "east":  { "texture": "#andesite" }
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
       }
     },
     {
-      "comment": "Andesite catching rim east",
-      "from": [14.5, 2, 4],
-      "to": [15.5, 6.5, 12],
+      "comment": "Bedstone south-east diagonal facet",
+      "from": [10.65, 2, 9.25],
+      "to": [13.05, 5.58, 14.45],
+      "neoforge_data": { "calculate_normals": true },
+      "rotation": { "angle": 45, "axis": "y", "origin": [11.85, 3.8, 11.85] },
       "faces": {
-        "up":    { "texture": "#andesite" },
-        "north": { "texture": "#andesite" },
-        "south": { "texture": "#andesite" },
-        "west":  { "texture": "#andesite" },
-        "east":  { "texture": "#andesite" }
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Bedstone south-west diagonal facet",
+      "from": [2.95, 2, 9.25],
+      "to": [5.35, 5.58, 14.45],
+      "neoforge_data": { "calculate_normals": true },
+      "rotation": { "angle": -45, "axis": "y", "origin": [4.15, 3.8, 11.85] },
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
+      }
+    },
+    {
+      "comment": "Bedstone north-west diagonal facet",
+      "from": [2.95, 2, 1.55],
+      "to": [5.35, 5.58, 6.75],
+      "neoforge_data": { "calculate_normals": true },
+      "rotation": { "angle": 45, "axis": "y", "origin": [4.15, 3.8, 4.15] },
+      "faces": {
+        "down":  { "texture": "#stone" },
+        "up":    { "texture": "#stone" },
+        "north": { "texture": "#stone" },
+        "south": { "texture": "#stone" },
+        "west":  { "texture": "#stone" },
+        "east":  { "texture": "#stone" }
       }
     },
     {
       "comment": "Center wooden spindle",
-      "from": [7, 6, 7],
-      "to": [9, 10, 9],
+      "from": [7.1, 5.6, 7.1],
+      "to": [8.9, 9.45, 8.9],
       "faces": {
+        "down":  { "texture": "#log" },
         "up":    { "texture": "#log" },
         "north": { "texture": "#wood" },
         "south": { "texture": "#wood" },

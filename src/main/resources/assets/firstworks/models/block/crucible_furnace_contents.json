@@ -1,0 +1,8 @@
+{
+  "parent":"minecraft:block/block",
+  "textures":{"clay":"minecraft:block/terracotta","dark":"minecraft:block/brown_terracotta","copper":"minecraft:block/copper_block","hot":"minecraft:block/magma","particle":"minecraft:block/terracotta"},
+  "elements":[
+    {"from":[5.65,9.55,4.65],"to":[10.35,10.7,9.35],"faces":{"down":{"texture":"#hot"},"up":{"texture":"#hot"},"north":{"texture":"#hot"},"south":{"texture":"#hot"},"west":{"texture":"#hot"},"east":{"texture":"#hot"}}},
+    {"from":[6,10.7,5],"to":[10,10.85,9],"faces":{"up":{"texture":"#copper"},"north":{"texture":"#copper"},"south":{"texture":"#copper"},"west":{"texture":"#copper"},"east":{"texture":"#copper"}}}
+  ]
+}
