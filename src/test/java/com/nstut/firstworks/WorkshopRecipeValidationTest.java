@@ -22,7 +22,7 @@ public class WorkshopRecipeValidationTest {
             "src/main/resources/data/firstworks/kubejs/recipe_schema/quern_grinding.json");
     private static final Path RECIPE_DIR = Path.of("src/main/resources/data/firstworks/recipe");
     private static final Set<String> VALID_STATIONS = Set.of(
-            "pottery_wheel", "kiln", "stone_anvil", "crucible_furnace");
+            "pottery_wheel", "stone_anvil", "crucible_furnace");
 
     @Test
     public void recipeContractRejectsUnknownStations() throws Exception {

@@ -1,6 +1,6 @@
 {
   "type": "firstworks:workshop_processing",
-  "station": "kiln",
+  "station": "crucible_furnace",
   "ingredient": {"item": "minecraft:charcoal"},
   "catalyst": {"tag": "firstworks:gametest_empty_catalysts"},
   "result": {"id": "minecraft:diamond"},

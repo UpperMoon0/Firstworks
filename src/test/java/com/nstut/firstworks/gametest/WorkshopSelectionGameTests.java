@@ -63,11 +63,11 @@ public final class WorkshopSelectionGameTests {
 
         var wrongStation = recipes.getRecipeFor(
                 ModRecipes.WORKSHOP_PROCESSING_TYPE.get(),
-                new WorkshopRecipeInput(WorkshopRecipe.KILN,
+                new WorkshopRecipeInput(WorkshopRecipe.STONE_ANVIL,
                         new ItemStack(Items.EMERALD), new ItemStack(Items.STICK)),
                 level);
         check(helper, wrongStation.isEmpty(),
-                "RecipeManager matched a Pottery Wheel workshop recipe at the Kiln station");
+                "RecipeManager matched a Pottery Wheel workshop recipe at the Stone Anvil station");
 
         var missingCatalyst = recipes.getRecipeFor(
                 ModRecipes.WORKSHOP_PROCESSING_TYPE.get(),

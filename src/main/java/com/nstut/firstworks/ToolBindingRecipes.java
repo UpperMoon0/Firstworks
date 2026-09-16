@@ -83,6 +83,10 @@ public final class ToolBindingRecipes {
         int changed = 0;
         int removed = 0;
         for (RecipeHolder<?> holder : manager.getRecipes()) {
+            if (isVanillaCopperSmeltingRecipe(holder.id())) {
+                removed++;
+                continue;
+            }
             if (textiles && isVanillaTextileRecipe(holder.id())) {
                 removed++;
                 continue;
@@ -112,6 +116,14 @@ public final class ToolBindingRecipes {
             manager.replaceRecipes(rewritten);
             Firstworks.LOGGER.info("Reworked {} progression recipes and removed {} bypass recipes", changed, removed);
         }
+    }
+
+    private static boolean isVanillaCopperSmeltingRecipe(ResourceLocation id) {
+        return id.getNamespace().equals("minecraft") && Set.of(
+                "copper_ingot_from_smelting_raw_copper", "copper_ingot_from_blasting_raw_copper",
+                "copper_ingot_from_smelting_copper_ore", "copper_ingot_from_blasting_copper_ore",
+                "copper_ingot_from_smelting_deepslate_copper_ore", "copper_ingot_from_blasting_deepslate_copper_ore"
+        ).contains(id.getPath());
     }
 
     private static final Set<String> BED_RECIPES = Set.of(

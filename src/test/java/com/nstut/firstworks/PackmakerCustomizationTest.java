@@ -70,14 +70,12 @@ public class PackmakerCustomizationTest {
     public void workshopJeiRecipesAndCatalystsAreStationScoped() throws Exception {
         String src = Files.readString(WORKSHOP_JEI_PLUGIN);
         assertTrue(src.contains("POTTERY_WHEEL_PROCESSING")
-                        && src.contains("KILN_PROCESSING")
                         && src.contains("STONE_ANVIL_PROCESSING")
                         && src.contains("CRUCIBLE_FURNACE_PROCESSING"),
                 "workshop JEI integration must expose a recipe type per station");
         assertTrue(src.contains("filter(recipe -> station.equals(recipe.station()))"),
                 "each JEI station category must receive only its matching workshop recipes");
         assertTrue(src.contains("ModBlocks.POTTERY_WHEEL.get(), POTTERY_WHEEL_PROCESSING"));
-        assertTrue(src.contains("ModBlocks.KILN.get(), KILN_PROCESSING"));
         assertTrue(src.contains("ModBlocks.STONE_ANVIL.get(), STONE_ANVIL_PROCESSING"));
         assertTrue(src.contains("ModBlocks.CRUCIBLE_FURNACE.get(), CRUCIBLE_FURNACE_PROCESSING"));
         assertTrue(src.contains("ModBlocks.BELLOWS.get(), CRUCIBLE_FURNACE_PROCESSING"),

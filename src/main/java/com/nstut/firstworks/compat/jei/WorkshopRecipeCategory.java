@@ -68,7 +68,6 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
             case WorkshopRecipe.STONE_ANVIL -> builder.addSlot(RecipeIngredientRole.CATALYST, 35, 31)
                     .setStandardSlotBackground()
                     .addItemStacks(Arrays.stream(Ingredient.of(ModTags.HAMMERS).getItems()).toList());
-            case WorkshopRecipe.KILN -> addFuelSlot(builder, 35);
             case WorkshopRecipe.CRUCIBLE_FURNACE -> {
                 addFuelSlot(builder, 35);
                 builder.addSlot(RecipeIngredientRole.CATALYST, 63, 31)
@@ -94,8 +93,7 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
         graphics.drawString(font,
                 Component.translatable("jei.firstworks.workshop.station", stationName(recipe.station())),
                 3, 55, 0xFF606060, false);
-        boolean heated = WorkshopRecipe.KILN.equals(recipe.station())
-                || WorkshopRecipe.CRUCIBLE_FURNACE.equals(recipe.station());
+        boolean heated = WorkshopRecipe.CRUCIBLE_FURNACE.equals(recipe.station());
         graphics.drawString(font,
                 Component.translatable(heated
                                 ? "jei.firstworks.workshop.processing_ticks"
@@ -126,7 +124,6 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
     private static ItemStack stationStack(String station) {
         return switch (station) {
             case WorkshopRecipe.POTTERY_WHEEL -> new ItemStack(ModItems.POTTERY_WHEEL.get());
-            case WorkshopRecipe.KILN -> new ItemStack(ModItems.KILN.get());
             case WorkshopRecipe.STONE_ANVIL -> new ItemStack(ModItems.STONE_ANVIL.get());
             case WorkshopRecipe.CRUCIBLE_FURNACE -> new ItemStack(ModItems.CRUCIBLE_FURNACE.get());
             default -> ItemStack.EMPTY;
@@ -136,7 +133,6 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
     private static Component stationName(String station) {
         return switch (station) {
             case WorkshopRecipe.POTTERY_WHEEL -> Component.translatable("block.firstworks.pottery_wheel");
-            case WorkshopRecipe.KILN -> Component.translatable("block.firstworks.kiln");
             case WorkshopRecipe.STONE_ANVIL -> Component.translatable("block.firstworks.stone_anvil");
             case WorkshopRecipe.CRUCIBLE_FURNACE -> Component.translatable("block.firstworks.crucible_furnace");
             default -> Component.literal(station);

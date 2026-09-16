@@ -1,7 +1,0 @@
-{
-  "type": "firstworks:workshop_processing",
-  "station": "kiln",
-  "ingredient": {"item": "firstworks:unfired_casting_mold"},
-  "result": {"id": "firstworks:casting_mold"},
-  "work": 220
-}

@@ -24,12 +24,10 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 
 /**
  * In-world visual language for the Stone/Copper workshop. Every process is readable from the block:
- * wheel motion and shaped clay, anvil deformation, kiln fire, and bellows-fed molten copper.
+ * wheel motion and shaped clay, anvil deformation, bellows-fed molten copper.
  */
 public final class WorkshopBlockEntityRenderer implements BlockEntityRenderer<WorkshopBlockEntity> {
     public static final ModelResourceLocation POTTERY_HEAD = ModelResourceLocation.standalone(Firstworks.id("block/pottery_wheel_head"));
-    public static final ModelResourceLocation KILN_EMBERS = ModelResourceLocation.standalone(Firstworks.id("block/kiln_embers"));
-    public static final ModelResourceLocation KILN_BILLET = ModelResourceLocation.standalone(Firstworks.id("block/kiln_billet"));
     public static final ModelResourceLocation CRUCIBLE_CONTENTS = ModelResourceLocation.standalone(Firstworks.id("block/crucible_furnace_contents"));
 
     public static final ModelResourceLocation CASTING_MOLD = ModelResourceLocation.standalone(Firstworks.id("block/furnace_casting_mold"));
@@ -47,7 +45,6 @@ public final class WorkshopBlockEntityRenderer implements BlockEntityRenderer<Wo
         switch (workshop.station()) {
             case WorkshopRecipe.POTTERY_WHEEL -> renderPotteryWheel(workshop, partialTick, pose, buffers, packedLight);
             case WorkshopRecipe.STONE_ANVIL -> renderStoneAnvil(workshop, partialTick, pose, buffers, packedLight);
-            case WorkshopRecipe.KILN -> renderKiln(workshop, pose, buffers, packedLight);
             case WorkshopRecipe.CRUCIBLE_FURNACE -> renderCrucibleFurnace(workshop, pose, buffers, packedLight);
             default -> { }
         }
@@ -95,26 +92,6 @@ public final class WorkshopBlockEntityRenderer implements BlockEntityRenderer<Wo
         pose.scale(0.40F + fraction * 0.13F, 0.40F + fraction * 0.13F, 0.24F - fraction * 0.055F - impact * 0.025F);
         Minecraft.getInstance().getItemRenderer().renderStatic(visible, ItemDisplayContext.FIXED,
                 light, OverlayTexture.NO_OVERLAY, pose, buffers, workshop.getLevel(), 0);
-        pose.popPose();
-    }
-
-    private void renderKiln(WorkshopBlockEntity workshop, PoseStack pose, MultiBufferSource buffers, int light) {
-        if (workshop.isRunning()) renderPartial(workshop, KILN_EMBERS, pose, buffers, LightTexture.FULL_BRIGHT);
-        ItemStack visible = workshop.getOutput().isEmpty() ? workshop.getInput() : workshop.getOutput();
-        if (visible.isEmpty()) return;
-        if (visible.is(ModItems.CAST_COPPER_BILLET.get())
-                || visible.is(ModItems.ANNEALED_COPPER_BILLET.get())
-                || visible.is(ModItems.WORKED_COPPER_BILLET.get())) {
-            renderPartial(workshop, KILN_BILLET, pose, buffers,
-                    workshop.isRunning() ? LightTexture.FULL_BRIGHT : light);
-            return;
-        }
-        pose.pushPose();
-        pose.translate(0.5, 0.47, 0.235);
-        pose.scale(0.40F, 0.40F, 0.40F);
-        Minecraft.getInstance().getItemRenderer().renderStatic(visible, ItemDisplayContext.FIXED,
-                workshop.isRunning() ? LightTexture.FULL_BRIGHT : light,
-                OverlayTexture.NO_OVERLAY, pose, buffers, workshop.getLevel(), 0);
         pose.popPose();
     }
 

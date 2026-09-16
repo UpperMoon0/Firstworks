@@ -98,7 +98,7 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
                 IElementHelper.get().progressStyle().color(0xFF302B27, 0xFF51463C).textColor(0xFFFFFFFF),
                 BoxStyle.getTransparent(), false).size(new Vec2(140, 12)));
 
-        if (WorkshopRecipe.KILN.equals(station) || WorkshopRecipe.CRUCIBLE_FURNACE.equals(station)) {
+        if (WorkshopRecipe.CRUCIBLE_FURNACE.equals(station)) {
             int fuel = data.getInt(FUEL_COUNT);
             if (fuel > 0) {
                 tooltip.add(Component.translatable("jade.firstworks.workshop.fuel_reserve", fuel));

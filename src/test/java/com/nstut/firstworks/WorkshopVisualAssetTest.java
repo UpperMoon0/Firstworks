@@ -17,7 +17,7 @@ public class WorkshopVisualAssetTest {
     @Test
     public void workstationModelsAreNotPlaceholderCubes() throws Exception {
         for (String name : List.of(
-                "bellows", "pottery_wheel", "kiln", "stone_anvil",
+                "bellows", "pottery_wheel", "stone_anvil",
                 "crucible_furnace")) {
             Path model = ASSETS.resolve("models/block/" + name + ".json");
             assertTrue(Files.exists(model), "Missing workstation model: " + name);
@@ -33,7 +33,6 @@ public class WorkshopVisualAssetTest {
                 "models/block/bellows_bag.json",
                 "models/block/bellows_top.json",
                 "models/block/pottery_wheel_head.json",
-                "models/block/kiln_embers.json",
                 "models/block/crucible_furnace_contents.json")) {
             assertTrue(Files.exists(ASSETS.resolve(path)), "Missing animated model part: " + path);
         }
@@ -42,7 +41,7 @@ public class WorkshopVisualAssetTest {
     @Test
     public void workshopInventoryModelsAreThreeDimensional() throws Exception {
         for (String name : List.of(
-                "bellows", "pottery_wheel", "kiln", "stone_anvil", "crucible_furnace",
+                "bellows", "pottery_wheel", "stone_anvil", "crucible_furnace",
                 "unfired_casting_mold", "casting_mold",
                 "unfired_crucible", "crucible", "unfired_tuyere", "tuyere",
                 "unfired_refractory_brick", "refractory_brick")) {
@@ -59,7 +58,6 @@ public class WorkshopVisualAssetTest {
                 "content/BellowsBlock.java",
                 "content/workshop/PotteryWheelBlock.java",
                 "content/workshop/StoneAnvilBlock.java",
-                "content/workshop/KilnBlock.java",
                 "content/workshop/CrucibleFurnaceBlock.java")) {
             String src = Files.readString(JAVA.resolve(path));
             assertTrue(src.contains("getCollisionShape"), "Missing custom collision shape: " + path);

@@ -1,7 +1,0 @@
-{
-  "type": "firstworks:workshop_processing",
-  "station": "kiln",
-  "ingredient": {"item": "firstworks:cast_copper_billet"},
-  "result": {"id": "firstworks:annealed_copper_billet"},
-  "work": 140
-}

@@ -78,7 +78,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
         }
 
         String station = workshop.station();
-        if (!station.equals(WorkshopRecipe.KILN) && !station.equals(WorkshopRecipe.CRUCIBLE_FURNACE)) {
+        if (!station.equals(WorkshopRecipe.CRUCIBLE_FURNACE)) {
             if (stokeExpired) {
                 workshop.sync();
             }
@@ -213,7 +213,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
     }
 
     private boolean heated() {
-        return station().equals(WorkshopRecipe.KILN) || station().equals(WorkshopRecipe.CRUCIBLE_FURNACE);
+        return station().equals(WorkshopRecipe.CRUCIBLE_FURNACE);
     }
 
     private boolean validInput(ItemStack stack) {

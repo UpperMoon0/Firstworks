@@ -37,6 +37,51 @@ public final class FirstworksGameTests {
 
     private FirstworksGameTests() {}
 
+    private static ItemStack smelt(GameTestHelper helper, BlockPos pos, ItemStack input, int ticks) {
+        helper.setBlock(pos, Blocks.FURNACE);
+        net.minecraft.world.level.block.entity.FurnaceBlockEntity furnace = helper.getBlockEntity(pos);
+        furnace.setItem(0, input);
+        furnace.setItem(1, new ItemStack(Items.COAL));
+        BlockPos absolute = helper.absolutePos(pos);
+        for (int i = 0; i <= ticks; i++) {
+            net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity.serverTick(
+                    helper.getLevel(), absolute, helper.getLevel().getBlockState(absolute), furnace);
+        }
+        return furnace.getItem(2).copy();
+    }
+
+    @GameTest(template = EMPTY, timeoutTicks = 20)
+    public static void furnaceRecipesReplaceKilnWithoutCopperBypass(GameTestHelper helper) {
+        var level = helper.getLevel();
+        // Exercise the same rewrite used on login and datapack reload, twice to check idempotence.
+        for (int pass = 0; pass < 2; pass++) {
+            com.nstut.firstworks.ToolBindingRecipes.bindVanillaTools(
+                    new net.neoforged.neoforge.event.OnDatapackSyncEvent(level.getServer().getPlayerList(), null));
+        }
+        var manager = level.getRecipeManager();
+        for (var input : List.of(Items.RAW_COPPER, Items.COPPER_ORE, Items.DEEPSLATE_COPPER_ORE)) {
+            var recipeInput = new net.minecraft.world.item.crafting.SingleRecipeInput(new ItemStack(input));
+            check(helper, manager.getRecipeFor(net.minecraft.world.item.crafting.RecipeType.SMELTING,
+                    recipeInput, level).isEmpty(), "Copper still smelts directly in furnace");
+            check(helper, manager.getRecipeFor(net.minecraft.world.item.crafting.RecipeType.BLASTING,
+                    recipeInput, level).isEmpty(), "Copper still smelts directly in blast furnace");
+        }
+        check(helper, manager.getRecipeFor(net.minecraft.world.item.crafting.RecipeType.SMELTING,
+                new net.minecraft.world.item.crafting.SingleRecipeInput(new ItemStack(Items.RAW_IRON)), level).isPresent(),
+                "Unrelated iron smelting was removed");
+        var inputs = List.of(ModItems.UNFIRED_CASTING_MOLD.get(), ModItems.UNFIRED_CRUCIBLE.get(),
+                ModItems.UNFIRED_TUYERE.get(), ModItems.UNFIRED_REFRACTORY_BRICK.get(),
+                ModItems.CAST_COPPER_BILLET.get(), Items.CALCITE);
+        var outputs = List.of(ModItems.CASTING_MOLD.get(), ModItems.CRUCIBLE.get(), ModItems.TUYERE.get(),
+                ModItems.REFRACTORY_BRICK.get(), ModItems.ANNEALED_COPPER_BILLET.get(), ModItems.LIME.get());
+        for (int i = 0; i < inputs.size(); i++) {
+            ItemStack result = smelt(helper, new BlockPos(2 + i, 1, 2), new ItemStack(inputs.get(i)), 250);
+            check(helper, result.is(outputs.get(i)) && result.getCount() == (i == 5 ? 2 : 1),
+                    "Migrated furnace recipe produced wrong result: " + inputs.get(i));
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = EMPTY, timeoutTicks = 20)
     public static void copperWorkshopCompletesEntirePrimitiveChain(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -53,16 +98,8 @@ public final class FirstworksGameTests {
         use(helper, wheelPos, player, 8);
         check(helper, wheel.getOutput().is(ModItems.UNFIRED_CASTING_MOLD.get()), "Pottery Wheel did not shape an unfired casting mold");
 
-        BlockPos moldKilnPos = new BlockPos(5, 1, 2);
-        helper.setBlock(moldKilnPos, ModBlocks.KILN.get());
-        WorkshopBlockEntity moldKiln = helper.getBlockEntity(moldKilnPos);
-        hold(player, wheel.getOutput().copy());
-        helper.useBlock(moldKilnPos, player);
-        hold(player, new ItemStack(Items.COAL));
-        helper.useBlock(moldKilnPos, player);
-        clearHand(player);
-        tickHeated(level, helper.absolutePos(moldKilnPos), moldKiln, 220);
-        check(helper, moldKiln.getOutput().is(ModItems.CASTING_MOLD.get()), "Kiln did not fire the casting mold");
+        ItemStack moldResult = smelt(helper, new BlockPos(5, 1, 2), wheel.getOutput().copy(), 220);
+        check(helper, moldResult.is(ModItems.CASTING_MOLD.get()), "Vanilla furnace did not process mold");
 
         BlockPos bellowsPos = new BlockPos(7, 1, 3);
         BlockPos furnacePos = new BlockPos(8, 1, 3);
@@ -72,7 +109,7 @@ public final class FirstworksGameTests {
 
         hold(player, new ItemStack(Items.RAW_COPPER, 3));
         use(helper, furnacePos, player, 3);
-        hold(player, moldKiln.getOutput().copy());
+        hold(player, moldResult.copy());
         helper.useBlock(furnacePos, player);
         hold(player, new ItemStack(Items.CHARCOAL));
         helper.useBlock(furnacePos, player);
@@ -90,25 +127,17 @@ public final class FirstworksGameTests {
         check(helper, furnace.getOutput().is(ModItems.CAST_COPPER_BILLET.get()), "Crucible Furnace did not cast a copper billet");
         check(helper, furnace.getCatalyst().is(ModItems.CASTING_MOLD.get()), "Reusable casting mold was consumed");
 
-        BlockPos annealKilnPos = new BlockPos(11, 1, 3);
-        helper.setBlock(annealKilnPos, ModBlocks.KILN.get());
-        WorkshopBlockEntity annealKiln = helper.getBlockEntity(annealKilnPos);
-        hold(player, furnace.getOutput().copy());
-        helper.useBlock(annealKilnPos, player);
-        hold(player, new ItemStack(Items.COAL));
-        helper.useBlock(annealKilnPos, player);
-        clearHand(player);
-        tickHeated(level, helper.absolutePos(annealKilnPos), annealKiln, 140);
-        check(helper, annealKiln.getOutput().is(ModItems.ANNEALED_COPPER_BILLET.get()), "Kiln did not anneal the cast copper billet");
+        ItemStack annealResult = smelt(helper, new BlockPos(11, 1, 3), furnace.getOutput().copy(), 140);
+        check(helper, annealResult.is(ModItems.ANNEALED_COPPER_BILLET.get()), "Vanilla furnace did not process anneal");
 
         BlockPos anvilPos = new BlockPos(13, 1, 3);
         helper.setBlock(anvilPos, ModBlocks.STONE_ANVIL.get());
         WorkshopBlockEntity anvil = helper.getBlockEntity(anvilPos);
-        hold(player, annealKiln.getOutput().copy());
+        hold(player, annealResult.copy());
         helper.useBlock(anvilPos, player);
         hold(player, new ItemStack(ModItems.STONE_HAMMER.get()));
         use(helper, anvilPos, player, 8);
-        check(helper, anvil.getOutput().is(ModItems.WORKED_COPPER_BILLET.get()), "Stone Anvil did not finish the worked copper billet");
+        check(helper, anvil.getOutput().is(Items.COPPER_INGOT), "Stone Anvil did not finish the vanilla copper ingot");
 
         helper.succeed();
     }
@@ -189,32 +218,32 @@ public final class FirstworksGameTests {
     public static void workshopEmptyCatalystAndFuelRoutingStaySafe(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
-        BlockPos kilnPos = new BlockPos(4, 1, 4);
-        helper.setBlock(kilnPos, ModBlocks.KILN.get());
-        WorkshopBlockEntity kiln = helper.getBlockEntity(kilnPos);
+        BlockPos heatedPos = new BlockPos(4, 1, 4);
+        helper.setBlock(heatedPos, ModBlocks.CRUCIBLE_FURNACE.get());
+        WorkshopBlockEntity heated = helper.getBlockEntity(heatedPos);
 
         hold(player, new ItemStack(Items.CHARCOAL, 2));
-        helper.useBlock(kilnPos, player);
-        check(helper, kiln.getInput().is(Items.CHARCOAL) && kiln.getInput().getCount() == 1,
+        helper.useBlock(heatedPos, player);
+        check(helper, heated.getInput().is(Items.CHARCOAL) && heated.getInput().getCount() == 1,
                 "normal insertion did not prefer the custom recipe input role over fuel");
-        check(helper, kiln.getFuel().isEmpty(),
+        check(helper, heated.getFuel().isEmpty(),
                 "normal insertion routed an overlapping charcoal recipe input into fuel");
-        check(helper, kiln.activeRecipe().isEmpty(),
+        check(helper, heated.activeRecipe().isEmpty(),
                 "recipe with an explicitly declared empty catalyst tag became active");
 
         player.setShiftKeyDown(true);
-        helper.useBlock(kilnPos, player);
+        helper.useBlock(heatedPos, player);
         player.setShiftKeyDown(false);
-        check(helper, kiln.getInput().getCount() == 1,
+        check(helper, heated.getInput().getCount() == 1,
                 "sneak fuel insertion modified the loaded recipe input");
-        check(helper, kiln.getFuel().is(Items.CHARCOAL) && kiln.getFuel().getCount() == 1,
+        check(helper, heated.getFuel().is(Items.CHARCOAL) && heated.getFuel().getCount() == 1,
                 "sneak-right-click did not explicitly route overlapping charcoal into fuel");
 
-        tickHeated(level, helper.absolutePos(kilnPos), kiln, 4);
-        check(helper, kiln.getOutput().isEmpty(),
+        tickHeated(level, helper.absolutePos(heatedPos), heated, 4);
+        check(helper, heated.getOutput().isEmpty(),
                 "empty catalyst tag bypass produced output despite an unsatisfied catalyst requirement");
-        check(helper, kiln.getFuel().getCount() == 1,
-                "kiln consumed fuel for a recipe whose declared catalyst cannot match");
+        check(helper, heated.getFuel().getCount() == 1,
+                "Furnace consumed fuel for a recipe whose declared catalyst cannot match");
 
         helper.succeed();
     }
@@ -226,8 +255,8 @@ public final class FirstworksGameTests {
         int minY = level.getMinBuildHeight();
         int maxY = level.getMaxBuildHeight() - 1;
 
-        check(helper, !ModBlocks.KILN.get().defaultBlockState().canOcclude(),
-                "Kiln must not occlude neighboring faces around its hollow model");
+        check(helper, !ModBlocks.CRUCIBLE_FURNACE.get().defaultBlockState().canOcclude(),
+                "Crucible furnace must not occlude neighboring faces around its hollow model");
         check(helper, !ModBlocks.CRUCIBLE_FURNACE.get().defaultBlockState().canOcclude(),
                 "Crucible Furnace must not occlude neighboring faces around its hollow model");
         check(helper, !level.isOutsideBuildHeight(minY), "Vanilla lower build edge was treated as out of bounds");
@@ -237,7 +266,6 @@ public final class FirstworksGameTests {
 
         List<Block> blocks = List.of(
                 ModBlocks.POTTERY_WHEEL.get(),
-                ModBlocks.KILN.get(),
                 ModBlocks.STONE_ANVIL.get(),
                 ModBlocks.BELLOWS.get(),
                 ModBlocks.CRUCIBLE_FURNACE.get(),

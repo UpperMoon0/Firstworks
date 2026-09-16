@@ -104,7 +104,6 @@ public final class ModItems {
             "stone_hammer", () -> new Item(new Item.Properties().durability(192).stacksTo(1)));
 
     public static final DeferredHolder<Item, Item> POTTERY_WHEEL = blockItem("pottery_wheel", ModBlocks.POTTERY_WHEEL);
-    public static final DeferredHolder<Item, Item> KILN = blockItem("kiln", ModBlocks.KILN);
     public static final DeferredHolder<Item, Item> STONE_ANVIL = blockItem("stone_anvil", ModBlocks.STONE_ANVIL);
     public static final DeferredHolder<Item, Item> BELLOWS = blockItem("bellows", ModBlocks.BELLOWS);
     public static final DeferredHolder<Item, Item> CRUCIBLE_FURNACE =
@@ -113,7 +112,6 @@ public final class ModItems {
     // Primitive copper and copper workshop upgrades.
     public static final DeferredHolder<Item, Item> CAST_COPPER_BILLET = simple("cast_copper_billet");
     public static final DeferredHolder<Item, Item> ANNEALED_COPPER_BILLET = simple("annealed_copper_billet");
-    public static final DeferredHolder<Item, Item> WORKED_COPPER_BILLET = simple("worked_copper_billet");
     public static final DeferredHolder<Item, Item> LIME = simple("lime");
     public static final DeferredHolder<Item, Item> PLASTER = simple("plaster");
     public static final DeferredHolder<Item, Item> PLASTER_BLOCK = blockItem("plaster_block", ModBlocks.PLASTER_BLOCK);

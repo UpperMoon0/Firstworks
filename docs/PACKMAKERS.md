@@ -269,7 +269,7 @@ Stone/Copper workshop stations use one shared recipe type with a station selecto
 }
 ```
 
-Supported `station` values are `pottery_wheel`, `kiln`, `stone_anvil`, and `crucible_furnace`. Unknown values fail recipe loading. The `catalyst` field is genuinely optional: omit it for a catalyst-free recipe. If the field is present but resolves to an empty ingredient/tag, it remains a required catalyst and the recipe matches nothing rather than silently bypassing the requirement.
+Supported `station` values are `pottery_wheel`, `stone_anvil`, and `crucible_furnace`. Unknown values fail recipe loading. The `catalyst` field is genuinely optional: omit it for a catalyst-free recipe. If the field is present but resolves to an empty ingredient/tag, it remains a required catalyst and the recipe matches nothing rather than silently bypassing the requirement.
 
 ---
 
@@ -362,7 +362,7 @@ ServerEvents.recipes(event => {
     type: 'firstworks:workshop_processing',
     station: 'stone_anvil',
     ingredient: { item: 'firstworks:annealed_copper_billet' },
-    result: { id: 'firstworks:worked_copper_billet' },
+    result: { id: 'minecraft:copper_ingot' },
     work: 8
   }).id('example:work_copper')
 })
@@ -499,7 +499,7 @@ FirstworksEvents.quernGrindingCompleted(event => {
   - **Bottom Face**: Extracts completed result from output slot (raw input cannot be extracted by automation).
   - **Side Faces / Unsided**: Accepts input insertion and output extraction.
   - **Processing**: Has no powered processing capability. Automated transfer does not advance work; only a player's empty-hand crank does.
-- **Workshop stations (`pottery_wheel`, `kiln`, `stone_anvil`, `crucible_furnace`)**:
+- **Workshop stations (`pottery_wheel`, `stone_anvil`, `crucible_furnace`)**:
   - All faces expose the same four-slot handler: slot 0 input, slot 1 catalyst, slot 2 fuel, slot 3 output.
   - Automation may insert into the first three valid slots and may extract only completed output from slot 3.
   - Normal player right-click favors recipe input/catalyst roles. On heated stations, sneak-right-click coal/charcoal forces the held item into slot 2, so fuel remains reachable even when a pack recipe also uses that item as input or catalyst.

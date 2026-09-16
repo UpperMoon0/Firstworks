@@ -14,13 +14,12 @@ public class StoneCopperProgressionRecipeTest {
     }
 
     @Test
-    public void workedCopperOwnsFastenersAndRetainedTools() throws Exception {
+    public void vanillaCopperIngotsMakeFastenersAndRetainedTools() throws Exception {
         String fasteners = resource("data/firstworks/recipe/copper_fasteners.json");
-        assertTrue(fasteners.contains("firstworks:worked_copper_billet"));
-        assertFalse(fasteners.contains("minecraft:copper_ingot"));
+        assertTrue(fasteners.contains("minecraft:copper_ingot"));
 
         String knife = resource("data/firstworks/recipe/copper_knife.json");
-        assertTrue(knife.contains("firstworks:worked_copper_billet"));
+        assertTrue(knife.contains("minecraft:copper_ingot"));
         assertTrue(knife.contains("firstworks:strong_bindings"));
     }
 
@@ -41,13 +40,13 @@ public class StoneCopperProgressionRecipeTest {
         assertTrue(casting.contains("firstworks:casting_mold"));
         assertTrue(casting.contains("minecraft:raw_copper"));
 
-        String annealing = resource("data/firstworks/recipe/kiln_anneal_copper.json");
+        String annealing = resource("data/firstworks/recipe/smelt_anneal_copper.json");
         assertTrue(annealing.contains("firstworks:cast_copper_billet"));
         assertTrue(annealing.contains("firstworks:annealed_copper_billet"));
 
         String working = resource("data/firstworks/recipe/anvil_work_copper.json");
         assertTrue(working.contains("firstworks:annealed_copper_billet"));
-        assertTrue(working.contains("firstworks:worked_copper_billet"));
+        assertTrue(working.contains("minecraft:copper_ingot"));
     }
 
     @Test
@@ -71,7 +70,7 @@ public class StoneCopperProgressionRecipeTest {
         assertTrue(resource("data/firstworks/tags/item/strong_bindings.json").contains("firstworks:hafting_compound"));
         assertTrue(resource("data/firstworks/recipe/hafting_compound.json").contains("firstworks:resin"));
         assertTrue(resource("data/firstworks/recipe/quern_grog.json").contains("minecraft:brick"));
-        assertTrue(resource("data/firstworks/recipe/kiln_crucible.json").contains("firstworks:unfired_crucible"));
+        assertTrue(resource("data/firstworks/recipe/smelt_crucible.json").contains("firstworks:unfired_crucible"));
         assertTrue(resource("data/firstworks/recipe/heavy_leather.json").contains("firstworks:tannin_solution"));
     }
 
@@ -82,4 +81,23 @@ public class StoneCopperProgressionRecipeTest {
         assertTrue(bellows.contains("firstworks:strong_bindings"));
         assertFalse(bellows.contains("firstworks:copper_fasteners"));
     }
+    @Test
+    public void hammerHasAHandleAndMortarUnlocksCopperBeforeQuern() throws Exception {
+        var hammer = com.google.gson.JsonParser.parseString(resource("data/firstworks/recipe/stone_hammer.json")).getAsJsonObject();
+        assertTrue(hammer.getAsJsonObject("key").getAsJsonObject("H").get("item").getAsString().equals("minecraft:stick"));
+        assertTrue(hammer.getAsJsonArray("pattern").get(2).getAsString().contains("H"));
+        String quern = resource("data/firstworks/recipe/quern.json");
+        assertTrue(quern.contains("firstworks:copper_fasteners"));
+        var mortar = com.google.gson.JsonParser.parseString(resource("data/firstworks/recipe/grind_grog.json")).getAsJsonObject();
+        var grinding = com.google.gson.JsonParser.parseString(resource("data/firstworks/recipe/quern_grog.json")).getAsJsonObject();
+        assertTrue(mortar.get("type").getAsString().equals("firstworks:mortar_grinding"));
+        for (var recipe : java.util.List.of(mortar, grinding)) {
+            assertTrue(recipe.getAsJsonObject("ingredient").get("item").getAsString().equals("minecraft:brick"));
+            assertTrue(recipe.get("input_count").getAsInt() == 1);
+            assertTrue(recipe.getAsJsonObject("result").get("id").getAsString().equals("firstworks:grog"));
+        }
+        assertTrue(mortar.getAsJsonObject("result").get("count").getAsInt() == 1);
+        assertTrue(grinding.getAsJsonObject("result").get("count").getAsInt() == 2);
+    }
+
 }

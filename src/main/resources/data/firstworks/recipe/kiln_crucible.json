@@ -1,7 +1,0 @@
-{
-  "type": "firstworks:workshop_processing",
-  "station": "kiln",
-  "ingredient": {"item": "firstworks:unfired_crucible"},
-  "result": {"id": "firstworks:crucible"},
-  "work": 240
-}

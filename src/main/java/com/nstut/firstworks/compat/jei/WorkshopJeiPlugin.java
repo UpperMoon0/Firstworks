@@ -19,8 +19,6 @@ import java.util.List;
 public final class WorkshopJeiPlugin implements IModPlugin {
     public static final RecipeType<WorkshopRecipe> POTTERY_WHEEL_PROCESSING =
             RecipeType.create(Firstworks.MOD_ID, "pottery_wheel", WorkshopRecipe.class);
-    public static final RecipeType<WorkshopRecipe> KILN_PROCESSING =
-            RecipeType.create(Firstworks.MOD_ID, "kiln", WorkshopRecipe.class);
     public static final RecipeType<WorkshopRecipe> STONE_ANVIL_PROCESSING =
             RecipeType.create(Firstworks.MOD_ID, "stone_anvil", WorkshopRecipe.class);
     public static final RecipeType<WorkshopRecipe> CRUCIBLE_FURNACE_PROCESSING =
@@ -34,7 +32,6 @@ public final class WorkshopJeiPlugin implements IModPlugin {
         var guiHelper = registration.getJeiHelpers().getGuiHelper();
         registration.addRecipeCategories(
                 new WorkshopRecipeCategory(guiHelper, POTTERY_WHEEL_PROCESSING, WorkshopRecipe.POTTERY_WHEEL),
-                new WorkshopRecipeCategory(guiHelper, KILN_PROCESSING, WorkshopRecipe.KILN),
                 new WorkshopRecipeCategory(guiHelper, STONE_ANVIL_PROCESSING, WorkshopRecipe.STONE_ANVIL),
                 new WorkshopRecipeCategory(guiHelper, CRUCIBLE_FURNACE_PROCESSING, WorkshopRecipe.CRUCIBLE_FURNACE));
     }
@@ -46,7 +43,6 @@ public final class WorkshopJeiPlugin implements IModPlugin {
                 .getAllRecipesFor(ModRecipes.WORKSHOP_PROCESSING_TYPE.get()).stream()
                 .map(holder -> holder.value()).toList();
         registerStationRecipes(registration, recipes, POTTERY_WHEEL_PROCESSING, WorkshopRecipe.POTTERY_WHEEL);
-        registerStationRecipes(registration, recipes, KILN_PROCESSING, WorkshopRecipe.KILN);
         registerStationRecipes(registration, recipes, STONE_ANVIL_PROCESSING, WorkshopRecipe.STONE_ANVIL);
         registerStationRecipes(registration, recipes, CRUCIBLE_FURNACE_PROCESSING, WorkshopRecipe.CRUCIBLE_FURNACE);
     }
@@ -61,7 +57,6 @@ public final class WorkshopJeiPlugin implements IModPlugin {
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
         registration.addRecipeCatalyst(ModBlocks.POTTERY_WHEEL.get(), POTTERY_WHEEL_PROCESSING);
-        registration.addRecipeCatalyst(ModBlocks.KILN.get(), KILN_PROCESSING);
         registration.addRecipeCatalyst(ModBlocks.STONE_ANVIL.get(), STONE_ANVIL_PROCESSING);
         registration.addRecipeCatalyst(ModBlocks.CRUCIBLE_FURNACE.get(), CRUCIBLE_FURNACE_PROCESSING);
         registration.addRecipeCatalyst(ModBlocks.BELLOWS.get(), CRUCIBLE_FURNACE_PROCESSING);

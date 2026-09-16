@@ -12,7 +12,6 @@ import com.nstut.firstworks.content.loom.LoomBlock;
 import com.nstut.firstworks.content.mortar.MortarBlock;
 import com.nstut.firstworks.content.quern.QuernBlock;
 import com.nstut.firstworks.content.workshop.CrucibleFurnaceBlock;
-import com.nstut.firstworks.content.workshop.KilnBlock;
 import com.nstut.firstworks.content.workshop.PotteryWheelBlock;
 import com.nstut.firstworks.content.workshop.StoneAnvilBlock;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -83,9 +82,6 @@ public final class ModBlocks {
     public static final DeferredHolder<Block, PotteryWheelBlock> POTTERY_WHEEL = BLOCKS.register(
             "pottery_wheel",
             () -> new PotteryWheelBlock(Block.Properties.ofFullCopy(Blocks.SMOOTH_STONE).noOcclusion()));
-    public static final DeferredHolder<Block, KilnBlock> KILN = BLOCKS.register(
-            "kiln",
-            () -> new KilnBlock(Block.Properties.ofFullCopy(Blocks.BRICKS).noOcclusion()));
     public static final DeferredHolder<Block, StoneAnvilBlock> STONE_ANVIL = BLOCKS.register(
             "stone_anvil",
             () -> new StoneAnvilBlock(Block.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));

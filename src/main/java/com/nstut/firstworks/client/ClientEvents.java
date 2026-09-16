@@ -25,8 +25,6 @@ public final class ClientEvents {
     public static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
         event.register(ModelResourceLocation.standalone(Firstworks.id("block/quern_runner")));
         event.register(WorkshopBlockEntityRenderer.POTTERY_HEAD);
-        event.register(WorkshopBlockEntityRenderer.KILN_EMBERS);
-        event.register(WorkshopBlockEntityRenderer.KILN_BILLET);
         event.register(WorkshopBlockEntityRenderer.CRUCIBLE_CONTENTS);
         event.register(WorkshopBlockEntityRenderer.CASTING_MOLD);
         event.register(WorkshopBlockEntityRenderer.CASTING_METAL);
