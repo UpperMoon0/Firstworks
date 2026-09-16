@@ -71,7 +71,7 @@ Firstworks exposes data-driven tags for extensible pack integration. Below are t
 | `#firstworks:resin_tapping_tools` | `firstworks:resin_tap` | Additional tools accepted for renewable resin tapping; primitive knives are accepted separately. |
 | `#firstworks:hammers` | `firstworks:stone_hammer` | Hammer-role tools that advance Stone Anvil work. |
 | `#firstworks:refractory_materials` | `firstworks:grog`, `firstworks:refractory_clay`, `firstworks:refractory_brick` | Shared refractory-material classification for workshop extension. |
-| `#firstworks:primitive_copper` | Cast/annealed/worked copper billets, Copper Wire, Copper Fasteners, Copper Knife | Firstworks primitive-copper products that precede mature metallurgy. |
+| `#firstworks:primitive_copper` | `firstworks:cast_copper_billet`, `firstworks:annealed_copper_billet`, `minecraft:copper_ingot`, `firstworks:copper_fasteners`, `firstworks:copper_knife` | Firstworks primitive-copper chain and products that precede mature metallurgy. |
 | `#firstworks:charcoal_igniters` | `firstworks:fire_starter`, `minecraft:flint_and_steel` | Items capable of igniting charcoal mounds. |
 | `#firstworks:raw_hides` | `firstworks:raw_hide` | Raw hide items removed during animal drop normalization before adding `firstworks:raw_hide`. Packs integrating third-party animal mods should add items like `naturalist:hide` here. |
 | `#firstworks:tree_bark` | `firstworks:tree_bark` | Stripped bark items used for brewing tannin solution in barrels. |
@@ -503,7 +503,7 @@ FirstworksEvents.quernGrindingCompleted(event => {
   - All faces expose the same four-slot handler: slot 0 input, slot 1 catalyst, slot 2 fuel, slot 3 output.
   - Automation may insert into the first three valid slots and may extract only completed output from slot 3.
   - Normal player right-click favors recipe input/catalyst roles. On heated stations, sneak-right-click coal/charcoal forces the held item into slot 2, so fuel remains reachable even when a pack recipe also uses that item as input or catalyst.
-  - Adding recipe input/catalyst resets active work; adding reserve fuel does not reset progress or consume another fuel item while the current batch is already running.
+  - Adding recipe input or catalyst preserves active progress and running state when the selected recipe id remains unchanged; if the insertion changes the selected recipe, processing resets before the new recipe begins. Reserve-fuel top-ups also preserve progress and do not consume another fuel item while the current batch is already running.
 
 ---
 
@@ -572,7 +572,7 @@ Because all Firstworks routes match by common tag (`#c:flours/wheat`, `#c:doughs
   - **Charcoal Pile**: Stored charcoal count.
 - **JEI Categories**:
   - Barrel Processing, Hand Spinning, Loom Weaving, Brick Molding, Mortar Grinding, Quern Grinding, **Workshop Processing**, and dynamic Charcoal Mound Information guide.
-  - The Copper Hand Spindle is a catalyst for Hand Spinning, the Rotary Quern is a catalyst for Quern Grinding, Copper Looms are discovered with the Loom block family, and each workshop station is a catalyst for Workshop Processing.
+  - The base Hand Spindle is a catalyst for Hand Spinning, the Quern is a catalyst for Quern Grinding, the Loom block family is discovered for Loom Weaving, and the Pottery Wheel, Stone Anvil, Crucible Furnace, and Bellows are catalysts for their Workshop Processing views.
 
 ---
 
