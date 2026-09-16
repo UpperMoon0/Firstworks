@@ -57,16 +57,16 @@ public final class WorkshopSelectionGameTests {
     }
 
     @GameTest(template = EMPTY, timeoutTicks = 20)
-    public static void taggedCrucibleFuelAndWorkshopPriorityAreBehavioral(GameTestHelper helper) {
+    public static void tagBackedCrucibleFuelAndWorkshopPriorityAreBehavioral(GameTestHelper helper) {
         BlockPos furnacePos = new BlockPos(2, 1, 2);
         helper.setBlock(furnacePos, ModBlocks.CRUCIBLE_FURNACE.get());
         WorkshopBlockEntity furnace = helper.getBlockEntity(furnacePos);
-        ItemStack packFuel = new ItemStack(Items.BLAZE_POWDER);
-        check(helper, furnace.canInsertFuel(packFuel),
-                "Crucible Furnace rejected a fuel added by the test datapack tag");
-        check(helper, furnace.getItemHandler(null).insertItem(2, packFuel.copy(), false).isEmpty(),
-                "Automation rejected a fuel added by #firstworks:crucible_furnace_fuels");
-        check(helper, furnace.getFuel().is(Items.BLAZE_POWDER),
+        ItemStack taggedFuel = new ItemStack(Items.COAL);
+        check(helper, furnace.canInsertFuel(taggedFuel),
+                "Crucible Furnace rejected a fuel from #firstworks:crucible_furnace_fuels");
+        check(helper, furnace.getItemHandler(null).insertItem(2, taggedFuel.copy(), false).isEmpty(),
+                "Automation rejected a fuel from #firstworks:crucible_furnace_fuels");
+        check(helper, furnace.getFuel().is(Items.COAL),
                 "Tagged Crucible Furnace fuel was not stored in the reserve slot");
 
         BlockPos wheelPos = new BlockPos(6, 1, 2);
