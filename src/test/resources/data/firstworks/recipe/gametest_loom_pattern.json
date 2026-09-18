@@ -1,0 +1,7 @@
+{
+  "type": "firstworks:loom_weaving",
+  "ingredient": { "item": "minecraft:paper" },
+  "result": { "id": "minecraft:book" },
+  "strokes": 12,
+  "weaving": { "pattern": ["A", "A", "B", "B"], "passes": 4 }
+}

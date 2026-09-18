@@ -1,5 +1,8 @@
 package com.nstut.firstworks.content.workshop;
 
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.level.block.CampfireBlock;
+import net.minecraft.network.chat.Component;
 import com.nstut.firstworks.compat.OptionalIntegrations;
 import com.nstut.firstworks.registry.ModBlockEntities;
 import com.nstut.firstworks.registry.ModRecipes;
@@ -41,6 +44,9 @@ public final class WorkshopBlockEntity extends BlockEntity {
     private ItemStack output = ItemStack.EMPTY;
     private int progress;
     private int stokeTicks;
+    private int forgeHeat;
+    private long lastForgeTick = Long.MIN_VALUE;
+    private String lastForgeAction = "";
     private boolean running;
     private boolean processCancelled;
     private long actionSteps;
@@ -74,6 +80,11 @@ public final class WorkshopBlockEntity extends BlockEntity {
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, WorkshopBlockEntity workshop) {
+        if (workshop.forgeHeat > 0) {
+            workshop.forgeHeat--;
+            workshop.setChanged();
+            if (workshop.forgeHeat % 20 == 0) workshop.sync();
+        }
         boolean stokeExpired = false;
         if (workshop.stokeTicks > 0) {
             workshop.stokeTicks--;
@@ -143,7 +154,93 @@ public final class WorkshopBlockEntity extends BlockEntity {
         return true;
     }
 
+    public boolean isHot() {
+        return heated() && running && stokeTicks > 0 && !input.isEmpty() && output.isEmpty();
+    }
+
+    public int getForgeHeat() { return forgeHeat; }
+    public String getLastForgeAction() { return lastForgeAction; }
+
+    public Component anvilHint(String action, boolean reheat, boolean hammer) {
+        if (!output.isEmpty()) return Component.translatable("hint.firstworks.collect");
+        if (input.isEmpty()) return Component.translatable("jade.firstworks.workshop.empty");
+        var active = activeRecipe();
+        if (active.isEmpty()) {
+            var candidate = stationRecipes().filter(h -> h.value().ingredient().test(input))
+                    .sorted(Comparator.comparingInt(h -> h.value().inputCount())).findFirst();
+            if (candidate.isEmpty()) return Component.translatable("hint.firstworks.unsupported");
+            if (input.getCount() < candidate.get().value().inputCount())
+                return Component.translatable("hint.firstworks.input_count", input.getCount(), candidate.get().value().inputCount());
+            return Component.translatable("hint.firstworks.catalyst", candidate.get().value().catalystCount());
+        }
+        if (!hammer) return Component.translatable("hint.firstworks.anvil.hammer");
+        if (processCancelled) return Component.translatable("hint.firstworks.cancelled");
+        var forge = active.get().value().forge();
+        if (forge.isEmpty()) return Component.translatable("hint.firstworks.anvil.smash");
+        if (reheat || forge.get().heatTicks() > 0 && forgeHeat == 0)
+            return Component.translatable(hasForgeHeatSource() ? "hint.firstworks.anvil.reheat_ready" : "hint.firstworks.anvil.reheat");
+        String next = forge.get().actions().get(Math.min(progress, forge.get().actions().size() - 1));
+        if (forge.get().heatTicks() == 0) return Component.translatable("hint.firstworks.anvil.action_cold",
+                Component.translatable("action.firstworks." + action), Component.translatable("action.firstworks." + next));
+        return Component.translatable("hint.firstworks.anvil.action",
+                Component.translatable("action.firstworks." + action),
+                Component.translatable("action.firstworks." + next), (forgeHeat + 19) / 20);
+    }
+
+    public boolean hasForgeHeatSource() {
+        if (level == null) return false;
+        for (Direction side : Direction.values()) {
+            BlockPos source = worldPosition.relative(side);
+            var state = level.getBlockState(source);
+            if (state.getBlock() instanceof CampfireBlock
+                    && state.getValue(CampfireBlock.LIT)) return true;
+            if (level.getBlockEntity(source) instanceof WorkshopBlockEntity furnace && furnace.isHot()) return true;
+        }
+        return false;
+    }
+
+    public boolean reheat(Player player) {
+        if (!(level instanceof ServerLevel) || !hasHammer(player) || !hasForgeHeatSource() || !output.isEmpty()) return false;
+        var data = activeRecipe().flatMap(h -> h.value().forge());
+        if (data.isEmpty() || data.get().heatTicks() == 0) return false;
+        forgeHeat = data.get().heatTicks();
+        level.playSound(null, worldPosition, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 0.4F, 1.1F);
+        sync();
+        return true;
+    }
+
+    private static boolean hasHammer(Player player) {
+        return player.getMainHandItem().is(ModTags.HAMMERS) || player.getOffhandItem().is(ModTags.HAMMERS);
+    }
+
+    public boolean forge(Player player, String action) {
+        if (!(level instanceof ServerLevel server) || !station().equals(WorkshopRecipe.STONE_ANVIL)
+                || !hasHammer(player) || lastForgeTick == level.getGameTime()) return false;
+        var active = activeRecipe();
+        if (active.isEmpty() || !output.isEmpty()) return false;
+        var recipe = active.get().value();
+        if (recipe.forge().isEmpty()) return work(player);
+        var data = recipe.forge().get();
+        if (progress >= data.actions().size() || !data.actions().get(progress).equals(action)
+                || data.heatTicks() > 0 && forgeHeat <= 0) return false;
+        processCancelled = false;
+        if (!tryBegin(active.get())) return false;
+        lastForgeTick = level.getGameTime();
+        lastForgeAction = action;
+        progress++;
+        actionSteps++;
+        server.sendParticles(ParticleTypes.CRIT,
+                worldPosition.getX() + 0.5, worldPosition.getY() + 0.72, worldPosition.getZ() + 0.5,
+                3, 0.12, 0.02, 0.12, 0.02);
+        level.playSound(null, worldPosition, SoundEvents.ANVIL_HIT, SoundSource.BLOCKS, 0.45F,
+                action.equals("draw") ? 1.5F : action.equals("bend") ? 0.85F : 1.15F);
+        if (progress >= recipe.requiredWork()) complete(active.get());
+        else sync();
+        return true;
+    }
+
     public boolean work(Player player) {
+        if (!(level instanceof ServerLevel)) return false;
         String station = station();
         if (!station.equals(WorkshopRecipe.POTTERY_WHEEL) && !station.equals(WorkshopRecipe.STONE_ANVIL)) {
             return false;
@@ -152,6 +249,9 @@ public final class WorkshopBlockEntity extends BlockEntity {
         if (holder.isEmpty() || !output.isEmpty()) {
             return false;
         }
+
+        if (station.equals(WorkshopRecipe.STONE_ANVIL)
+                && (!hasHammer(player) || holder.get().value().forge().isPresent())) return false;
 
         // Manual work is an explicit retry boundary; unlike the ticking furnace it cannot spam a veto handler.
         processCancelled = false;
@@ -206,6 +306,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
             }
         }
         output = recipe.result().copy();
+        forgeHeat = 0;
         progress = 0;
         running = false;
         processCancelled = false;
@@ -271,11 +372,11 @@ public final class WorkshopBlockEntity extends BlockEntity {
     }
 
     private boolean canInsertInput(ItemStack stack) {
-        return validInput(stack) && canStack(input, stack);
+        return !(station().equals(WorkshopRecipe.STONE_ANVIL) && progress > 0) && validInput(stack) && canStack(input, stack);
     }
 
     private boolean canInsertCatalyst(ItemStack stack) {
-        return validCatalyst(stack) && canStack(catalyst, stack);
+        return !(station().equals(WorkshopRecipe.STONE_ANVIL) && progress > 0) && validCatalyst(stack) && canStack(catalyst, stack);
     }
 
     public boolean canInsertFuel(ItemStack stack) {
@@ -370,6 +471,8 @@ public final class WorkshopBlockEntity extends BlockEntity {
         }
         if (!heated() || !previousRecipe.equals(activeRecipeId())) {
             progress = 0;
+            forgeHeat = 0;
+            lastForgeAction = "";
             running = false;
         }
     }
@@ -408,6 +511,8 @@ public final class WorkshopBlockEntity extends BlockEntity {
             return false;
         }
         player.getInventory().placeItemBackInInventory(stack.copy());
+        forgeHeat = 0;
+        lastForgeAction = "";
         progress = 0;
         running = false;
         processCancelled = false;
@@ -456,7 +561,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
             return 1.0F;
         }
         return activeRecipe()
-                .map(holder -> Mth.clamp((float) progress / Math.max(1, holder.value().work()), 0.0F, 1.0F))
+                .map(holder -> Mth.clamp((float) progress / Math.max(1, holder.value().requiredWork()), 0.0F, 1.0F))
                 .orElse(0.0F);
     }
 
@@ -495,6 +600,9 @@ public final class WorkshopBlockEntity extends BlockEntity {
         tag.put("Output", output.saveOptional(regs));
         tag.putInt("Progress", progress);
         tag.putInt("StokeTicks", stokeTicks);
+        tag.putInt("ForgeHeat", forgeHeat);
+        tag.putLong("LastForgeTick", lastForgeTick);
+        tag.putString("LastForgeAction", lastForgeAction);
         tag.putBoolean("Running", running);
         tag.putBoolean("ProcessCancelled", processCancelled);
         tag.putLong("ActionSteps", actionSteps);
@@ -509,6 +617,9 @@ public final class WorkshopBlockEntity extends BlockEntity {
         output = ItemStack.parseOptional(regs, tag.getCompound("Output"));
         progress = tag.getInt("Progress");
         stokeTicks = tag.getInt("StokeTicks");
+        forgeHeat = Math.max(0, tag.getInt("ForgeHeat"));
+        lastForgeTick = tag.contains("LastForgeTick") ? tag.getLong("LastForgeTick") : Long.MIN_VALUE;
+        lastForgeAction = tag.getString("LastForgeAction");
         running = tag.getBoolean("Running");
         processCancelled = tag.getBoolean("ProcessCancelled");
         long loadedActionSteps = tag.getLong("ActionSteps");

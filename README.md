@@ -25,8 +25,8 @@ Looking to configure recipes, progression gates, custom wood types, KubeJS event
 
 ### 🧵 Textile Crafting & Hand Weaving
 - **Hand Spindle**: Hold in main hand with Retted Fibre in off-hand to hand-spin Twine.
-- **Looms**: Load Twine or String into a wooden Loom and manually work the shuttle to weave Cloth.
-- **Automation**: Empty-handed Create Deployers can operate the Loom shuttle when Create is present.
+- **Looms**: Load Twine or String, use the side post where the shuttle rests to throw it, and use the lower crossbar to change the A/B shed. Basic Cloth needs four alternating passes; the beater packs each pass automatically.
+- **Automation**: Loom item insertion/extraction remains supported. Mechanical operation must target the correct side post and shed control; a fixed generic click does not weave automatically.
 - **Sheep & Fleece**: Sheep drop color-aware Raw Fleece. Wash fleece in water-filled Barrels to make Clean Wool for textile beds.
 
 ### 🌲 Resin, Bindings & Primitive Tools
@@ -59,7 +59,7 @@ Looking to configure recipes, progression gates, custom wood types, KubeJS event
 - **Flour & Dough**: Mill wheat into Flour (`#c:flours/wheat`), knead it into Wheat Dough (`#c:doughs/wheat`), then bake or craft it into early foods.
 
 ### 🥣 Mortar & Pestle
-- Place on any surface, add grindable materials such as Raw Ochre, Charcoal, or Bone, and right-click to grind with an animated in-world pestle.
+- Place on any surface, add materials such as Raw Ochre, Charcoal, or Bone, pound the center to crush them, then hold use on the inner bowl/rim to grind with an animated in-world pestle.
 
 ### 🔥 Earthen Charcoal Mounds
 - **Physical Construction**: Stack connected logs and encase them with suitable earthen blocks, leaving one opening.
@@ -122,3 +122,13 @@ CI additionally runs the NeoForge GameTest server to exercise progression and wo
 ## Credits
 
 Inspired by [TerraFirmaCraft](https://www.curseforge.com/minecraft/mc-mods/terrafirmacraft) and its tactile approach to early-game survival progression.
+
+
+### 0.0.15 manual workstation controls
+
+- **Stone Anvil:** load a workpiece, reheat it by sneak-using a hammer beside a lit campfire or hot crucible, then follow the recipe's center/edge/horn actions. A cooled piece keeps its progress and can be reheated. Custom smashing recipes retain their simple hammer behavior.
+- **Mortar and Pestle:** pound the center to crush coarse material, then hold use on the inner bowl/rim to grind. Releasing pauses work; there is no autonomous finish timer.
+- **Loom:** throw from the shuttle's current side and change the A/B shed at the lower crossbar. Recipes may define repeating patterns.
+- **Crucible Furnace:** glow and particles follow actual fuel-backed processing with airflow, independently of retained progress.
+
+See [packmaker documentation](docs/PACKMAKERS.md#0015-workstation-interactions) for optional recipe metadata and compatibility behavior.

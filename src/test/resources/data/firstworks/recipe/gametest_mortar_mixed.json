@@ -1,22 +1,19 @@
 {
   "type": "firstworks:mortar_grinding",
   "ingredient": {
-    "item": "minecraft:brick"
+    "item": "minecraft:amethyst_shard"
   },
-  "input_count": 1,
   "result": {
-    "id": "firstworks:grog",
-    "count": 1
+    "id": "minecraft:diamond"
   },
-  "duration": 40,
   "processing": [
     {
       "action": "crush",
-      "count": 3
+      "count": 1
     },
     {
       "action": "grind",
-      "duration": 40
+      "duration": 3
     }
   ]
 }

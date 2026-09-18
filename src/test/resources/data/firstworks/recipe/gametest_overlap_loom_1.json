@@ -1,0 +1,17 @@
+{
+  "type": "firstworks:loom_weaving",
+  "result": {
+    "id": "minecraft:paper"
+  },
+  "weaving": {
+    "passes": 1,
+    "pattern": [
+      "A"
+    ]
+  },
+  "ingredient": {
+    "item": "minecraft:emerald"
+  },
+  "input_count": 1,
+  "strokes": 1
+}

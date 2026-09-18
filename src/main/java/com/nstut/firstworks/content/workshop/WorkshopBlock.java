@@ -91,7 +91,7 @@ public abstract class WorkshopBlock extends BaseEntityBlock {
         }
         Direction facing = state.getValue(FACING);
         if (WorkshopRecipe.CRUCIBLE_FURNACE.equals(station)
-                && (workshop.isRunning() || workshop.getStokeTicks() > 0)) {
+                && workshop.isHot()) {
             int air = workshop.getStokeTicks();
             int flameChance = air >= 320 ? 1 : 2;
             if (random.nextInt(flameChance) == 0) {
@@ -116,11 +116,13 @@ public abstract class WorkshopBlock extends BaseEntityBlock {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
         if (station.equals(WorkshopRecipe.STONE_ANVIL) && stack.is(ModTags.HAMMERS)) {
-            if (!level.isClientSide && workshop.work(player)) {
-                if (!player.hasInfiniteMaterials()) {
+            if (!level.isClientSide && (player.isShiftKeyDown() ? workshop.reheat(player)
+                    : workshop.forge(player, StoneAnvilBlock.actionAt(state, pos, hit)))) {
+                if (!player.isShiftKeyDown() && !player.hasInfiniteMaterials()) {
                     stack.hurtAndBreak(1, player, slotFor(hand));
                 }
-                level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 0.65F, 1.35F);
+            } else if (!level.isClientSide) {
+                player.displayClientMessage(workshop.anvilHint(StoneAnvilBlock.actionAt(state, pos, hit), player.isShiftKeyDown(), true), true);
             }
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
@@ -176,6 +178,9 @@ public abstract class WorkshopBlock extends BaseEntityBlock {
         if (!(level.getBlockEntity(pos) instanceof WorkshopBlockEntity workshop)) {
             return InteractionResult.PASS;
         }
+        // Let vanilla try the offhand rather than consuming an empty main-hand interaction.
+        if (station.equals(WorkshopRecipe.STONE_ANVIL) && workshop.getOutput().isEmpty()
+                && player.getOffhandItem().is(ModTags.HAMMERS)) return InteractionResult.PASS;
         if (!level.isClientSide) {
             if (workshop.takeOutput(player)) {
                 return InteractionResult.SUCCESS;

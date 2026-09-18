@@ -30,6 +30,10 @@ public final class ClientEvents {
         event.register(WorkshopBlockEntityRenderer.CASTING_METAL);
         event.register(BellowsBlockEntityRenderer.BAG);
         event.register(BellowsBlockEntityRenderer.TOP);
+        net.minecraft.client.Minecraft.getInstance().getResourceManager()
+                .listResources("models/forge_workpieces", id -> id.getPath().endsWith(".json")).keySet().forEach(id ->
+                    event.register(ModelResourceLocation.standalone(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+                            id.getNamespace(), id.getPath().substring(7, id.getPath().length() - 5)))));
     }
 
     @SubscribeEvent

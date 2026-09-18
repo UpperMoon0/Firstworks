@@ -35,7 +35,7 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
     @Override public RecipeType<WorkshopRecipe> getRecipeType() { return recipeType; }
     @Override public Component getTitle() { return stationName(station); }
     @Override public int getWidth() { return 170; }
-    @Override public int getHeight() { return 104; }
+    @Override public int getHeight() { return 208; }
     @Override public IDrawable getIcon() { return icon; }
 
     @Override
@@ -96,10 +96,21 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
                 Component.translatable(heated
                                 ? "jei.firstworks.workshop.processing_ticks"
                                 : "jei.firstworks.workshop.manual_actions",
-                        recipe.work()),
+                        recipe.requiredWork()),
                 3, 67, 0xFF606060, false);
 
         int detailsY = 79;
+        if (recipe.forge().isPresent()) {
+            graphics.drawWordWrap(font, Component.translatable("hint.firstworks.anvil.controls"), 3, detailsY, 164, 0xFF606060);
+            detailsY += 34;
+            if (recipe.forge().get().heatTicks() > 0) {
+                graphics.drawWordWrap(font, Component.translatable("hint.firstworks.anvil.reheat"), 3, detailsY, 164, 0xFF606060);
+                detailsY += 38;
+            }
+            String sequence = String.join(" > ", recipe.forge().get().actions());
+            graphics.drawWordWrap(font, Component.translatable("hint.firstworks.anvil.sequence", sequence.length() > 75 ? sequence.substring(0, 72) + "..." : sequence), 3, detailsY, 164, 0xFF606060);
+            return;
+        }
         if (WorkshopRecipe.POTTERY_WHEEL.equals(recipe.station()) && recipe.inputCount() <= 3) {
             graphics.drawString(font, Component.translatable("jei.firstworks.workshop.pottery_batch"),
                     3, detailsY, 0xFF606060, false);
@@ -126,6 +137,21 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
             case WorkshopRecipe.CRUCIBLE_FURNACE -> new ItemStack(ModItems.CRUCIBLE_FURNACE.get());
             default -> ItemStack.EMPTY;
         };
+    }
+
+    @Override public void getTooltip(mezz.jei.api.gui.builder.ITooltipBuilder tooltip, WorkshopRecipe recipe,
+            IRecipeSlotsView slots, double mouseX, double mouseY) {
+        if (mouseY < 79) return;
+        recipe.forge().ifPresent(forge -> {
+            for (int i = 0; i < forge.actions().size(); i += 4) {
+                var line = Component.empty();
+                for (int j = i; j < Math.min(i + 4, forge.actions().size()); j++) {
+                    if (j > i) line.append(" > ");
+                    line.append(Component.literal((j + 1) + ". ").append(Component.translatable("action.firstworks." + forge.actions().get(j))));
+                }
+                tooltip.add(line);
+            }
+        });
     }
 
     private static Component stationName(String station) {

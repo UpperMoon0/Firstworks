@@ -10,7 +10,9 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -21,73 +23,156 @@ import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
-
 import java.util.Optional;
+import java.util.UUID;
 
 public final class MortarBlockEntity extends BlockEntity {
     private ItemStack input = ItemStack.EMPTY;
     private ItemStack output = ItemStack.EMPTY;
     private boolean grinding;
-    private long finishGameTime;
+    private int stageIndex;
+    private int stageProgress;
+    private boolean started;
+    private boolean cancelled;
+    private ResourceLocation recipeId;
+    private long lastWorkTick = Long.MIN_VALUE;
+    private long lastCrushTick = Long.MIN_VALUE;
+    private UUID operator;
     private final IItemHandler itemHandler = new MortarItemHandler();
 
     public MortarBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MORTAR.get(), pos, state);
     }
 
+    /** Ticking can only stop work. Progress is earned by validated manual input. */
     public static void tick(Level level, BlockPos pos, BlockState state, MortarBlockEntity mortar) {
         if (level.isClientSide || !mortar.grinding) return;
-        Optional<RecipeHolder<MortarGrindingRecipe>> active = mortar.findRecipe(mortar.input);
-        if (active.isEmpty() || mortar.output.isEmpty() == false
-                || mortar.input.getCount() < active.get().value().inputCount()) {
-            mortar.stopGrinding();
-            return;
+        Player player = mortar.operator == null ? null : level.getPlayerByUUID(mortar.operator);
+        if (level.getGameTime() - mortar.lastWorkTick > 1 || player == null || !mortar.canOperate(player, "grind")) {
+            mortar.grinding = false;
+            mortar.operator = null;
+            mortar.setChangedAndSync();
         }
-        if (level.getGameTime() % 10L == 0L) {
-            level.playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 0.28F, 0.78F);
-            if (level instanceof ServerLevel serverLevel) {
-                serverLevel.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, mortar.input.copyWithCount(1)),
-                        pos.getX() + 0.5, pos.getY() + 0.38, pos.getZ() + 0.5,
-                        1, 0.08, 0.02, 0.08, 0.006);
-            }
-        }
-        if (level.getGameTime() < mortar.finishGameTime) return;
+    }
 
-        MortarGrindingRecipe recipe = active.get().value();
-        ItemStack consumed = mortar.input.copyWithCount(recipe.inputCount());
-        mortar.input.shrink(recipe.inputCount());
-        if (mortar.input.isEmpty()) mortar.input = ItemStack.EMPTY;
-        mortar.output = recipe.result().copy();
-        if (level instanceof ServerLevel serverLevel) {
-            OptionalIntegrations.fireMortarGrindingCompleted(serverLevel, mortar, active.get().id(), recipe,
-                    consumed, mortar.output.copy());
+    public boolean canOperate(Player player, String action) {
+        if (player.isSpectator() || !player.isAlive() || player.isShiftKeyDown()
+                || !player.getMainHandItem().isEmpty() || player.level() != level
+                || !player.mayBuild() || !level.mayInteract(player, worldPosition)) return false;
+        return player.pick(player.blockInteractionRange(), 1.0F, false) instanceof BlockHitResult hit
+                && hit.getBlockPos().equals(worldPosition) && MortarBlock.actionAt(worldPosition, hit).equals(action);
+    }
+
+    public boolean operate(Player player, String action) {
+        if (!(level instanceof ServerLevel server) || !canOperate(player, action)
+                || !output.isEmpty() || lastWorkTick == level.getGameTime()) return false;
+        var active = findRecipe(input);
+        if (active.isEmpty()) return false;
+        var holder = active.get();
+        if (!holder.id().equals(recipeId)) {
+            resetProcessing();
+            recipeId = holder.id();
         }
-        mortar.grinding = false;
-        mortar.finishGameTime = 0L;
-        mortar.setChangedAndSync();
+        var stages = holder.value().stages();
+        if (stageIndex >= stages.size()) resetProcessing();
+        MortarStage stage = stages.get(stageIndex);
+        if (!stage.action().equals(action) || cancelled) return false;
+        if (action.equals("crush") && lastCrushTick != Long.MIN_VALUE && level.getGameTime() - lastCrushTick < 4) return false;
+        if (!started) {
+            if (OptionalIntegrations.fireMortarGrindingStarting(server, this, holder.id(), holder.value(), input.copy(), holder.value().result())) {
+                cancelled = true;
+                setChangedAndSync();
+                return false;
+            }
+            started = true;
+        }
+        lastWorkTick = level.getGameTime();
+        boolean wasGrinding = grinding;
+        grinding = action.equals("grind");
+        operator = grinding ? player.getUUID() : null;
+        if (!grinding) lastCrushTick = lastWorkTick;
+        stageProgress++;
+        if (!grinding || lastWorkTick % 10 == 0) {
+            level.playSound(null, worldPosition, grinding ? SoundEvents.GRINDSTONE_USE : SoundEvents.STONE_HIT,
+                    SoundSource.BLOCKS, 0.35F, grinding ? 0.78F : 1.05F);
+            server.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, input.copyWithCount(1)),
+                    worldPosition.getX() + 0.5, worldPosition.getY() + 0.25, worldPosition.getZ() + 0.5,
+                    grinding ? 1 : 4, 0.08, 0.02, 0.08, 0.006);
+        }
+        if (stageProgress >= stage.work()) {
+            stageIndex++;
+            stageProgress = 0;
+            grinding = false;
+            operator = null;
+            if (stageIndex >= stages.size()) {
+                ItemStack consumed = input.copyWithCount(holder.value().inputCount());
+                input.shrink(holder.value().inputCount());
+                if (input.isEmpty()) input = ItemStack.EMPTY;
+                output = holder.value().result().copy();
+                resetProcessing();
+                OptionalIntegrations.fireMortarGrindingCompleted(server, this, holder.id(), holder.value(), consumed, output.copy());
+            }
+            setChangedAndSync();
+        } else if (!grinding || !wasGrinding || stageProgress % 5 == 0) setChangedAndSync();
+        else setChanged();
+        return true;
+    }
+
+    public void stopGrinding(Player player) {
+        if (player.getUUID().equals(operator)) {
+            grinding = false;
+            operator = null;
+            setChangedAndSync();
+        }
+    }
+
+    /** Kept for script compatibility; an unowned start must never run a hand tool autonomously. */
+    @Deprecated public boolean startGrinding() { return false; }
+
+    private void resetProcessing() {
+        stageIndex = 0;
+        stageProgress = 0;
+        started = false;
+        cancelled = false;
+        grinding = false;
+        operator = null;
+        recipeId = null;
     }
 
     private Optional<RecipeHolder<MortarGrindingRecipe>> findRecipe(ItemStack stack) {
         if (stack.isEmpty() || level == null) return Optional.empty();
-        return level.getRecipeManager().getRecipeFor(ModRecipes.MORTAR_GRINDING_TYPE.get(),
-                new SingleRecipeInput(stack), level);
+        return matchingRecipes(stack).filter(h -> h.value().matches(new SingleRecipeInput(stack), level)).findFirst();
     }
 
     public Optional<RecipeHolder<MortarGrindingRecipe>> findRecipeForIngredient(ItemStack stack) {
         if (stack.isEmpty() || level == null) return Optional.empty();
+        return findRecipe(stack).or(() -> matchingRecipes(stack).min(java.util.Comparator
+                .comparingInt((RecipeHolder<MortarGrindingRecipe> h) -> h.value().inputCount())
+                .thenComparing(h -> h.id().toString())));
+    }
+
+    private java.util.stream.Stream<RecipeHolder<MortarGrindingRecipe>> matchingRecipes(ItemStack stack) {
         return level.getRecipeManager().getAllRecipesFor(ModRecipes.MORTAR_GRINDING_TYPE.get()).stream()
-                .filter(holder -> holder.value().ingredient().test(stack))
-                .findFirst();
+                .filter(h -> h.value().ingredient().test(stack))
+                .sorted(java.util.Comparator.comparingInt((RecipeHolder<MortarGrindingRecipe> h) -> h.value().inputCount())
+                        .reversed().thenComparing(h -> h.id().toString()));
+    }
+
+    private int inputCapacity(ItemStack stack) {
+        if (level == null || stack.isEmpty()) return 64;
+        return Math.min(stack.getMaxStackSize(), matchingRecipes(stack)
+                .mapToInt(h -> h.value().inputCount()).max().orElse(0));
     }
 
     public boolean canInsert(ItemStack stack) {
-        if (grinding || stack.isEmpty() || !output.isEmpty()) return false;
-        Optional<RecipeHolder<MortarGrindingRecipe>> recipe = findRecipeForIngredient(stack);
+        if (started || grinding || stack.isEmpty() || !output.isEmpty()) return false;
+        var recipe = findRecipeForIngredient(stack);
         if (recipe.isEmpty()) return false;
         if (!input.isEmpty() && !ItemStack.isSameItemSameComponents(input, stack)) return false;
-        return input.getCount() < recipe.get().value().inputCount();
+        return input.getCount() < inputCapacity(stack);
     }
 
     public boolean insert(ItemStack held, boolean creative) {
@@ -95,26 +180,9 @@ public final class MortarBlockEntity extends BlockEntity {
         if (input.isEmpty()) input = held.copyWithCount(1);
         else input.grow(1);
         if (!creative) held.shrink(1);
+        cancelled = false;
         setChangedAndSync();
         return true;
-    }
-
-    public boolean startGrinding() {
-        if (grinding || !output.isEmpty() || level == null) return false;
-        Optional<RecipeHolder<MortarGrindingRecipe>> active = findRecipe(input);
-        if (active.isEmpty() || input.getCount() < active.get().value().inputCount()) return false;
-        if (level instanceof ServerLevel serverLevel && OptionalIntegrations.fireMortarGrindingStarting(
-                serverLevel, this, active.get().id(), active.get().value(), input.copy(), active.get().value().result())) return false;
-        grinding = true;
-        finishGameTime = level.getGameTime() + active.get().value().duration();
-        setChangedAndSync();
-        return true;
-    }
-
-    private void stopGrinding() {
-        grinding = false;
-        finishGameTime = 0L;
-        setChangedAndSync();
     }
 
     public boolean takeOutput(Player player) {
@@ -126,54 +194,79 @@ public final class MortarBlockEntity extends BlockEntity {
     }
 
     public boolean takeInput(Player player) {
-        if (input.isEmpty() || grinding) return false;
+        if (input.isEmpty()) return false;
         player.getInventory().placeItemBackInInventory(input.copy());
         input = ItemStack.EMPTY;
+        resetProcessing();
         setChangedAndSync();
         return true;
     }
 
-    public float getGrindingProgress(float partialTick) {
-        if (!grinding || level == null) return 0.0F;
-        return level.getGameTime() + partialTick;
+    public Component hint(String action) {
+        if (!output.isEmpty()) return Component.translatable("hint.firstworks.collect");
+        if (input.isEmpty()) return Component.translatable("jade.firstworks.mortar.empty");
+        var recipe = getActiveRecipe();
+        if (recipe.isEmpty()) return Component.translatable("hint.firstworks.unsupported");
+        if (input.getCount() < recipe.get().value().inputCount()) return Component.translatable("hint.firstworks.input_count", input.getCount(), recipe.get().value().inputCount());
+        if (cancelled) return Component.translatable("hint.firstworks.cancelled");
+        String required = getStage().map(MortarStage::action).orElse("grind");
+        if (!required.equals(action)) return Component.translatable("hint.firstworks.mortar.requires", Component.translatable("action.firstworks." + required));
+        return Component.translatable("hint.firstworks.mortar." + action);
     }
 
+    public Optional<MortarStage> getStage() {
+        return getActiveRecipe().map(h -> h.value().stages().get(Math.min(stageIndex, h.value().stages().size() - 1)));
+    }
+    public int getStageIndex() { return stageIndex; }
+    public int getStageProgress() { return stageProgress; }
+    public boolean isProcessCancelled() { return cancelled; }
+    public float getGrindingProgress(float partialTick) { return isGrinding() && level != null ? level.getGameTime() + partialTick : 0; }
+    public float getCrushPulse(float partialTick) {
+        if (level == null || lastCrushTick == Long.MIN_VALUE) return 0;
+        float elapsed = (level.getGameTime() - lastCrushTick) + partialTick;
+        return elapsed >= 0 && elapsed < 5 ? (float)Math.sin(Math.PI * elapsed / 5) : 0;
+    }
     public ItemStack getInput() { return input; }
     public ItemStack getOutput() { return output; }
-    public boolean isGrinding() { return grinding; }
-    public long getFinishGameTime() { return finishGameTime; }
+    public boolean isGrinding() { return grinding && level != null && level.getGameTime() - lastWorkTick <= 6; }
+    @Deprecated public long getFinishGameTime() { return 0; }
     public Optional<RecipeHolder<MortarGrindingRecipe>> getActiveRecipe() { return findRecipeForIngredient(input); }
     public IItemHandler getItemHandler(@Nullable Direction side) { return itemHandler; }
 
     private void setChangedAndSync() {
         setChanged();
-        if (level != null && !level.isClientSide) {
-            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-        }
+        if (level != null && !level.isClientSide) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
     }
 
-    @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+    @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put("Input", input.saveOptional(registries));
         tag.put("Output", output.saveOptional(registries));
+        tag.putInt("Stage", stageIndex);
+        tag.putInt("StageProgress", stageProgress);
+        tag.putBoolean("Started", started);
+        tag.putBoolean("Cancelled", cancelled);
         tag.putBoolean("Grinding", grinding);
-        tag.putLong("FinishGameTime", finishGameTime);
+        tag.putLong("LastWork", lastWorkTick);
+        tag.putLong("LastCrush", lastCrushTick);
+        if (recipeId != null) tag.putString("Recipe", recipeId.toString());
     }
-
-    @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+    @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         input = ItemStack.parseOptional(registries, tag.getCompound("Input"));
         output = ItemStack.parseOptional(registries, tag.getCompound("Output"));
-        grinding = tag.getBoolean("Grinding");
-        finishGameTime = tag.getLong("FinishGameTime");
+        stageIndex = Math.max(0, tag.getInt("Stage"));
+        stageProgress = Math.max(0, tag.getInt("StageProgress"));
+        started = tag.getBoolean("Started");
+        cancelled = tag.getBoolean("Cancelled");
+        recipeId = ResourceLocation.tryParse(tag.getString("Recipe"));
+        grinding = level != null && level.isClientSide && tag.getBoolean("Grinding");
+        operator = null;
+        lastWorkTick = tag.contains("LastWork") ? tag.getLong("LastWork") : Long.MIN_VALUE;
+        lastCrushTick = tag.contains("LastCrush") ? tag.getLong("LastCrush") : Long.MIN_VALUE;
     }
-
     @Override public CompoundTag getUpdateTag(HolderLookup.Provider registries) { return saveWithoutMetadata(registries); }
-    @Override public ClientboundBlockEntityDataPacket getUpdatePacket() {
-        return ClientboundBlockEntityDataPacket.create(this, BlockEntity::getUpdateTag);
-    }
+    @Override public ClientboundBlockEntityDataPacket getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this, BlockEntity::getUpdateTag); }
 
     private final class MortarItemHandler implements IItemHandler {
         @Override public int getSlots() { return 2; }
@@ -182,7 +275,7 @@ public final class MortarBlockEntity extends BlockEntity {
         }
         @Override public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
             if (slot != 0 || !canInsert(stack)) return stack;
-            int required = findRecipeForIngredient(stack).map(holder -> holder.value().inputCount()).orElse(0);
+            int required = inputCapacity(stack);
             int accepted = Math.min(required - input.getCount(), stack.getCount());
             if (!simulate && accepted > 0) {
                 if (input.isEmpty()) input = stack.copyWithCount(accepted);
@@ -203,7 +296,7 @@ public final class MortarBlockEntity extends BlockEntity {
             return result;
         }
         @Override public int getSlotLimit(int slot) {
-            return slot == 0 ? findRecipeForIngredient(input).map(holder -> holder.value().inputCount()).orElse(64) : 64;
+            return slot == 0 ? inputCapacity(input) : 64;
         }
         @Override public boolean isItemValid(int slot, ItemStack stack) { return slot == 0 && canInsert(stack); }
     }
