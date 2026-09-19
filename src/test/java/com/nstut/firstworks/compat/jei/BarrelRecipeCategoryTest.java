@@ -1,13 +1,20 @@
 package com.nstut.firstworks.compat.jei;
 
+import net.minecraft.server.Bootstrap;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BarrelRecipeCategoryTest {
+    @BeforeAll
+    static void bootstrapMinecraft() {
+        Bootstrap.bootStrap();
+    }
+
     @Test
     void countedIngredientStacksApplyInputCountToEveryAlternative() {
         var stacks = BarrelRecipeCategory.countedIngredientStacks(
