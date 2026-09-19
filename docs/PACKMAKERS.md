@@ -728,3 +728,14 @@ Hot contents, molten fill, and fire/spark effects require a paid, running batch 
 Overlapping loom and mortar recipes use the largest input count that the loaded stack can satisfy, with recipe id as the tie-breaker. Processing, hints, and previews share that selection. Before enough input is loaded, hints show the smallest matching requirement (also ordered by id). Mortars accept material up to the largest matching batch, capped by the item's stack limit; choose the batch by loading it before starting work.
 
 The 0.0.15 changes cover Stone Anvil, Loom, and Mortar controls through contextual hints, item tooltips, Jade, and JEI. Missing input counts, recipe catalysts, hammers, heat, wrong action/shed, and ready output have distinct feedback. JEI exposes ordered actions and stages, with complete long sequences in the recipe tooltip. The broader audit of unchanged stations in issue #21 and the pottery visuals in issue #19 remain outside this PR.
+
+
+### Upgrade compatibility and optional guide
+
+0.0.15 migrates partial workstation state from 0.0.14 instead of interpreting old progress with the new interaction model:
+
+- Legacy Stone Anvil `Progress` is proportionally mapped from the old recipe `work` count to the new forge action sequence. The migrated workpiece resumes cold and can be reheated normally.
+- A legacy Mortar with `Grinding=true` and `FinishGameTime` is converted into equivalent paused staged progress. Input is preserved, the old process-start lifecycle is treated as already fired, and the player resumes manually.
+- Recipes without `forge`, `weaving`, or `processing` remain valid and use their documented fallback behavior.
+
+Patchouli is an optional integration. When installed, `firstworks:field_guide` provides the **Firstworks Field Guide** from resources under `patchouli_books/field_guide`. The guide has a conditional Book + Plant Fibre recipe; without Patchouli the recipe is skipped and Firstworks has no runtime class dependency on Patchouli.
