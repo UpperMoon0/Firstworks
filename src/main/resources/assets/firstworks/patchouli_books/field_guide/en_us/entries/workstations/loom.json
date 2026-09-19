@@ -1,0 +1,18 @@
+{
+  "name": "Loom",
+  "category": "firstworks:workstations",
+  "icon": "minecraft:string",
+  "sortnum": 10,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Shuttle and Shed",
+      "text": "Load the required thread. Use the side post where the shuttle currently rests to throw it across. Use the lower crossbar to switch between shed A and B. The required shed pattern is shown by JEI and contextual hints."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Patterns",
+      "text": "A valid pass requires both the correct shuttle side and the correct shed. Partial progress, shuttle side, and shed survive reloads. Once weaving starts, additional thread cannot be inserted until the batch is finished or retrieved."
+    }
+  ]
+}

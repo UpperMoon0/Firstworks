@@ -18,7 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public record WorkshopRecipe(String station, Ingredient ingredient, int inputCount, Optional<Ingredient> catalyst,
-                             int catalystCount, boolean consumeCatalyst, ItemStack result, int work, int priority)
+                             int catalystCount, boolean consumeCatalyst, ItemStack result, int work, int priority, Optional<ForgeData> forge)
         implements Recipe<WorkshopRecipeInput> {
     public static final String POTTERY_WHEEL = "pottery_wheel";
     public static final String STONE_ANVIL = "stone_anvil";
@@ -31,7 +31,15 @@ public record WorkshopRecipe(String station, Ingredient ingredient, int inputCou
         this(station, ingredient, inputCount, catalyst, catalystCount, consumeCatalyst, result, work, 0);
     }
 
+    public WorkshopRecipe(String station, Ingredient ingredient, int inputCount, Optional<Ingredient> catalyst,
+                          int catalystCount, boolean consumeCatalyst, ItemStack result, int work, int priority) {
+        this(station, ingredient, inputCount, catalyst, catalystCount, consumeCatalyst, result, work, priority, Optional.empty());
+    }
+
+    public int requiredWork() { return forge.map(data -> data.actions().size()).orElse(work); }
+
     public WorkshopRecipe {
+        if (forge.isPresent() && !STONE_ANVIL.equals(station)) throw new IllegalArgumentException("Forge data requires stone_anvil");
         if (!VALID_STATIONS.contains(station)) {
             throw new IllegalArgumentException("Unknown workshop station: " + station);
         }
@@ -122,7 +130,8 @@ public record WorkshopRecipe(String station, Ingredient ingredient, int inputCou
                 Codec.BOOL.optionalFieldOf("consume_catalyst", false).forGetter(WorkshopRecipe::consumeCatalyst),
                 ItemStack.CODEC.fieldOf("result").forGetter(WorkshopRecipe::result),
                 Codec.intRange(1, 72000).optionalFieldOf("work", 20).forGetter(WorkshopRecipe::work),
-                Codec.INT.optionalFieldOf("priority", 0).forGetter(WorkshopRecipe::priority)
+                Codec.INT.optionalFieldOf("priority", 0).forGetter(WorkshopRecipe::priority),
+                ForgeData.CODEC.optionalFieldOf("forge").forGetter(WorkshopRecipe::forge)
         ).apply(instance, WorkshopRecipe::new));
 
         private static final StreamCodec<RegistryFriendlyByteBuf, WorkshopRecipe> STREAM_CODEC = StreamCodec.of(
@@ -137,6 +146,8 @@ public record WorkshopRecipe(String station, Ingredient ingredient, int inputCou
                     ItemStack.STREAM_CODEC.encode(buffer, recipe.result);
                     buffer.writeVarInt(recipe.work);
                     buffer.writeVarInt(recipe.priority);
+                    buffer.writeBoolean(recipe.forge.isPresent());
+                    recipe.forge.ifPresent(data -> buffer.writeJsonWithCodec(ForgeData.CODEC, data));
                 },
                 buffer -> new WorkshopRecipe(
                         buffer.readUtf(),
@@ -149,7 +160,8 @@ public record WorkshopRecipe(String station, Ingredient ingredient, int inputCou
                         buffer.readBoolean(),
                         ItemStack.STREAM_CODEC.decode(buffer),
                         buffer.readVarInt(),
-                        buffer.readVarInt()));
+                        buffer.readVarInt(),
+                        buffer.readBoolean() ? Optional.of(buffer.readJsonWithCodec(ForgeData.CODEC)) : Optional.empty()));
 
         @Override
         public MapCodec<WorkshopRecipe> codec() {

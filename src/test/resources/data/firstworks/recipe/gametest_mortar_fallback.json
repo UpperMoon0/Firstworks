@@ -1,0 +1,11 @@
+{
+  "type": "firstworks:mortar_grinding",
+  "ingredient": {
+    "item": "minecraft:feather"
+  },
+  "input_count": 2,
+  "result": {
+    "id": "minecraft:string"
+  },
+  "duration": 3
+}

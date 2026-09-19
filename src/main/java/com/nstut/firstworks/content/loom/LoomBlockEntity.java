@@ -30,6 +30,7 @@ public class LoomBlockEntity extends BlockEntity {
     private int progress;
     private long lastStrokeTick = Long.MIN_VALUE;
     private boolean shuttleRight;
+    private boolean shedB;
     private boolean processCancelled;
     private final IItemHandler itemHandler = new LoomItemHandler();
 
@@ -38,7 +39,7 @@ public class LoomBlockEntity extends BlockEntity {
     }
 
     public boolean canInsert(ItemStack stack) {
-        if (stack.isEmpty() || level == null) return false;
+        if (stack.isEmpty() || level == null || progress > 0) return false;
         if (!input.isEmpty() && !ItemStack.isSameItemSameComponents(input, stack)) return false;
         if (!input.isEmpty() && input.getCount() >= input.getMaxStackSize()) return false;
         return level.getRecipeManager().getAllRecipesFor(ModRecipes.LOOM_WEAVING_TYPE.get()).stream()
@@ -56,12 +57,42 @@ public class LoomBlockEntity extends BlockEntity {
         return true;
     }
 
-    public boolean weave(Player player) {
+    public void changeShed() {
+        if (!(level instanceof ServerLevel)) return;
+        shedB = !shedB;
+        sync();
+    }
+
+    public String getShed() { return shedB ? "B" : "A"; }
+    public boolean isShuttleRight() { return shuttleRight; }
+
+    public net.minecraft.network.chat.Component interactionHint(LoomBlock.Control control) {
+        if (!output.isEmpty()) return net.minecraft.network.chat.Component.translatable("hint.firstworks.loom.collect");
+        if (processCancelled) return net.minecraft.network.chat.Component.translatable("jade.firstworks.loom.cancelled");
+        var matching = getMatchingRecipe();
+        if (matching.isEmpty()) return net.minecraft.network.chat.Component.translatable("jade.firstworks.loom.empty");
+        if (input.getCount() < matching.get().value().inputCount())
+            return net.minecraft.network.chat.Component.translatable("jade.firstworks.loom.loading", input.getCount(), matching.get().value().inputCount());
+        if (control == LoomBlock.Control.SHED)
+            return net.minecraft.network.chat.Component.translatable("hint.firstworks.loom.shed", getShed(), shedB ? "A" : "B");
+        if (control == LoomBlock.Control.NONE)
+            return net.minecraft.network.chat.Component.translatable("hint.firstworks.loom.controls");
+        if ((control == LoomBlock.Control.RIGHT) != shuttleRight)
+            return net.minecraft.network.chat.Component.translatable("hint.firstworks.loom.wrong_side");
+        String required = matching.get().value().requiredShed(progress);
+        if (!required.equals(getShed()))
+            return net.minecraft.network.chat.Component.translatable("hint.firstworks.loom.wrong_shed", required);
+        return net.minecraft.network.chat.Component.translatable(shuttleRight ? "hint.firstworks.loom.throw_left" : "hint.firstworks.loom.throw_right");
+    }
+
+    public boolean weave(Player player, boolean fromRight) {
+        if (!(level instanceof ServerLevel) || fromRight != shuttleRight || lastStrokeTick == level.getGameTime()) return false;
         if (processCancelled) return false;
         Optional<RecipeHolder<LoomRecipe>> active = getActiveRecipe();
         if (active.isEmpty() || !canAccept(active.get().value().result())) return false;
         RecipeHolder<LoomRecipe> holder = active.get();
         LoomRecipe recipe = holder.value();
+        if (!recipe.requiredShed(progress).equals(getShed())) return false;
         ItemStack consumed = input.copyWithCount(recipe.inputCount());
         if (progress == 0 && level instanceof ServerLevel server
                 && OptionalIntegrations.fireLoomWeavingStarting(server, this, holder.id(), recipe, consumed, recipe.result())) {
@@ -82,8 +113,17 @@ public class LoomBlockEntity extends BlockEntity {
         return true;
     }
 
+    /** Compatibility entry point: resolve the caller's actual target rather than selecting a side for them. */
+    public boolean weave(Player player) {
+        if (!(player.pick(player.blockInteractionRange(), 1.0F, false) instanceof net.minecraft.world.phys.BlockHitResult hit)
+                || !hit.getBlockPos().equals(worldPosition)) return false;
+        LoomBlock.Control control = LoomBlock.controlAt(getBlockState(), worldPosition, hit.getLocation());
+        return (control == LoomBlock.Control.LEFT || control == LoomBlock.Control.RIGHT)
+                && weave(player, control == LoomBlock.Control.RIGHT);
+    }
+
     private int requiredStrokes(LoomRecipe recipe) {
-        return Math.max(1, recipe.strokes());
+        return recipe.passes();
     }
 
     public int getRequiredStrokes() {
@@ -121,23 +161,34 @@ public class LoomBlockEntity extends BlockEntity {
         input = ItemStack.EMPTY;
         progress = 0;
         processCancelled = false;
+        shedB = false;
+        shuttleRight = false;
+        lastStrokeTick = Long.MIN_VALUE;
         sync();
         return true;
     }
 
     public Optional<RecipeHolder<LoomRecipe>> getActiveRecipe() {
         if (level == null || input.isEmpty()) return Optional.empty();
-        return level.getRecipeManager().getRecipeFor(ModRecipes.LOOM_WEAVING_TYPE.get(), new SingleRecipeInput(input), level);
+        return matchingRecipes().filter(h -> h.value().matches(new SingleRecipeInput(input), level)).findFirst();
     }
 
     public Optional<RecipeHolder<LoomRecipe>> getMatchingRecipe() {
         if (level == null || input.isEmpty()) return Optional.empty();
+        return getActiveRecipe().or(() -> matchingRecipes().min(java.util.Comparator
+                .comparingInt((RecipeHolder<LoomRecipe> h) -> h.value().inputCount())
+                .thenComparing(h -> h.id().toString())));
+    }
+
+    private java.util.stream.Stream<RecipeHolder<LoomRecipe>> matchingRecipes() {
         return level.getRecipeManager().getAllRecipesFor(ModRecipes.LOOM_WEAVING_TYPE.get()).stream()
-                .filter(h -> h.value().ingredient().test(input)).findFirst();
+                .filter(h -> h.value().ingredient().test(input))
+                .sorted(java.util.Comparator.comparingInt((RecipeHolder<LoomRecipe> h) -> h.value().inputCount())
+                        .reversed().thenComparing(h -> h.id().toString()));
     }
 
     public float getShuttleOffset(float partial) {
-        if (level == null) return shuttleRight ? 0.20F : -0.20F;
+        if (level == null || lastStrokeTick == Long.MIN_VALUE) return shuttleRight ? 0.20F : -0.20F;
         float elapsed = Math.max(0.0F, level.getGameTime() + partial - lastStrokeTick);
         float t = Math.min(1.0F, elapsed / 6.0F);
         float eased = 0.5F - 0.5F * (float) Math.cos(Math.PI * t);
@@ -174,6 +225,7 @@ public class LoomBlockEntity extends BlockEntity {
         tag.putInt("Progress", progress);
         tag.putLong("LastStroke", lastStrokeTick);
         tag.putBoolean("ShuttleRight", shuttleRight);
+        tag.putBoolean("ShedB", shedB);
         tag.putBoolean("ProcessCancelled", processCancelled);
     }
 
@@ -185,6 +237,7 @@ public class LoomBlockEntity extends BlockEntity {
         progress = tag.getInt("Progress");
         lastStrokeTick = tag.getLong("LastStroke");
         shuttleRight = tag.getBoolean("ShuttleRight");
+        shedB = tag.getBoolean("ShedB");
         processCancelled = tag.getBoolean("ProcessCancelled");
     }
 

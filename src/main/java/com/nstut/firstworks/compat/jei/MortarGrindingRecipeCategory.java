@@ -27,8 +27,8 @@ public final class MortarGrindingRecipeCategory implements IRecipeCategory<Morta
         return FirstworksJeiPlugin.MORTAR_GRINDING;
     }
     @Override public Component getTitle() { return Component.translatable("jei.firstworks.mortar_grinding"); }
-    @Override public int getWidth() { return 132; }
-    @Override public int getHeight() { return 48; }
+    @Override public int getWidth() { return 190; }
+    @Override public int getHeight() { return 118; }
     @Override public IDrawable getIcon() { return icon; }
     @Override public void setRecipe(IRecipeLayoutBuilder builder, MortarGrindingRecipe recipe, IFocusGroup focuses) {
         builder.addSlot(RecipeIngredientRole.CATALYST, 4, 5).setStandardSlotBackground()
@@ -41,8 +41,25 @@ public final class MortarGrindingRecipeCategory implements IRecipeCategory<Morta
     @Override public void draw(MortarGrindingRecipe recipe, IRecipeSlotsView slots, GuiGraphics graphics,
             double mouseX, double mouseY) {
         arrow.draw(graphics, 66, 5);
-        Component time = Component.translatable("jei.firstworks.grinding_time",
-                String.format(java.util.Locale.ROOT, "%.1f", recipe.duration() / 20.0F));
-        graphics.drawString(Minecraft.getInstance().font, time, 4, 34, 0xFF606060, false);
+        var font = Minecraft.getInstance().font;
+        int y = 30;
+        for (var stage : recipe.stages()) {
+            if (y >= 70) break;
+            graphics.drawString(font, stageDescription(stage), 4, y, 0xFF606060, false);
+            y += 10;
+        }
+        graphics.drawWordWrap(font, Component.translatable("hint.firstworks.mortar.controls"), 4, y + 4, 182, 0xFF606060);
+    }
+
+    private static Component stageDescription(com.nstut.firstworks.content.mortar.MortarStage stage) {
+        return stage.action().equals("crush")
+                ? Component.translatable("hint.firstworks.mortar.recipe_crush", stage.count())
+                : Component.translatable("hint.firstworks.mortar.recipe_grind", String.format(java.util.Locale.ROOT, "%.2f", stage.duration() / 20.0F));
+    }
+
+    @Override public void getTooltip(mezz.jei.api.gui.builder.ITooltipBuilder tooltip, MortarGrindingRecipe recipe,
+            IRecipeSlotsView slots, double mouseX, double mouseY) {
+        if (mouseY < 30) return;
+        for (var stage : recipe.stages()) tooltip.add(stageDescription(stage));
     }
 }

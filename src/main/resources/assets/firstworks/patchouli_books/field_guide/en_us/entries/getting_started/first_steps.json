@@ -1,0 +1,23 @@
+{
+  "name": "First Steps",
+  "category": "firstworks:getting_started",
+  "icon": "firstworks:stone_hammer",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Work by Hand",
+      "text": "Firstworks machines are deliberately physical. Load the material, read the station's state, then perform the required action. JEI shows recipes; Jade and contextual hints explain what the station expects right now."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Safe Interruptions",
+      "text": "Partial workstation progress is saved. If a process pauses, cools, or the world reloads, retrieve the input only when you intend to reset that work. Output is collected separately once a batch completes."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Automation",
+      "text": "Inventory insertion and output extraction may be automated where exposed, but manual work is still manual. Loom shuttle/shed controls, mortar grinding, and forge actions must be operated through their real interaction points."
+    }
+  ]
+}

@@ -28,6 +28,7 @@ public final class Firstworks {
         ModFluids.register(modBus);
         ModRecipes.register(modBus);
         ModBlockEntities.register(modBus);
+        modBus.addListener(com.nstut.firstworks.content.mortar.MortarInputPayload::register);
         container.registerConfig(ModConfig.Type.SERVER, FirstworksConfig.SPEC);
         LOGGER.info("Firstworks is preparing the first works");
     }

@@ -1,0 +1,15 @@
+{
+  "type": "firstworks:mortar_grinding",
+  "ingredient": {
+    "item": "minecraft:paper"
+  },
+  "result": {
+    "id": "minecraft:book"
+  },
+  "processing": [
+    {
+      "action": "crush",
+      "count": 2
+    }
+  ]
+}

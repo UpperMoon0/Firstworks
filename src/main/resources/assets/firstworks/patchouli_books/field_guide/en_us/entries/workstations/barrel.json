@@ -1,0 +1,18 @@
+{
+  "name": "Barrels",
+  "category": "firstworks:workstations",
+  "icon": "minecraft:barrel",
+  "sortnum": 40,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Batch Processing",
+      "text": "Barrel recipes combine an item ingredient with a required fluid amount and may require the barrel to be sealed. JEI displays the configured item count for every valid item or tag alternative."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Reading JEI",
+      "text": "When an ingredient is a tag, JEI rotates through valid alternatives without changing the required quantity. Fluid tags similarly show compatible fluids at the amount required by the recipe."
+    }
+  ]
+}

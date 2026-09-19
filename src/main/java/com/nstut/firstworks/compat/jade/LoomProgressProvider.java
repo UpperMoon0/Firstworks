@@ -35,11 +35,14 @@ public enum LoomProgressProvider implements IBlockComponentProvider, IServerData
         data.putInt(INPUT_COUNT, loom.getInput().getCount());
         data.putInt(PROGRESS, loom.getProgress());
         data.putBoolean(CANCELLED, loom.isProcessCancelled());
+        data.putString("Shed", loom.getShed());
+        data.putBoolean("ShuttleRight", loom.isShuttleRight());
         ItemStack output = loom.getOutput();
         if (!output.isEmpty()) data.putString(OUTPUT, output.getDescriptionId());
         loom.getMatchingRecipe().ifPresent(holder -> {
             data.putInt(REQUIRED_COUNT, holder.value().inputCount());
-            data.putInt(STROKES, Math.max(1, holder.value().strokes()));
+            data.putInt(STROKES, holder.value().passes());
+            data.putString("RequiredShed", holder.value().requiredShed(loom.getProgress()));
             data.putString(RESULT, holder.value().result().getDescriptionId());
         });
     }
@@ -68,6 +71,9 @@ public enum LoomProgressProvider implements IBlockComponentProvider, IServerData
         }
         int progress = data.getInt(PROGRESS);
         int strokes = Math.max(1, data.getInt(STROKES));
+        tooltip.add(Component.translatable("hint.firstworks.loom.state", data.getString("Shed"), data.getString("RequiredShed")));
+        tooltip.add(Component.translatable(data.getBoolean("ShuttleRight") ? "hint.firstworks.loom.throw_left" : "hint.firstworks.loom.throw_right"));
+        tooltip.add(Component.translatable("hint.firstworks.loom.controls"));
         tooltip.add(Component.translatable("jade.firstworks.loom.weaving",
                 Component.translatable(data.getString(RESULT)).withStyle(ChatFormatting.GOLD)));
         tooltip.add(IElementHelper.get().progress(

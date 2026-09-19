@@ -1,7 +1,24 @@
 {
   "type": "firstworks:workshop_processing",
   "station": "stone_anvil",
-  "ingredient": {"item": "firstworks:annealed_copper_billet"},
-  "result": {"id": "minecraft:copper_ingot"},
-  "work": 8
+  "ingredient": {
+    "item": "firstworks:annealed_copper_billet"
+  },
+  "result": {
+    "id": "minecraft:copper_ingot"
+  },
+  "work": 8,
+  "forge": {
+    "actions": [
+      "flatten",
+      "draw",
+      "bend",
+      "flatten"
+    ],
+    "heat_ticks": 1200,
+    "visual": {
+      "type": "deformable",
+      "initial_profile": "billet"
+    }
+  }
 }

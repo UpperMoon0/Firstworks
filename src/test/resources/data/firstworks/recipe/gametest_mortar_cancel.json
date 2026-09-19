@@ -1,0 +1,10 @@
+{
+  "type": "firstworks:mortar_grinding",
+  "ingredient": {
+    "item": "minecraft:prismarine_shard"
+  },
+  "result": {
+    "id": "minecraft:diamond"
+  },
+  "duration": 3
+}

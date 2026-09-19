@@ -8,5 +8,15 @@
     "id": "firstworks:grog",
     "count": 1
   },
-  "duration": 40
+  "duration": 40,
+  "processing": [
+    {
+      "action": "crush",
+      "count": 3
+    },
+    {
+      "action": "grind",
+      "duration": 40
+    }
+  ]
 }

@@ -52,7 +52,7 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
         data.putBoolean(RUNNING, workshop.isRunning());
         workshop.activeRecipe().ifPresent(holder -> {
             data.putString(RESULT, holder.value().result().getDescriptionId());
-            data.putInt(WORK, Math.max(1, holder.value().work()));
+            data.putInt(WORK, holder.value().requiredWork());
         });
     }
 
@@ -60,6 +60,15 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
         CompoundTag data = accessor.getServerData();
         String station = data.getString(STATION);
+        if (WorkshopRecipe.STONE_ANVIL.equals(station) && accessor.getBlockEntity() instanceof WorkshopBlockEntity anvil) {
+            tooltip.add(anvil.anvilHint("none", false, true));
+            anvil.activeRecipe().flatMap(h -> h.value().forge()).ifPresent(forge -> {
+                tooltip.add(Component.translatable("jade.firstworks.workshop.progress", anvil.getProgress(), forge.actions().size()));
+                tooltip.add(Component.translatable("hint.firstworks.anvil.sequence", String.join(" > ", forge.actions())));
+            });
+            tooltip.add(Component.translatable("hint.firstworks.anvil.controls"));
+            return;
+        }
 
         if (data.contains(OUTPUT)) {
             tooltip.add(Component.translatable("jade.firstworks.workshop.ready", data.getInt(OUTPUT_COUNT),

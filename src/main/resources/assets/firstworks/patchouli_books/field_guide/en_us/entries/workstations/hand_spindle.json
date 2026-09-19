@@ -1,0 +1,13 @@
+{
+  "name": "Hand Spindle",
+  "category": "firstworks:workstations",
+  "icon": "firstworks:hand_spindle",
+  "sortnum": 50,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Hand Spinning",
+      "text": "Hold the Hand Spindle in your main hand and the valid fibre input in your off hand, then use the spindle to spin the material into thread. JEI lists the accepted spinning ingredients and outputs."
+    }
+  ]
+}

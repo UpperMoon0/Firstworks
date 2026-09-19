@@ -33,6 +33,23 @@ import java.util.EnumMap;
 import java.util.Map;
 
 public class LoomBlock extends BaseEntityBlock {
+    public enum Control { LEFT, RIGHT, SHED, NONE }
+
+    /** Regions use the north-facing model's coordinates, independent of the player's view. */
+    public static Control controlAt(BlockState state, BlockPos pos, net.minecraft.world.phys.Vec3 hit) {
+        double x = hit.x - pos.getX() - 0.5;
+        double z = hit.z - pos.getZ() - 0.5;
+        double localX = 0.5 + switch (state.getValue(FACING)) {
+            case EAST -> z;
+            case SOUTH -> -x;
+            case WEST -> -z;
+            default -> x;
+        };
+        double y = hit.y - pos.getY();
+        if (y >= 2.75 / 16.0 && y <= 4.25 / 16.0 && localX >= 2.5 / 16.0 && localX <= 13.5 / 16.0) return Control.SHED;
+        if (y >= 5.25 / 16.0 && y <= 13.0 / 16.0) return localX < 0.5 ? Control.LEFT : Control.RIGHT;
+        return Control.NONE;
+    }
     public static final MapCodec<LoomBlock> CODEC = simpleCodec(LoomBlock::new);
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     private static final VoxelShape NORTH_SHAPE = Shapes.or(
@@ -49,6 +66,14 @@ public class LoomBlock extends BaseEntityBlock {
     }
 
     @Override protected MapCodec<? extends BaseEntityBlock> codec() { return CODEC; }
+
+    @Override
+    public void appendHoverText(ItemStack stack, net.minecraft.world.item.Item.TooltipContext context,
+            java.util.List<net.minecraft.network.chat.Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
+        super.appendHoverText(stack, context, tooltip, flag);
+        tooltip.add(net.minecraft.network.chat.Component.translatable("hint.firstworks.loom.controls"));
+        tooltip.add(net.minecraft.network.chat.Component.translatable("hint.firstworks.loom.retrieve"));
+    }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
@@ -101,7 +126,11 @@ public class LoomBlock extends BaseEntityBlock {
                 }
                 return InteractionResult.SUCCESS;
             }
-            loom.weave(player);
+            Control control = controlAt(state, pos, hitResult.getLocation());
+            if (control == Control.SHED) loom.changeShed();
+            else if (control == Control.LEFT || control == Control.RIGHT) {
+                if (!loom.weave(player, control == Control.RIGHT)) player.displayClientMessage(loom.interactionHint(control), true);
+            }
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

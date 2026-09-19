@@ -1,0 +1,23 @@
+{
+  "name": "Stone Anvil",
+  "category": "firstworks:workstations",
+  "icon": "firstworks:stone_hammer",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Forging",
+      "text": "Load a valid workpiece and hold a hammer. Forge recipes define an ordered sequence of Flatten, Draw, and Bend actions. The broad center flattens, outer working edges draw, and the horn bends. A wrong action does not advance or damage the hammer."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Heat",
+      "text": "Heat-requiring workpieces must be reheated beside a lit campfire or a hot Crucible Furnace. Sneak-use the anvil with a hammer to reheat. Cooling pauses the sequence without erasing completed actions."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Legacy Recipes",
+      "text": "Recipes without forge metadata keep the old hammer-smashing behavior and their configured work count. Started forge work locks further input/catalyst insertion until the work is completed or retrieved."
+    }
+  ]
+}

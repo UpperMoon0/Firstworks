@@ -1,0 +1,18 @@
+{
+  "name": "Crucible Furnace",
+  "category": "firstworks:workstations",
+  "icon": "firstworks:crucible_furnace",
+  "sortnum": 30,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Heat and Air",
+      "text": "The Crucible Furnace appears hot only while a paid batch is actively processing with input present, no ready output, and Bellows air remaining. Stored progress or air by itself is not heat."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Pausing",
+      "text": "Losing airflow removes the hot appearance immediately but does not erase a paid batch. Restore airflow to continue. A completed output is treated as cooled and can be collected normally."
+    }
+  ]
+}
