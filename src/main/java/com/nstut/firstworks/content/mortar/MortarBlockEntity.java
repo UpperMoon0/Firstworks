@@ -40,6 +40,8 @@ public final class MortarBlockEntity extends BlockEntity {
     private ResourceLocation recipeId;
     private long lastWorkTick = Long.MIN_VALUE;
     private long lastCrushTick = Long.MIN_VALUE;
+    private boolean legacyProgressPending;
+    private long legacyFinishGameTime = Long.MIN_VALUE;
     private UUID operator;
     private final IItemHandler itemHandler = new MortarItemHandler();
 
@@ -49,6 +51,7 @@ public final class MortarBlockEntity extends BlockEntity {
 
     /** Ticking can only stop work. Progress is earned by validated manual input. */
     public static void tick(Level level, BlockPos pos, BlockState state, MortarBlockEntity mortar) {
+        if (!level.isClientSide) mortar.migrateLegacyProgress();
         if (level.isClientSide || !mortar.grinding) return;
         Player player = mortar.operator == null ? null : level.getPlayerByUUID(mortar.operator);
         if (level.getGameTime() - mortar.lastWorkTick > 1 || player == null || !mortar.canOperate(player, "grind")) {
@@ -56,6 +59,45 @@ public final class MortarBlockEntity extends BlockEntity {
             mortar.operator = null;
             mortar.setChangedAndSync();
         }
+    }
+
+    private void migrateLegacyProgress() {
+        if (!legacyProgressPending || !(level instanceof ServerLevel)) return;
+        legacyProgressPending = false;
+        grinding = false;
+        operator = null;
+        cancelled = false;
+
+        var active = findRecipe(input);
+        if (active.isEmpty() || output.isEmpty() == false) {
+            legacyFinishGameTime = Long.MIN_VALUE;
+            setChangedAndSync();
+            return;
+        }
+
+        var holder = active.get();
+        var stages = holder.value().stages();
+        int legacyDuration = Math.max(1, holder.value().duration());
+        long remaining = legacyFinishGameTime == Long.MIN_VALUE
+                ? legacyDuration
+                : Math.max(0L, Math.min((long) legacyDuration, legacyFinishGameTime - level.getGameTime()));
+        long completed = Math.max(0L, legacyDuration - remaining);
+        int totalWork = stages.stream().mapToInt(MortarStage::work).sum();
+        int migratedWork = totalWork <= 1 ? 0
+                : (int) Math.min(totalWork - 1L, completed * totalWork / legacyDuration);
+
+        stageIndex = 0;
+        while (stageIndex < stages.size() - 1 && migratedWork >= stages.get(stageIndex).work()) {
+            migratedWork -= stages.get(stageIndex).work();
+            stageIndex++;
+        }
+        stageProgress = Math.max(0, migratedWork);
+        started = true;
+        recipeId = holder.id();
+        lastWorkTick = Long.MIN_VALUE;
+        lastCrushTick = Long.MIN_VALUE;
+        legacyFinishGameTime = Long.MIN_VALUE;
+        setChangedAndSync();
     }
 
     public boolean canOperate(Player player, String action) {
@@ -229,7 +271,9 @@ public final class MortarBlockEntity extends BlockEntity {
     public ItemStack getInput() { return input; }
     public ItemStack getOutput() { return output; }
     public boolean isGrinding() { return grinding && level != null && level.getGameTime() - lastWorkTick <= 6; }
-    @Deprecated public long getFinishGameTime() { return 0; }
+    @Deprecated public long getFinishGameTime() {
+        return legacyProgressPending && legacyFinishGameTime != Long.MIN_VALUE ? legacyFinishGameTime : 0L;
+    }
     public Optional<RecipeHolder<MortarGrindingRecipe>> getActiveRecipe() { return findRecipeForIngredient(input); }
     public IItemHandler getItemHandler(@Nullable Direction side) { return itemHandler; }
 
@@ -249,21 +293,34 @@ public final class MortarBlockEntity extends BlockEntity {
         tag.putBoolean("Grinding", grinding);
         tag.putLong("LastWork", lastWorkTick);
         tag.putLong("LastCrush", lastCrushTick);
+        if (legacyProgressPending) {
+            tag.putBoolean("LegacyProgressPending", true);
+            tag.putLong("LegacyFinishGameTime", legacyFinishGameTime);
+        }
         if (recipeId != null) tag.putString("Recipe", recipeId.toString());
     }
     @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         input = ItemStack.parseOptional(registries, tag.getCompound("Input"));
         output = ItemStack.parseOptional(registries, tag.getCompound("Output"));
-        stageIndex = Math.max(0, tag.getInt("Stage"));
-        stageProgress = Math.max(0, tag.getInt("StageProgress"));
-        started = tag.getBoolean("Started");
-        cancelled = tag.getBoolean("Cancelled");
-        recipeId = ResourceLocation.tryParse(tag.getString("Recipe"));
-        grinding = level != null && level.isClientSide && tag.getBoolean("Grinding");
+        boolean legacyFormat = tag.getBoolean("LegacyProgressPending")
+                || (!tag.contains("Stage") && tag.contains("FinishGameTime") && tag.getBoolean("Grinding"));
+        legacyProgressPending = legacyFormat;
+        legacyFinishGameTime = tag.getBoolean("LegacyProgressPending")
+                ? tag.getLong("LegacyFinishGameTime")
+                : legacyFormat ? tag.getLong("FinishGameTime") : Long.MIN_VALUE;
+        stageIndex = legacyFormat ? 0 : Math.max(0, tag.getInt("Stage"));
+        stageProgress = legacyFormat ? 0 : Math.max(0, tag.getInt("StageProgress"));
+        started = !legacyFormat && tag.getBoolean("Started");
+        cancelled = !legacyFormat && tag.getBoolean("Cancelled");
+        recipeId = legacyFormat ? null : ResourceLocation.tryParse(tag.getString("Recipe"));
+        grinding = !legacyFormat && level != null && level.isClientSide && tag.getBoolean("Grinding");
         operator = null;
-        lastWorkTick = tag.contains("LastWork") ? tag.getLong("LastWork") : Long.MIN_VALUE;
-        lastCrushTick = tag.contains("LastCrush") ? tag.getLong("LastCrush") : Long.MIN_VALUE;
+        lastWorkTick = legacyFormat ? Long.MIN_VALUE
+                : tag.contains("LastWork") ? tag.getLong("LastWork") : Long.MIN_VALUE;
+        lastCrushTick = legacyFormat ? Long.MIN_VALUE
+                : tag.contains("LastCrush") ? tag.getLong("LastCrush") : Long.MIN_VALUE;
+        if (legacyProgressPending && level != null && !level.isClientSide) migrateLegacyProgress();
     }
     @Override public CompoundTag getUpdateTag(HolderLookup.Provider registries) { return saveWithoutMetadata(registries); }
     @Override public ClientboundBlockEntityDataPacket getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this, BlockEntity::getUpdateTag); }
