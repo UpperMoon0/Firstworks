@@ -47,6 +47,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
     private int forgeHeat;
     private long lastForgeTick = Long.MIN_VALUE;
     private String lastForgeAction = "";
+    private boolean legacyForgeProgressPending;
     private boolean running;
     private boolean processCancelled;
     private long actionSteps;
@@ -80,6 +81,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, WorkshopBlockEntity workshop) {
+        workshop.migrateLegacyForgeProgress();
         if (workshop.forgeHeat > 0) {
             workshop.forgeHeat--;
             workshop.setChanged();
@@ -152,6 +154,22 @@ public final class WorkshopBlockEntity extends BlockEntity {
         stokeTicks = Math.max(stokeTicks, Math.max(1, ticks));
         sync();
         return true;
+    }
+
+    private void migrateLegacyForgeProgress() {
+        if (!legacyForgeProgressPending || level == null || level.isClientSide) return;
+        legacyForgeProgressPending = false;
+        if (!station().equals(WorkshopRecipe.STONE_ANVIL) || progress <= 0) return;
+        var active = activeRecipe();
+        if (active.isEmpty() || active.get().value().forge().isEmpty()) return;
+        WorkshopRecipe recipe = active.get().value();
+        int legacyWork = Math.max(1, recipe.work());
+        int forgeWork = Math.max(1, recipe.requiredWork());
+        progress = Mth.clamp((int) ((long) progress * forgeWork / legacyWork), 0, forgeWork - 1);
+        forgeHeat = 0;
+        lastForgeTick = Long.MIN_VALUE;
+        lastForgeAction = "";
+        setChanged();
     }
 
     public boolean isHot() {
@@ -603,6 +621,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
         tag.putInt("ForgeHeat", forgeHeat);
         tag.putLong("LastForgeTick", lastForgeTick);
         tag.putString("LastForgeAction", lastForgeAction);
+        tag.putBoolean("LegacyForgeProgressPending", legacyForgeProgressPending);
         tag.putBoolean("Running", running);
         tag.putBoolean("ProcessCancelled", processCancelled);
         tag.putLong("ActionSteps", actionSteps);
@@ -617,9 +636,13 @@ public final class WorkshopBlockEntity extends BlockEntity {
         output = ItemStack.parseOptional(regs, tag.getCompound("Output"));
         progress = tag.getInt("Progress");
         stokeTicks = tag.getInt("StokeTicks");
+        boolean hasModernForgeState = tag.contains("ForgeHeat") || tag.contains("LastForgeTick")
+                || tag.contains("LastForgeAction");
         forgeHeat = Math.max(0, tag.getInt("ForgeHeat"));
         lastForgeTick = tag.contains("LastForgeTick") ? tag.getLong("LastForgeTick") : Long.MIN_VALUE;
         lastForgeAction = tag.getString("LastForgeAction");
+        legacyForgeProgressPending = tag.getBoolean("LegacyForgeProgressPending")
+                || (!hasModernForgeState && progress > 0);
         running = tag.getBoolean("Running");
         processCancelled = tag.getBoolean("ProcessCancelled");
         long loadedActionSteps = tag.getLong("ActionSteps");
