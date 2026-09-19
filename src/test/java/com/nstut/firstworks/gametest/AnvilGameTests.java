@@ -89,6 +89,35 @@ public final class AnvilGameTests {
     }
 
     @GameTest(template = "empty", timeoutTicks = 20)
+    public static void legacyPartialProgressMigratesToForgeSequence(GameTestHelper h) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        h.setBlock(pos, ModBlocks.STONE_ANVIL.get());
+        WorkshopBlockEntity anvil = h.getBlockEntity(pos);
+        anvil.insert(new ItemStack(ModItems.ANNEALED_COPPER_BILLET.get()), false);
+
+        var legacy = anvil.saveWithoutMetadata(h.getLevel().registryAccess());
+        legacy.putInt("Progress", 6);
+        legacy.putBoolean("Running", true);
+        legacy.remove("ForgeHeat");
+        legacy.remove("LastForgeTick");
+        legacy.remove("LastForgeAction");
+        legacy.remove("LegacyForgeProgressPending");
+        anvil.loadWithComponents(legacy, h.getLevel().registryAccess());
+
+        WorkshopBlockEntity.serverTick(h.getLevel(), anvil.getBlockPos(), anvil.getBlockState(), anvil);
+        check(h, anvil.getProgress() == 3, "Legacy 6/8 anvil progress did not migrate to 3/4 forge actions");
+        check(h, anvil.getForgeHeat() == 0, "Legacy anvil migration invented heat");
+
+        Player player = h.makeMockPlayer(GameType.SURVIVAL);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.STONE_HAMMER.get()));
+        h.setBlock(pos.south(), Blocks.CAMPFIRE);
+        check(h, anvil.reheat(player), "Migrated legacy billet could not be reheated");
+        check(h, anvil.forge(player, "flatten"), "Migrated legacy billet could not finish its remaining forge action");
+        check(h, anvil.getOutput().is(Items.COPPER_INGOT), "Migrated legacy anvil produced the wrong result");
+        h.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20)
     public static void zonesRotateAndRejectSideFaces(GameTestHelper h) {
         BlockPos pos = new BlockPos(3, 1, 3);
         for (Direction facing : Direction.Plane.HORIZONTAL) {
