@@ -145,6 +145,45 @@ public final class MortarGameTests {
         });
     }
 
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void legacyTimedGrindingMigratesToPausedManualProgress(GameTestHelper h) {
+        var mortar = mortar(h);
+        mortar.insert(new ItemStack(Items.FEATHER), false);
+        mortar.insert(new ItemStack(Items.FEATHER), false);
+
+        var legacy = mortar.saveWithoutMetadata(h.getLevel().registryAccess());
+        legacy.remove("Stage");
+        legacy.remove("StageProgress");
+        legacy.remove("Started");
+        legacy.remove("Cancelled");
+        legacy.remove("LastWork");
+        legacy.remove("LastCrush");
+        legacy.remove("Recipe");
+        legacy.remove("LegacyProgressPending");
+        legacy.remove("LegacyFinishGameTime");
+        legacy.putBoolean("Grinding", true);
+        legacy.putLong("FinishGameTime", h.getLevel().getGameTime() + 2);
+        mortar.loadWithComponents(legacy, h.getLevel().registryAccess());
+
+        check(h, !mortar.isGrinding(), "Legacy timed mortar resumed autonomously");
+        check(h, mortar.getStageIndex() == 0 && mortar.getStageProgress() == 1,
+                "Legacy mortar progress was not preserved proportionally");
+        check(h, mortar.getInput().getCount() == 2, "Legacy mortar migration changed the input batch");
+
+        var p = operator(h, true);
+        check(h, mortar.operate(p, "grind") && mortar.getStageProgress() == 2,
+                "Migrated mortar did not resume manual grinding");
+        h.runAtTickTime(2, () -> {
+            check(h, mortar.operate(p, "grind") && mortar.getOutput().is(Items.STRING),
+                    "Migrated legacy mortar did not complete");
+            check(h, mortar.getPersistentData().getInt("starts") == 0,
+                    "Migrated legacy mortar replayed the starting lifecycle hook");
+            check(h, mortar.getPersistentData().getInt("completions") == 1,
+                    "Migrated legacy mortar did not fire completion exactly once");
+            h.succeed();
+        });
+    }
+
     @GameTest(template = "empty", timeoutTicks = 30)
     public static void scriptCancellationDoesNotSpamOrConsume(GameTestHelper h) {
         var mortar = mortar(h);
