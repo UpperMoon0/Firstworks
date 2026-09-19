@@ -16,11 +16,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.material.Fluid;
-
-import java.util.Arrays;
-import java.util.List;
 
 public final class BarrelRecipeCategory implements IRecipeCategory<BarrelRecipe> {
     private final IDrawable icon;
@@ -57,7 +53,7 @@ public final class BarrelRecipeCategory implements IRecipeCategory<BarrelRecipe>
         } else if (isTreeBark) {
             inputItem.addItemStacks(FirstworksJeiPlugin.treeBarkVariants(ModItems.TREE_BARK.get(), recipe.inputCount()));
         } else {
-            inputItem.addItemStacks(countedIngredientStacks(recipe.ingredient(), recipe.inputCount()));
+            inputItem.addItemStacks(JeiIngredientStacks.withCount(recipe.ingredient(), recipe.inputCount()));
         }
 
         IRecipeSlotBuilder fluidSlot = builder.addSlot(RecipeIngredientRole.INPUT, 27, 5)
@@ -95,12 +91,6 @@ public final class BarrelRecipeCategory implements IRecipeCategory<BarrelRecipe>
                 outputItem.addItemStack(recipe.result());
             }
         }
-    }
-
-    static List<ItemStack> countedIngredientStacks(Ingredient ingredient, int count) {
-        return Arrays.stream(ingredient.getItems())
-                .map(stack -> stack.copyWithCount(count))
-                .toList();
     }
 
     @Override
