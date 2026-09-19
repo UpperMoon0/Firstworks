@@ -1,0 +1,23 @@
+{
+  "name": "Mortar & Pestle",
+  "category": "firstworks:workstations",
+  "icon": "firstworks:mortar_and_pestle",
+  "sortnum": 20,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Crush, Then Grind",
+      "text": "Recipes may contain discrete crush stages and held grind stages. Aim at the bowl center and use with an empty hand to crush. For grinding, hold use while aiming at the inner bowl or rim."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Manual Progress",
+      "text": "Grinding advances only while valid held input reaches the server. Releasing use, moving away, changing held items, or looking away pauses the process. Nothing finishes from a background timer."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Old Worlds",
+      "text": "A mortar that was already grinding in an older world is migrated into equivalent paused manual progress. Its input is preserved and the old process-start event is not replayed; resume it by hand."
+    }
+  ]
+}
