@@ -32,6 +32,11 @@ public class LoomBlockEntity extends BlockEntity {
     private boolean shuttleRight;
     private boolean shedB;
     private boolean processCancelled;
+    private float shuttlePosition;
+    private int packingTicks;
+    private boolean started;
+    private java.util.UUID operator;
+    private long lastInputTick = Long.MIN_VALUE;
     private final IItemHandler itemHandler = new LoomItemHandler();
 
     public LoomBlockEntity(BlockPos pos, BlockState state) {
@@ -39,7 +44,7 @@ public class LoomBlockEntity extends BlockEntity {
     }
 
     public boolean canInsert(ItemStack stack) {
-        if (stack.isEmpty() || level == null || progress > 0) return false;
+        if (stack.isEmpty() || level == null || started || packingTicks > 0) return false;
         if (!input.isEmpty() && !ItemStack.isSameItemSameComponents(input, stack)) return false;
         if (!input.isEmpty() && input.getCount() >= input.getMaxStackSize()) return false;
         return level.getRecipeManager().getAllRecipesFor(ModRecipes.LOOM_WEAVING_TYPE.get()).stream()
@@ -48,78 +53,98 @@ public class LoomBlockEntity extends BlockEntity {
 
     public boolean insert(ItemStack held, boolean creative) {
         if (!canInsert(held)) return false;
-        if (input.isEmpty()) input = held.copyWithCount(1);
-        else input.grow(1);
-        if (!creative) held.shrink(1);
+        int count = Math.min(held.getCount(), held.getMaxStackSize() - input.getCount());
+        if (input.isEmpty()) input = held.copyWithCount(count);
+        else input.grow(count);
+        if (!creative) held.shrink(count);
         progress = 0;
         processCancelled = false;
         sync();
         return true;
     }
 
-    public void changeShed() {
-        if (!(level instanceof ServerLevel)) return;
-        shedB = !shedB;
-        sync();
-    }
-
     public String getShed() { return shedB ? "B" : "A"; }
     public boolean isShuttleRight() { return shuttleRight; }
-
-    public net.minecraft.network.chat.Component interactionHint(LoomBlock.Control control) {
-        if (!output.isEmpty()) return net.minecraft.network.chat.Component.translatable("hint.firstworks.loom.collect");
-        if (processCancelled) return net.minecraft.network.chat.Component.translatable("jade.firstworks.loom.cancelled");
-        var matching = getMatchingRecipe();
-        if (matching.isEmpty()) return net.minecraft.network.chat.Component.translatable("jade.firstworks.loom.empty");
-        if (input.getCount() < matching.get().value().inputCount())
-            return net.minecraft.network.chat.Component.translatable("jade.firstworks.loom.loading", input.getCount(), matching.get().value().inputCount());
-        if (control == LoomBlock.Control.SHED)
-            return net.minecraft.network.chat.Component.translatable("hint.firstworks.loom.shed", getShed(), shedB ? "A" : "B");
-        if (control == LoomBlock.Control.NONE)
-            return net.minecraft.network.chat.Component.translatable("hint.firstworks.loom.controls");
-        if ((control == LoomBlock.Control.RIGHT) != shuttleRight)
-            return net.minecraft.network.chat.Component.translatable("hint.firstworks.loom.wrong_side");
-        String required = matching.get().value().requiredShed(progress);
-        if (!required.equals(getShed()))
-            return net.minecraft.network.chat.Component.translatable("hint.firstworks.loom.wrong_shed", required);
-        return net.minecraft.network.chat.Component.translatable(shuttleRight ? "hint.firstworks.loom.throw_left" : "hint.firstworks.loom.throw_right");
+    public float getShuttlePosition() { return shuttlePosition; }
+    public boolean isPacking() { return packingTicks > 0; }
+    public float getPackingProgress(float partial) {
+        return packingTicks <= 0 || level == null ? 0 : Mth.clamp((6 - packingTicks + partial) / 6.0F, 0, 1);
     }
 
-    public boolean weave(Player player, boolean fromRight) {
-        if (!(level instanceof ServerLevel) || fromRight != shuttleRight || lastStrokeTick == level.getGameTime()) return false;
-        if (processCancelled) return false;
-        Optional<RecipeHolder<LoomRecipe>> active = getActiveRecipe();
+    public net.minecraft.network.chat.Component interactionHint() {
+        var matching = getMatchingRecipe();
+        if (output.isEmpty() && matching.isPresent() && input.getCount() < matching.get().value().inputCount())
+            return net.minecraft.network.chat.Component.translatable("jade.firstworks.loom.loading", input.getCount(), matching.get().value().inputCount());
+        String key = !output.isEmpty() ? "hint.firstworks.loom.collect"
+                : processCancelled ? "jade.firstworks.loom.cancelled"
+                : getActiveRecipe().isEmpty() ? "jade.firstworks.loom.empty"
+                : isPacking() ? "hint.firstworks.loom.packing" : "hint.firstworks.loom.controls";
+        return net.minecraft.network.chat.Component.translatable(key);
+    }
+
+    public void release(Player player) {
+        if (player.getUUID().equals(operator)) operator = null;
+    }
+
+    /** Server derives the track coordinate from the player's aim; packets never supply progress. */
+    public boolean guide(Player player, boolean assisted) {
+        if (!(level instanceof ServerLevel server) || player.level() != level || player.isSpectator()
+                || !player.isAlive() || !player.mayBuild() || !level.mayInteract(player, worldPosition)
+                || !player.getMainHandItem().isEmpty() || player.isShiftKeyDown()
+                || !player.canInteractWithBlock(worldPosition, 0) || processCancelled) return false;
+        var aim = LoomBlock.trackAim(player, worldPosition, getBlockState());
+        if (aim == null) { release(player); return false; }
+        long now = level.getGameTime();
+        if (lastInputTick == now) return false;
+        if (operator != null && now - lastInputTick > 5) operator = null;
+        if (operator != null && !operator.equals(player.getUUID())) return false;
+        if (operator == null && !LoomBlock.hitsShuttle(player, this)) return false;
+        var active = getActiveRecipe();
         if (active.isEmpty() || !canAccept(active.get().value().result())) return false;
-        RecipeHolder<LoomRecipe> holder = active.get();
-        LoomRecipe recipe = holder.value();
-        if (!recipe.requiredShed(progress).equals(getShed())) return false;
-        ItemStack consumed = input.copyWithCount(recipe.inputCount());
-        if (progress == 0 && level instanceof ServerLevel server
-                && OptionalIntegrations.fireLoomWeavingStarting(server, this, holder.id(), recipe, consumed, recipe.result())) {
-            processCancelled = true;
-            sync();
-            return false;
+        operator = player.getUUID();
+        lastInputTick = now;
+        if (packingTicks > 0) return false;
+        var holder = active.get();
+        var recipe = holder.value();
+        if (!started) {
+            if (OptionalIntegrations.fireLoomWeavingStarting(server, this, holder.id(), recipe,
+                    input.copyWithCount(recipe.inputCount()), recipe.result())) {
+                processCancelled = true;
+                sync();
+                return false;
+            }
+            started = true;
+            shedB = recipe.requiredShed(progress).equals("B");
         }
-        progress++;
-        shuttleRight = !shuttleRight;
-        lastStrokeTick = level == null ? 0 : level.getGameTime();
-        player.swing(player.getUsedItemHand(), true);
-        if (level != null) {
-            level.playSound(null, worldPosition, SoundEvents.UI_LOOM_SELECT_PATTERN, SoundSource.BLOCKS,
-                    0.8F, 0.92F + level.random.nextFloat() * 0.16F);
+        float target = assisted ? (shuttleRight ? 0 : 1) : (float) Mth.clamp((aim.x - 0.3) / 0.4, 0, 1);
+        // Forgiving endpoint seats suppress floating-point drift and tiny endpoint movements.
+        if (target < 0.05F) target = 0;
+        if (target > 0.95F) target = 1;
+        // Eight held samples per crossing at minimum, in either input mode.
+        shuttlePosition += Mth.clamp(target - shuttlePosition, -0.125F, 0.125F);
+        if ((!shuttleRight && shuttlePosition >= 1) || (shuttleRight && shuttlePosition <= 0)) {
+            packingTicks = 6;
+            lastStrokeTick = now;
+            level.playSound(null, worldPosition, SoundEvents.UI_LOOM_SELECT_PATTERN, SoundSource.BLOCKS, 0.8F, 1);
         }
-        if (progress >= requiredStrokes(recipe)) complete(holder.id(), recipe, consumed);
-        else sync();
+        sync();
         return true;
     }
 
-    /** Compatibility entry point: resolve the caller's actual target rather than selecting a side for them. */
-    public boolean weave(Player player) {
-        if (!(player.pick(player.blockInteractionRange(), 1.0F, false) instanceof net.minecraft.world.phys.BlockHitResult hit)
-                || !hit.getBlockPos().equals(worldPosition)) return false;
-        LoomBlock.Control control = LoomBlock.controlAt(getBlockState(), worldPosition, hit.getLocation());
-        return (control == LoomBlock.Control.LEFT || control == LoomBlock.Control.RIGHT)
-                && weave(player, control == LoomBlock.Control.RIGHT);
+    public static void tick(net.minecraft.world.level.Level level, BlockPos pos, BlockState state, LoomBlockEntity loom) {
+        if (level.isClientSide || loom.packingTicks <= 0) return;
+        if (--loom.packingTicks == 0) {
+            var active = loom.getActiveRecipe();
+            if (active.isPresent()) {
+                var holder = active.get();
+                loom.progress++;
+                loom.shuttleRight = !loom.shuttleRight;
+                loom.shedB = holder.value().requiredShed(loom.progress).equals("B");
+                if (loom.progress >= holder.value().passes())
+                    loom.complete(holder.id(), holder.value(), loom.input.copyWithCount(holder.value().inputCount()));
+            }
+        }
+        loom.sync();
     }
 
     private int requiredStrokes(LoomRecipe recipe) {
@@ -141,6 +166,7 @@ public class LoomBlockEntity extends BlockEntity {
         if (output.isEmpty()) output = recipe.result().copy();
         else output.grow(recipe.result().getCount());
         progress = 0;
+        started = false;
         sync();
         if (level instanceof ServerLevel server) {
             OptionalIntegrations.fireLoomWeavingCompleted(server, this, id, recipe, consumed, recipe.result());
@@ -163,6 +189,10 @@ public class LoomBlockEntity extends BlockEntity {
         processCancelled = false;
         shedB = false;
         shuttleRight = false;
+        shuttlePosition = 0;
+        packingTicks = 0;
+        started = false;
+        operator = null;
         lastStrokeTick = Long.MIN_VALUE;
         sync();
         return true;
@@ -188,20 +218,12 @@ public class LoomBlockEntity extends BlockEntity {
     }
 
     public float getShuttleOffset(float partial) {
-        if (level == null || lastStrokeTick == Long.MIN_VALUE) return shuttleRight ? 0.20F : -0.20F;
-        float elapsed = Math.max(0.0F, level.getGameTime() + partial - lastStrokeTick);
-        float t = Math.min(1.0F, elapsed / 6.0F);
-        float eased = 0.5F - 0.5F * (float) Math.cos(Math.PI * t);
-        float from = shuttleRight ? -0.20F : 0.20F;
-        return from + (-from - from) * eased;
+        return -0.20F + 0.40F * shuttlePosition;
     }
 
     /** 0→1→0 pulse used by the moving beater/reed on each hand stroke. */
     public float getStrokeAnimation(float partial) {
-        if (level == null || lastStrokeTick == Long.MIN_VALUE) return 0.0F;
-        float elapsed = Math.max(0.0F, level.getGameTime() + partial - lastStrokeTick);
-        if (elapsed >= 6.0F) return 0.0F;
-        return Mth.sin((float) Math.PI * Mth.clamp(elapsed / 6.0F, 0.0F, 1.0F));
+        return isPacking() ? Mth.sin((float) Math.PI * getPackingProgress(partial)) : 0;
     }
 
     private void sync() {
@@ -227,6 +249,9 @@ public class LoomBlockEntity extends BlockEntity {
         tag.putBoolean("ShuttleRight", shuttleRight);
         tag.putBoolean("ShedB", shedB);
         tag.putBoolean("ProcessCancelled", processCancelled);
+        tag.putFloat("ShuttlePosition", shuttlePosition);
+        tag.putInt("PackingTicks", packingTicks);
+        tag.putBoolean("Started", started);
     }
 
     @Override
@@ -239,6 +264,11 @@ public class LoomBlockEntity extends BlockEntity {
         shuttleRight = tag.getBoolean("ShuttleRight");
         shedB = tag.getBoolean("ShedB");
         processCancelled = tag.getBoolean("ProcessCancelled");
+        shuttlePosition = tag.contains("ShuttlePosition") ? Mth.clamp(tag.getFloat("ShuttlePosition"), 0, 1) : shuttleRight ? 1 : 0;
+        packingTicks = Mth.clamp(tag.getInt("PackingTicks"), 0, 6);
+        started = tag.getBoolean("Started") || progress > 0;
+        operator = null;
+        lastInputTick = Long.MIN_VALUE;
     }
 
     @Override public CompoundTag getUpdateTag(HolderLookup.Provider registries) { return saveWithoutMetadata(registries); }

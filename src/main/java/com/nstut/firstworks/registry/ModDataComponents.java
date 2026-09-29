@@ -24,6 +24,15 @@ public final class ModDataComponents {
                     .networkSynchronized(net.minecraft.network.codec.ByteBufCodecs.STRING_UTF8)
                     .build());
 
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.nstut.firstworks.content.workshop.ItemHeat>> HEAT =
+            COMPONENTS.register("heat", () -> DataComponentType.<com.nstut.firstworks.content.workshop.ItemHeat>builder()
+                    .persistent(com.nstut.firstworks.content.workshop.ItemHeat.CODEC)
+                    .networkSynchronized(net.minecraft.network.codec.ByteBufCodecs.fromCodec(com.nstut.firstworks.content.workshop.ItemHeat.CODEC)).build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.nstut.firstworks.content.workshop.ForgeProgress>> FORGE_PROGRESS =
+            COMPONENTS.register("forge_progress", () -> DataComponentType.<com.nstut.firstworks.content.workshop.ForgeProgress>builder()
+                    .persistent(com.nstut.firstworks.content.workshop.ForgeProgress.CODEC)
+                    .networkSynchronized(net.minecraft.network.codec.ByteBufCodecs.fromCodec(com.nstut.firstworks.content.workshop.ForgeProgress.CODEC)).build());
+
     public static void register(IEventBus bus) {
         COMPONENTS.register(bus);
     }

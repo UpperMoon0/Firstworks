@@ -1,7 +1,8 @@
 package com.nstut.firstworks.content.workshop;
 
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.world.level.block.CampfireBlock;
+import com.nstut.firstworks.registry.ModDataComponents;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.network.chat.Component;
 import com.nstut.firstworks.compat.OptionalIntegrations;
 import com.nstut.firstworks.registry.ModBlockEntities;
@@ -44,7 +45,10 @@ public final class WorkshopBlockEntity extends BlockEntity {
     private ItemStack output = ItemStack.EMPTY;
     private int progress;
     private int stokeTicks;
-    private int forgeHeat;
+    private int forgeHeat; // Legacy block-owned heat, imported once into the workpiece.
+    private int burnTicks;
+    private double heatRemainder;
+    private boolean importItemState;
     private long lastForgeTick = Long.MIN_VALUE;
     private String lastForgeAction = "";
     private boolean legacyForgeProgressPending;
@@ -82,11 +86,12 @@ public final class WorkshopBlockEntity extends BlockEntity {
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, WorkshopBlockEntity workshop) {
         workshop.migrateLegacyForgeProgress();
-        if (workshop.forgeHeat > 0) {
-            workshop.forgeHeat--;
-            workshop.setChanged();
-            if (workshop.forgeHeat % 20 == 0) workshop.sync();
+        workshop.importLegacyItemState();
+        if (workshop.station().equals(WorkshopRecipe.KILN)) {
+            workshop.tickKiln();
+            return;
         }
+        workshop.updateHeatLight();
         boolean stokeExpired = false;
         if (workshop.stokeTicks > 0) {
             workshop.stokeTicks--;
@@ -173,13 +178,13 @@ public final class WorkshopBlockEntity extends BlockEntity {
     }
 
     public boolean isHot() {
-        return heated() && running && stokeTicks > 0 && !input.isEmpty() && output.isEmpty();
+        return station().equals(WorkshopRecipe.KILN) ? burnTicks > 0 : heated() && running && stokeTicks > 0 && !input.isEmpty() && output.isEmpty();
     }
 
-    public int getForgeHeat() { return forgeHeat; }
+    public int getForgeHeat() { return ItemHeat.remaining(input, level); }
     public String getLastForgeAction() { return lastForgeAction; }
 
-    public Component anvilHint(String action, boolean reheat, boolean hammer) {
+    public Component anvilHint(String action, boolean hammer) {
         if (!output.isEmpty()) return Component.translatable("hint.firstworks.collect");
         if (input.isEmpty()) return Component.translatable("jade.firstworks.workshop.empty");
         var active = activeRecipe();
@@ -195,37 +200,86 @@ public final class WorkshopBlockEntity extends BlockEntity {
         if (processCancelled) return Component.translatable("hint.firstworks.cancelled");
         var forge = active.get().value().forge();
         if (forge.isEmpty()) return Component.translatable("hint.firstworks.anvil.smash");
-        if (reheat || forge.get().heatTicks() > 0 && forgeHeat == 0)
-            return Component.translatable(hasForgeHeatSource() ? "hint.firstworks.anvil.reheat_ready" : "hint.firstworks.anvil.reheat");
+        if (forge.get().heatTicks() > 0 && !ItemHeat.workable(input, level))
+            return Component.translatable("hint.firstworks.anvil.reheat");
         String next = forge.get().actions().get(Math.min(progress, forge.get().actions().size() - 1));
         if (forge.get().heatTicks() == 0) return Component.translatable("hint.firstworks.anvil.action_cold",
                 Component.translatable("action.firstworks." + action), Component.translatable("action.firstworks." + next));
         return Component.translatable("hint.firstworks.anvil.action",
                 Component.translatable("action.firstworks." + action),
-                Component.translatable("action.firstworks." + next), (forgeHeat + 19) / 20);
+                Component.translatable("action.firstworks." + next), (getForgeHeat() + 19) / 20);
     }
 
-    public boolean hasForgeHeatSource() {
-        if (level == null) return false;
-        for (Direction side : Direction.values()) {
-            BlockPos source = worldPosition.relative(side);
-            var state = level.getBlockState(source);
-            if (state.getBlock() instanceof CampfireBlock
-                    && state.getValue(CampfireBlock.LIT)) return true;
-            if (level.getBlockEntity(source) instanceof WorkshopBlockEntity furnace && furnace.isHot()) return true;
+    private void tickKiln() {
+        int capacity = ItemHeat.capacity(input, level);
+        int heat = ItemHeat.remaining(input, level);
+        boolean changed = false;
+        if (burnTicks <= 0 && capacity > 0 && heat < capacity && !fuel.isEmpty()) {
+            int duration = fuel.getBurnTime(RecipeType.SMELTING);
+            if (duration > 0) {
+                burnTicks = duration;
+                fuel.shrink(1);
+                changed = true;
+                level.playSound(null, worldPosition, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 0.4F, 1.0F);
+            }
         }
-        return false;
+        if (burnTicks > 0) {
+            burnTicks--;
+            if (capacity > 0) {
+                // Five seconds per item from cold to full heat; keeping it inside maintains heat.
+                heatRemainder += capacity / (100.0 * input.getCount());
+                int gain = (int) heatRemainder;
+                heatRemainder -= gain;
+                ItemHeat.set(input, level, Math.min(capacity, heat + gain + 1), capacity);
+            }
+            setChanged();
+            changed |= burnTicks == 0;
+        }
+        updateHeatLight();
+        if (changed || level.getGameTime() % (burnTicks > 0 && heat < capacity ? 5 : 20) == 0) sync();
     }
 
-    public boolean reheat(Player player) {
-        if (!(level instanceof ServerLevel) || !hasHammer(player) || !hasForgeHeatSource() || !output.isEmpty()) return false;
-        var data = activeRecipe().flatMap(h -> h.value().forge());
-        if (data.isEmpty() || data.get().heatTicks() == 0) return false;
-        forgeHeat = data.get().heatTicks();
-        level.playSound(null, worldPosition, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 0.4F, 1.1F);
-        sync();
-        return true;
+    private void updateHeatLight() {
+        if (level == null || level.isClientSide) return;
+        if (!station().equals(WorkshopRecipe.KILN) && !station().equals(WorkshopRecipe.STONE_ANVIL)) return;
+        int light = Math.max(ItemHeat.light(input, level), ItemHeat.light(output, level));
+        if (station().equals(WorkshopRecipe.KILN) && burnTicks > 0) light = Math.max(light, 8);
+        if (getBlockState().getValue(WorkshopBlock.HEAT_LIGHT) != light)
+            level.setBlock(worldPosition, getBlockState().setValue(WorkshopBlock.HEAT_LIGHT, light), Block.UPDATE_CLIENTS);
     }
+
+    private void importLegacyItemState() {
+        if (!importItemState || level == null || level.isClientSide) return;
+        importItemState = false;
+        if (!station().equals(WorkshopRecipe.STONE_ANVIL) || input.isEmpty()) return;
+        if (forgeHeat > 0) {
+            int capacity = Math.max(forgeHeat, ItemHeat.capacity(input, level));
+            ItemHeat.set(input, level, forgeHeat, capacity);
+        }
+        forgeHeat = 0;
+        storeForgeProgress();
+        sync();
+    }
+
+    private void storeForgeProgress() {
+        if (!station().equals(WorkshopRecipe.STONE_ANVIL) || input.isEmpty() || progress <= 0) return;
+        activeRecipe().filter(h -> h.value().forge().isPresent()).ifPresent(h ->
+                input.set(ModDataComponents.FORGE_PROGRESS.get(), new ForgeProgress(h.id().toString(),
+                        String.join(",", h.value().forge().get().actions()), progress, h.value().inputCount())));
+    }
+
+    private void restoreForgeProgress() {
+        progress = 0;
+        ForgeProgress saved = input.get(ModDataComponents.FORGE_PROGRESS.get());
+        if (saved == null || !station().equals(WorkshopRecipe.STONE_ANVIL)) return;
+        activeRecipe().filter(h -> h.id().toString().equals(saved.recipe())
+                && h.value().forge().isPresent() && h.value().inputCount() == saved.batchSize()
+                && input.getCount() == saved.batchSize()
+                && String.join(",", h.value().forge().get().actions()).equals(saved.sequence()))
+                .ifPresent(h -> progress = Math.min(saved.completed(), h.value().requiredWork() - 1));
+    }
+
+    public int getBurnTicks() { return burnTicks; }
 
     private static boolean hasHammer(Player player) {
         return player.getMainHandItem().is(ModTags.HAMMERS) || player.getOffhandItem().is(ModTags.HAMMERS);
@@ -240,12 +294,14 @@ public final class WorkshopBlockEntity extends BlockEntity {
         if (recipe.forge().isEmpty()) return work(player);
         var data = recipe.forge().get();
         if (progress >= data.actions().size() || !data.actions().get(progress).equals(action)
-                || data.heatTicks() > 0 && forgeHeat <= 0) return false;
+                || input.getCount() != recipe.inputCount()
+                || data.heatTicks() > 0 && !ItemHeat.workable(input, level)) return false;
         processCancelled = false;
         if (!tryBegin(active.get())) return false;
         lastForgeTick = level.getGameTime();
         lastForgeAction = action;
         progress++;
+        storeForgeProgress();
         actionSteps++;
         server.sendParticles(ParticleTypes.CRIT,
                 worldPosition.getX() + 0.5, worldPosition.getY() + 0.72, worldPosition.getZ() + 0.5,
@@ -324,6 +380,8 @@ public final class WorkshopBlockEntity extends BlockEntity {
             }
         }
         output = recipe.result().copy();
+        if (station().equals(WorkshopRecipe.STONE_ANVIL)) ItemHeat.copy(eventInput, output, level);
+        input.remove(ModDataComponents.FORGE_PROGRESS.get());
         forgeHeat = 0;
         progress = 0;
         running = false;
@@ -346,6 +404,10 @@ public final class WorkshopBlockEntity extends BlockEntity {
                 .filter(holder -> holder.value().ingredient().test(input)
                         && input.getCount() >= holder.value().inputCount())
                 .filter(holder -> holder.value().catalystMatches(catalyst))
+                .filter(holder -> {
+                    ForgeProgress saved = input.get(ModDataComponents.FORGE_PROGRESS.get());
+                    return saved == null || holder.id().toString().equals(saved.recipe());
+                })
                 .sorted(Comparator.comparingInt((RecipeHolder<WorkshopRecipe> holder) -> holder.value().priority())
                         .reversed()
                         .thenComparing(Comparator.comparingInt(
@@ -369,14 +431,17 @@ public final class WorkshopBlockEntity extends BlockEntity {
     }
 
     private boolean isFuel(ItemStack stack) {
-        return stack.is(ModTags.CRUCIBLE_FURNACE_FUELS);
+        return station().equals(WorkshopRecipe.KILN)
+                ? stack.getBurnTime(RecipeType.SMELTING) > 0 && !stack.hasCraftingRemainingItem()
+                : stack.is(ModTags.CRUCIBLE_FURNACE_FUELS);
     }
 
     private boolean heated() {
-        return station().equals(WorkshopRecipe.CRUCIBLE_FURNACE);
+        return station().equals(WorkshopRecipe.CRUCIBLE_FURNACE) || station().equals(WorkshopRecipe.KILN);
     }
 
     private boolean validInput(ItemStack stack) {
+        if (station().equals(WorkshopRecipe.KILN)) return ItemHeat.capacity(stack, level) > 0;
         return stationRecipes().anyMatch(holder -> holder.value().ingredient().test(stack));
     }
 
@@ -390,7 +455,16 @@ public final class WorkshopBlockEntity extends BlockEntity {
     }
 
     private boolean canInsertInput(ItemStack stack) {
-        return !(station().equals(WorkshopRecipe.STONE_ANVIL) && progress > 0) && validInput(stack) && canStack(input, stack);
+        if (station().equals(WorkshopRecipe.STONE_ANVIL) && progress > 0) return false;
+        return validInput(stack) && canStack(input, stack) && input.getCount() < inputLimit(stack);
+    }
+
+    private int inputLimit(ItemStack stack) {
+        if (!station().equals(WorkshopRecipe.STONE_ANVIL)) return stack.getMaxStackSize();
+        ForgeProgress saved = stack.get(ModDataComponents.FORGE_PROGRESS.get());
+        if (saved != null) return saved.batchSize();
+        return stationRecipes().filter(h -> h.value().ingredient().test(stack))
+                .mapToInt(h -> h.value().inputCount()).max().orElse(stack.getMaxStackSize());
     }
 
     private boolean canInsertCatalyst(ItemStack stack) {
@@ -450,6 +524,15 @@ public final class WorkshopBlockEntity extends BlockEntity {
 
     public boolean insert(ItemStack held, boolean creative) {
         int slot = preferredPlayerInsertionSlot(held);
+        if (slot == INPUT_SLOT && input.isEmpty() && held.has(ModDataComponents.FORGE_PROGRESS.get())) {
+            int count = held.get(ModDataComponents.FORGE_PROGRESS.get()).batchSize();
+            if (held.getCount() < count) return false;
+            input = held.copyWithCount(count);
+            if (!creative) held.shrink(count);
+            restoreForgeProgress();
+            sync();
+            return true;
+        }
         return slot >= 0 && insertOne(slot, held, creative);
     }
 
@@ -492,6 +575,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
             forgeHeat = 0;
             lastForgeAction = "";
             running = false;
+            if (station().equals(WorkshopRecipe.STONE_ANVIL)) restoreForgeProgress();
         }
     }
 
@@ -604,6 +688,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
 
     private void sync() {
         setChanged();
+        updateHeatLight();
         if (level != null && !level.isClientSide) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
         }
@@ -619,6 +704,9 @@ public final class WorkshopBlockEntity extends BlockEntity {
         tag.putInt("Progress", progress);
         tag.putInt("StokeTicks", stokeTicks);
         tag.putInt("ForgeHeat", forgeHeat);
+        tag.putInt("BurnTicks", burnTicks);
+        tag.putDouble("HeatRemainder", heatRemainder);
+        tag.putBoolean("ItemHeatVersion", !importItemState);
         tag.putLong("LastForgeTick", lastForgeTick);
         tag.putString("LastForgeAction", lastForgeAction);
         tag.putBoolean("LegacyForgeProgressPending", legacyForgeProgressPending);
@@ -639,10 +727,14 @@ public final class WorkshopBlockEntity extends BlockEntity {
         boolean hasModernForgeState = tag.contains("ForgeHeat") || tag.contains("LastForgeTick")
                 || tag.contains("LastForgeAction");
         forgeHeat = Math.max(0, tag.getInt("ForgeHeat"));
+        burnTicks = Math.max(0, tag.getInt("BurnTicks"));
+        heatRemainder = Math.max(0, Math.min(1, tag.getDouble("HeatRemainder")));
+        importItemState = !tag.getBoolean("ItemHeatVersion");
         lastForgeTick = tag.contains("LastForgeTick") ? tag.getLong("LastForgeTick") : Long.MIN_VALUE;
         lastForgeAction = tag.getString("LastForgeAction");
         legacyForgeProgressPending = tag.getBoolean("LegacyForgeProgressPending")
                 || (!hasModernForgeState && progress > 0);
+        importItemState |= legacyForgeProgressPending;
         running = tag.getBoolean("Running");
         processCancelled = tag.getBoolean("ProcessCancelled");
         long loadedActionSteps = tag.getLong("ActionSteps");
@@ -709,7 +801,8 @@ public final class WorkshopBlockEntity extends BlockEntity {
             if (!current.isEmpty() && !ItemStack.isSameItemSameComponents(current, stack)) {
                 return stack;
             }
-            int accepted = Math.min(stack.getMaxStackSize() - current.getCount(), stack.getCount());
+            int limit = slot == INPUT_SLOT ? inputLimit(stack) : stack.getMaxStackSize();
+            int accepted = Math.min(limit - current.getCount(), stack.getCount());
             if (accepted <= 0) {
                 return stack;
             }
@@ -735,6 +828,20 @@ public final class WorkshopBlockEntity extends BlockEntity {
 
         @Override
         public ItemStack extractItem(int slot, int amount, boolean simulate) {
+            if (slot == INPUT_SLOT && (station().equals(WorkshopRecipe.KILN) || station().equals(WorkshopRecipe.STONE_ANVIL))) {
+                if (amount <= 0 || input.isEmpty()) return ItemStack.EMPTY;
+                if (input.has(ModDataComponents.FORGE_PROGRESS.get()) && amount < input.getCount()) return ItemStack.EMPTY;
+                int count = Math.min(amount, input.getCount());
+                ItemStack result = input.copyWithCount(count);
+                if (!simulate) {
+                    input.shrink(count);
+                    restoreForgeProgress();
+                    lastForgeAction = "";
+                    processCancelled = false;
+                    sync();
+                }
+                return result;
+            }
             if (slot != OUTPUT_SLOT || output.isEmpty() || amount <= 0) {
                 return ItemStack.EMPTY;
             }

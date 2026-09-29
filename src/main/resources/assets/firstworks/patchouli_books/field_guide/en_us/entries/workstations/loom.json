@@ -6,13 +6,13 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "Shuttle and Shed",
-      "text": "Load the required thread. Use the side post where the shuttle currently rests to throw it across. Use the lower crossbar to switch between shed A and B. The required shed pattern is shown by JEI and contextual hints."
+      "title": "Guide the Shuttle",
+      "text": "Use thread on the loom to load a stack in one action. With an empty hand, hold Use on the highlighted shuttle grip and guide your aim across the loom. Keep holding and reverse direction after the beater packs the row. Four crossings make basic cloth. Use the finished cloth to collect it."
     },
     {
       "type": "patchouli:text",
-      "title": "Patterns",
-      "text": "A valid pass requires both the correct shuttle side and the correct shed. Partial progress, shuttle side, and shed survive reloads. Once weaving starts, additional thread cannot be inserted until the batch is finished or retrieved."
+      "title": "Comfortable Weaving",
+      "text": "You may stop halfway and return later. The shed and beater work automatically. Sneak-use retrieves the thread and resets the batch. For less mouse movement, enable loomInputAssistance in firstworks-client.toml, then hold Use on the shuttle. Assisted weaving has the same crossing speed and packing time."
     }
   ]
 }

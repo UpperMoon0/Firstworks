@@ -22,9 +22,22 @@ import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtension
 public final class ClientEvents {
 
     @SubscribeEvent
+    public static void heatBuffer(net.neoforged.neoforge.client.event.RegisterRenderBuffersEvent event) {
+        // Draw after the base item/block sheets, otherwise their later flush hides the glow.
+        event.registerRenderBuffer(HeatRenderType.GLOW);
+    }
+
+    @SubscribeEvent
+    public static void heatModels(ModelEvent.ModifyBakingResult event) {
+        event.getModels().replaceAll((id, model) -> id.getVariant().equals("inventory")
+                ? new HeatGlowModel(model) : model);
+    }
+
+    @SubscribeEvent
     public static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
         event.register(ModelResourceLocation.standalone(Firstworks.id("block/quern_runner")));
         event.register(WorkshopBlockEntityRenderer.POTTERY_HEAD);
+        event.register(WorkshopBlockEntityRenderer.KILN_EMBERS);
         event.register(WorkshopBlockEntityRenderer.CRUCIBLE_CONTENTS);
         event.register(WorkshopBlockEntityRenderer.CASTING_MOLD);
         event.register(WorkshopBlockEntityRenderer.CASTING_METAL);

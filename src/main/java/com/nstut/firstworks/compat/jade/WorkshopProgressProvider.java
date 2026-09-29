@@ -3,8 +3,12 @@ package com.nstut.firstworks.compat.jade;
 import com.nstut.firstworks.Firstworks;
 import com.nstut.firstworks.content.workshop.WorkshopBlockEntity;
 import com.nstut.firstworks.content.workshop.WorkshopRecipe;
+import com.nstut.firstworks.content.workshop.ItemHeat;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -22,6 +26,7 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
     INSTANCE;
 
     private static final ResourceLocation UID = Firstworks.id("workshop_progress");
+    private static final String ACTIONS = "FirstworksForgeActions";
     private static final String STATION = "FirstworksWorkshopStation";
     private static final String INPUT = "FirstworksWorkshopInput";
     private static final String INPUT_COUNT = "FirstworksWorkshopInputCount";
@@ -43,6 +48,11 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
         }
 
         data.putString(STATION, workshop.station());
+        var visible = workshop.getOutput().isEmpty() ? workshop.getInput() : workshop.getOutput();
+        data.putFloat("Heat", ItemHeat.fraction(visible, workshop.getLevel()));
+        data.putBoolean("Heatable", ItemHeat.capacity(visible, workshop.getLevel()) > 0
+                || visible.has(com.nstut.firstworks.registry.ModDataComponents.HEAT.get()));
+        data.putInt("BurnTicks", workshop.getBurnTicks());
         putStack(data, INPUT, INPUT_COUNT, workshop.getInput());
         putStack(data, CATALYST, CATALYST_COUNT, workshop.getCatalyst());
         data.putInt(FUEL_COUNT, workshop.getFuel().getCount());
@@ -53,6 +63,11 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
         workshop.activeRecipe().ifPresent(holder -> {
             data.putString(RESULT, holder.value().result().getDescriptionId());
             data.putInt(WORK, holder.value().requiredWork());
+            holder.value().forge().ifPresent(forge -> {
+                ListTag actions = new ListTag();
+                forge.actions().forEach(action -> actions.add(StringTag.valueOf(action)));
+                data.put(ACTIONS, actions);
+            });
         });
     }
 
@@ -60,16 +75,11 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
         CompoundTag data = accessor.getServerData();
         String station = data.getString(STATION);
-        if (WorkshopRecipe.STONE_ANVIL.equals(station) && accessor.getBlockEntity() instanceof WorkshopBlockEntity anvil) {
-            tooltip.add(anvil.anvilHint("none", false, true));
-            anvil.activeRecipe().flatMap(h -> h.value().forge()).ifPresent(forge -> {
-                tooltip.add(Component.translatable("jade.firstworks.workshop.progress", anvil.getProgress(), forge.actions().size()));
-                tooltip.add(Component.translatable("hint.firstworks.anvil.sequence", String.join(" > ", forge.actions())));
-            });
-            tooltip.add(Component.translatable("hint.firstworks.anvil.controls"));
-            return;
+        if (data.getBoolean("Heatable")) {
+            float heat = data.getFloat("Heat");
+            tooltip.add(Component.translatable("heat.firstworks." + ItemHeat.state(heat))
+                    .withStyle(heat >= 0.25F ? ChatFormatting.GOLD : heat > 0 ? ChatFormatting.RED : ChatFormatting.GRAY));
         }
-
         if (data.contains(OUTPUT)) {
             tooltip.add(Component.translatable("jade.firstworks.workshop.ready", data.getInt(OUTPUT_COUNT),
                     Component.translatable(data.getString(OUTPUT)).withStyle(ChatFormatting.GOLD)));
@@ -89,6 +99,12 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
                     Component.translatable(data.getString(CATALYST)).withStyle(ChatFormatting.GOLD)));
         }
 
+        if (WorkshopRecipe.KILN.equals(station)) {
+            tooltip.add(Component.translatable(data.getInt("BurnTicks") > 0
+                    ? "jade.firstworks.kiln.heating" : "jade.firstworks.workshop.needs_fuel").withStyle(ChatFormatting.GRAY));
+            return;
+        }
+
         if (!data.contains(RESULT)) {
             tooltip.add(Component.translatable("jade.firstworks.workshop.incomplete")
                     .withStyle(ChatFormatting.YELLOW));
@@ -99,6 +115,26 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
         tooltip.add(Component.translatable("jade.firstworks.workshop.making",
                 Component.translatable(data.getString(RESULT)).withStyle(ChatFormatting.GOLD)));
         int progress = data.getInt(PROGRESS);
+        if (WorkshopRecipe.STONE_ANVIL.equals(station) && data.contains(ACTIONS)) {
+            ListTag actions = data.getList(ACTIONS, Tag.TAG_STRING);
+            for (int start = 0; start < actions.size(); start += 4) {
+                var sequence = Component.empty();
+                for (int i = start; i < Math.min(start + 4, actions.size()); i++) {
+                    if (i > start) sequence.append(Component.literal(" > ").withStyle(ChatFormatting.DARK_GRAY));
+                    var action = Component.translatable("action.firstworks." + actions.getString(i));
+                    if (i < progress) {
+                        sequence.append(action.withStyle(ChatFormatting.GREEN));
+                    } else if (i == progress) {
+                        sequence.append(Component.literal("[").append(action).append("]")
+                                .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+                    } else {
+                        sequence.append(action.withStyle(ChatFormatting.GRAY));
+                    }
+                }
+                tooltip.add(sequence);
+            }
+            return;
+        }
         int work = Math.max(1, data.getInt(WORK));
         tooltip.add(IElementHelper.get().progress(
                 Mth.clamp((float) progress / work, 0.0F, 1.0F),
@@ -134,9 +170,6 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
     private static void appendManualHint(ITooltip tooltip, String station) {
         if (WorkshopRecipe.POTTERY_WHEEL.equals(station)) {
             tooltip.add(Component.translatable("jade.firstworks.workshop.pottery_action")
-                    .withStyle(ChatFormatting.GRAY));
-        } else if (WorkshopRecipe.STONE_ANVIL.equals(station)) {
-            tooltip.add(Component.translatable("jade.firstworks.workshop.anvil_action")
                     .withStyle(ChatFormatting.GRAY));
         }
     }

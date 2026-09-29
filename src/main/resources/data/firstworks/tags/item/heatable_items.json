@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "firstworks:annealed_copper_billet",
+    "firstworks:cast_copper_billet",
+    "minecraft:copper_ingot"
+  ]
+}

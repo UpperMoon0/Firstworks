@@ -1,0 +1,19 @@
+{
+  "type": "firstworks:workshop_processing",
+  "station": "stone_anvil",
+  "ingredient": {
+    "item": "minecraft:prismarine_shard"
+  },
+  "input_count": 2,
+  "result": {
+    "id": "minecraft:prismarine_crystals"
+  },
+  "work": 2,
+  "forge": {
+    "actions": [
+      "draw",
+      "bend"
+    ],
+    "heat_ticks": 1200
+  }
+}

@@ -1,6 +1,7 @@
 package com.nstut.firstworks.client;
 
 import net.minecraft.client.renderer.Sheets;
+import com.nstut.firstworks.content.workshop.ItemHeat;
 import net.minecraft.world.level.block.Blocks;
 import com.nstut.firstworks.content.workshop.ForgeData;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -30,6 +31,7 @@ import net.neoforged.neoforge.client.model.data.ModelData;
  * wheel motion and shaped clay, anvil deformation, bellows-fed molten copper.
  */
 public final class WorkshopBlockEntityRenderer implements BlockEntityRenderer<WorkshopBlockEntity> {
+    public static final ModelResourceLocation KILN_EMBERS = ModelResourceLocation.standalone(Firstworks.id("block/kiln_embers"));
     public static final ModelResourceLocation POTTERY_HEAD = ModelResourceLocation.standalone(Firstworks.id("block/pottery_wheel_head"));
     public static final ModelResourceLocation CRUCIBLE_CONTENTS = ModelResourceLocation.standalone(Firstworks.id("block/crucible_furnace_contents"));
 
@@ -46,12 +48,18 @@ public final class WorkshopBlockEntityRenderer implements BlockEntityRenderer<Wo
         pose.pushPose();
         rotateToFacing(pose, facing);
         switch (workshop.station()) {
+            case WorkshopRecipe.KILN -> renderKiln(workshop, pose, buffers, packedLight);
             case WorkshopRecipe.POTTERY_WHEEL -> renderPotteryWheel(workshop, partialTick, pose, buffers, packedLight);
             case WorkshopRecipe.STONE_ANVIL -> renderStoneAnvil(workshop, partialTick, pose, buffers, packedLight);
             case WorkshopRecipe.CRUCIBLE_FURNACE -> renderCrucibleFurnace(workshop, pose, buffers, packedLight);
             default -> { }
         }
         pose.popPose();
+    }
+
+    private void renderKiln(WorkshopBlockEntity kiln, PoseStack pose, MultiBufferSource buffers, int light) {
+        if (kiln.getBurnTicks() > 0) renderPartial(kiln, KILN_EMBERS, pose, buffers, LightTexture.FULL_BRIGHT);
+        if (!kiln.getInput().isEmpty()) renderFurnaceItem(kiln, kiln.getInput(), 0.36, 0.39, pose, buffers, light);
     }
 
     private void renderPotteryWheel(WorkshopBlockEntity workshop, float partialTick, PoseStack pose,
@@ -107,12 +115,19 @@ public final class WorkshopBlockEntityRenderer implements BlockEntityRenderer<Wo
     private void renderForgeWorkpiece(WorkshopBlockEntity workshop, ForgeData data,
                                       PoseStack pose, MultiBufferSource buffers, int light) {
         var visual = data.visual().orElseThrow();
-        int workLight = workshop.getForgeHeat() > 0 ? LightTexture.FULL_BRIGHT : light;
+        float heat = ItemHeat.fraction(workshop.getInput(), workshop.getLevel());
+        int workLight = light;
         if (visual.type().equals("stages") && !visual.models().isEmpty()) {
             var location = ModelResourceLocation.standalone(visual.models().get(Math.min(workshop.getProgress(), visual.models().size() - 1)));
             var models = Minecraft.getInstance().getModelManager();
             if (models.getModel(location) != models.getMissingModel()) {
                 renderPartial(workshop, location, pose, buffers, workLight);
+                if (heat > 0) {
+                    var consumer = new HeatOverlay(buffers.getBuffer(HeatRenderType.GLOW), heat);
+                    Minecraft.getInstance().getBlockRenderer().getModelRenderer().renderModel(pose.last(), consumer,
+                            workshop.getBlockState(), models.getModel(location), 1, 1, 1, LightTexture.FULL_BRIGHT,
+                            OverlayTexture.NO_OVERLAY, ModelData.EMPTY, null);
+                }
                 return;
             }
         }
@@ -135,11 +150,18 @@ public final class WorkshopBlockEntityRenderer implements BlockEntityRenderer<Wo
         var vertices = buffers.getBuffer(Sheets.solidBlockSheet());
         pose.pushPose();
         pose.translate(0.5, 10.62 / 16.0, 0.5);
-        MortarBlockEntityRenderer.renderCuboid(pose, vertices, sprite, -width / 2, 0, -length / 2, width / 2, height, 0,
-                workLight, OverlayTexture.NO_OVERLAY);
-        pose.mulPose(Axis.XP.rotationDegrees(-bend));
-        MortarBlockEntityRenderer.renderCuboid(pose, vertices, sprite, -width / 2, 0, 0, width / 2, height, length / 2,
-                workLight, OverlayTexture.NO_OVERLAY);
+        for (int pass = 0; pass < (heat > 0 ? 2 : 1); pass++) {
+            var consumer = pass == 0 ? vertices : new HeatOverlay(
+                    buffers.getBuffer(HeatRenderType.GLOW), heat);
+            float expansion = pass == 0 ? 0 : 0.0005F;
+            pose.pushPose();
+            MortarBlockEntityRenderer.renderCuboid(pose, consumer, sprite, -width / 2 - expansion, -expansion, -length / 2 - expansion,
+                    width / 2 + expansion, height + expansion, expansion, workLight, OverlayTexture.NO_OVERLAY);
+            pose.mulPose(Axis.XP.rotationDegrees(-bend));
+            MortarBlockEntityRenderer.renderCuboid(pose, consumer, sprite, -width / 2 - expansion, -expansion, -expansion,
+                    width / 2 + expansion, height + expansion, length / 2 + expansion, workLight, OverlayTexture.NO_OVERLAY);
+            pose.popPose();
+        }
         pose.popPose();
     }
 

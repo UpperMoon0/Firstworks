@@ -30,10 +30,15 @@ public final class WorkshopInteractionHints {
         if (entity instanceof MortarBlockEntity mortar && mc.player.getMainHandItem().isEmpty()) {
             text = mc.player.isShiftKeyDown() ? Component.translatable("hint.firstworks.retrieve")
                     : mortar.hint(MortarBlock.actionAt(hit.getBlockPos(), hit));
+        } else if (entity instanceof WorkshopBlockEntity kiln && kiln.station().equals(WorkshopRecipe.KILN)) {
+            text = kiln.getInput().isEmpty() ? Component.translatable("hint.firstworks.kiln.load")
+                    : Component.translatable("hint.firstworks.kiln.heat",
+                            Component.translatable("heat.firstworks." + com.nstut.firstworks.content.workshop.ItemHeat.state(
+                                    com.nstut.firstworks.content.workshop.ItemHeat.fraction(kiln.getInput(), mc.level))));
         } else if (entity instanceof WorkshopBlockEntity anvil && anvil.station().equals(WorkshopRecipe.STONE_ANVIL)) {
             boolean hammer = mc.player.getMainHandItem().is(ModTags.HAMMERS) || mc.player.getOffhandItem().is(ModTags.HAMMERS);
             text = !hammer && mc.player.isShiftKeyDown() ? Component.translatable("hint.firstworks.retrieve")
-                    : anvil.anvilHint(StoneAnvilBlock.actionAt(anvil.getBlockState(), hit.getBlockPos(), hit), mc.player.isShiftKeyDown(), hammer);
+                    : anvil.anvilHint(StoneAnvilBlock.actionAt(anvil.getBlockState(), hit.getBlockPos(), hit), hammer);
         } else return;
         var graphics = event.getGuiGraphics();
         graphics.drawCenteredString(mc.font, text, graphics.guiWidth() / 2, graphics.guiHeight() / 2 + 18, 0xFFE8DFCF);

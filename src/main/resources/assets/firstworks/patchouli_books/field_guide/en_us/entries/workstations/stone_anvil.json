@@ -12,7 +12,7 @@
     {
       "type": "patchouli:text",
       "title": "Heat",
-      "text": "Heat-requiring workpieces must be reheated beside a lit campfire or a hot Crucible Furnace. Sneak-use the anvil with a hammer to reheat. Cooling pauses the sequence without erasing completed actions."
+      "text": "Heat the workpiece in a fueled Kiln, then retrieve it and place it on the Stone Anvil. Heat and completed actions stay on the item when it moves. Sneak-use with an empty hand to retrieve unfinished work for reheating. A warm workpiece is too cold to forge; heat it until Workable. The glow and surrounding light fade as it cools."
     },
     {
       "type": "patchouli:text",

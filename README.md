@@ -25,8 +25,8 @@ Looking to configure recipes, progression gates, custom wood types, KubeJS event
 
 ### 🧵 Textile Crafting & Hand Weaving
 - **Hand Spindle**: Hold in main hand with Retted Fibre in off-hand to hand-spin Twine.
-- **Looms**: Load Twine or String, use the side post where the shuttle rests to throw it, and use the lower crossbar to change the A/B shed. Basic Cloth needs four alternating passes; the beater packs each pass automatically.
-- **Automation**: Loom item insertion/extraction remains supported. Mechanical operation must target the correct side post and shed control; a fixed generic click does not weave automatically.
+- **Looms**: Load a stack of Twine or String in one action, hold Use on the shuttle, and guide it back and forth. Basic Cloth needs four crossings; the shed and beater operate automatically. An optional client assistance setting removes repeated aim movement.
+- **Automation**: Loom item insertion/extraction remains supported. Weaving requires held shuttle input; a fixed generic click does not weave automatically.
 - **Sheep & Fleece**: Sheep drop color-aware Raw Fleece. Wash fleece in water-filled Barrels to make Clean Wool for textile beds.
 
 ### 🌲 Resin, Bindings & Primitive Tools
@@ -127,9 +127,9 @@ Inspired by [TerraFirmaCraft](https://www.curseforge.com/minecraft/mc-mods/terra
 
 ### 0.0.15 manual workstation controls
 
-- **Stone Anvil:** load a workpiece, reheat it by sneak-using a hammer beside a lit campfire or hot crucible, then follow the recipe's center/edge/horn actions. A cooled piece keeps its progress and can be reheated. Custom smashing recipes retain their simple hammer behavior.
+- **Stone Anvil:** heat a workpiece in the fueled Kiln, transfer it to the anvil, then follow the recipe's center/edge/horn actions. A cooled piece keeps its progress and can be reheated. Custom smashing recipes retain their simple hammer behavior.
 - **Mortar and Pestle:** pound the center to crush coarse material, then hold use on the inner bowl/rim to grind. Releasing pauses work; there is no autonomous finish timer.
-- **Loom:** throw from the shuttle's current side and change the A/B shed at the lower crossbar. Recipes may define repeating patterns.
+- **Loom:** hold Use on the shuttle and guide it across. Recipes may define automatic repeating shed patterns.
 - **Crucible Furnace:** glow and particles follow actual fuel-backed processing with airflow, independently of retained progress.
 
 See [packmaker documentation](docs/PACKMAKERS.md#0015-workstation-interactions) for optional recipe metadata and compatibility behavior.

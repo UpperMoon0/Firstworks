@@ -20,6 +20,7 @@ import java.util.Set;
 public record WorkshopRecipe(String station, Ingredient ingredient, int inputCount, Optional<Ingredient> catalyst,
                              int catalystCount, boolean consumeCatalyst, ItemStack result, int work, int priority, Optional<ForgeData> forge)
         implements Recipe<WorkshopRecipeInput> {
+    public static final String KILN = "kiln";
     public static final String POTTERY_WHEEL = "pottery_wheel";
     public static final String STONE_ANVIL = "stone_anvil";
     public static final String CRUCIBLE_FURNACE = "crucible_furnace";

@@ -31,9 +31,9 @@ public final class AnvilGameTests {
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.STONE_HAMMER.get()));
         anvil.insert(new ItemStack(Items.AMETHYST_SHARD), false);
         check(h, !anvil.forge(player, "draw"), "Cold workpiece advanced");
-        check(h, !anvil.reheat(player), "Reheated without heat source");
+        check(h, anvil.getForgeHeat() == 0, "Cold item invented heat");
         h.setBlock(pos.south(), Blocks.CAMPFIRE);
-        check(h, anvil.reheat(player), "Lit campfire did not heat");
+        heatOnAnvil(h, anvil);
         check(h, !anvil.work(player), "Generic work bypassed forge sequence");
         check(h, !anvil.forge(player, "bend") && anvil.getProgress() == 0, "Wrong order advanced");
         check(h, anvil.forge(player, "draw"), "Correct action rejected");
@@ -45,7 +45,8 @@ public final class AnvilGameTests {
         h.runAtTickTime(5, () -> {
             check(h, anvil.getForgeHeat() == 0 && !anvil.forge(player, "bend"), "Cooling did not block forging");
             check(h, anvil.getProgress() == 1, "Cooling reset partial work");
-            check(h, anvil.reheat(player), "Reheat failed after cooling");
+            heatOnAnvil(h, anvil);
+            check(h, anvil.getProgress() == 1, "Kiln transfer lost the completed action");
             player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
             check(h, !anvil.forge(player, "bend"), "Missing hammer advanced");
             player.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(ModItems.STONE_HAMMER.get()));
@@ -111,7 +112,7 @@ public final class AnvilGameTests {
         Player player = h.makeMockPlayer(GameType.SURVIVAL);
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.STONE_HAMMER.get()));
         h.setBlock(pos.south(), Blocks.CAMPFIRE);
-        check(h, anvil.reheat(player), "Migrated legacy billet could not be reheated");
+        heatOnAnvil(h, anvil);
         check(h, anvil.forge(player, "flatten"), "Migrated legacy billet could not finish its remaining forge action");
         check(h, anvil.getOutput().is(Items.COPPER_INGOT), "Migrated legacy anvil produced the wrong result");
         h.succeed();
@@ -139,5 +140,20 @@ public final class AnvilGameTests {
         }
         h.succeed();
     }
+    static void heatOnAnvil(GameTestHelper h, WorkshopBlockEntity anvil) {
+        BlockPos kilnPos = new BlockPos(7, 1, 7);
+        h.setBlock(kilnPos, ModBlocks.KILN.get());
+        WorkshopBlockEntity kiln = h.getBlockEntity(kilnPos);
+        ItemStack work = anvil.getItemHandler(null).extractItem(0, 64, false);
+        check(h, !work.isEmpty(), "Unfinished work could not be extracted");
+        check(h, kiln.insert(work, false), "Kiln rejected workpiece");
+        kiln.insertFuel(new ItemStack(Items.CHARCOAL), false);
+        for (int i = 0; i < 100; i++) WorkshopBlockEntity.serverTick(h.getLevel(), kiln.getBlockPos(), kiln.getBlockState(), kiln);
+        check(h, kiln.getProgress() == 0 && kiln.getOutput().isEmpty(), "Kiln performed anvil work");
+        ItemStack hot = kiln.getItemHandler(null).extractItem(0, 64, false);
+        check(h, ItemHeat.workable(hot, h.getLevel()), "Kiln did not heat the workpiece");
+        check(h, anvil.insert(hot, false), "Anvil rejected heated workpiece");
+    }
+
     private static void check(GameTestHelper h, boolean value, String message) { h.assertTrue(value, message); }
 }

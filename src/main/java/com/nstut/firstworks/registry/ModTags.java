@@ -13,6 +13,7 @@ public final class ModTags {
     public static final TagKey<Item> PRIMITIVE_BINDINGS = TagKey.create(Registries.ITEM, Firstworks.id("primitive_bindings"));
     public static final TagKey<Item> STRONG_BINDINGS = TagKey.create(Registries.ITEM, Firstworks.id("strong_bindings"));
     public static final TagKey<Item> RESIN_TAPPING_TOOLS = TagKey.create(Registries.ITEM, Firstworks.id("resin_tapping_tools"));
+    public static final TagKey<Item> HEATABLE_ITEMS = TagKey.create(Registries.ITEM, Firstworks.id("heatable_items"));
     public static final TagKey<Item> HAMMERS = TagKey.create(Registries.ITEM, Firstworks.id("hammers"));
     public static final TagKey<Item> REFRACTORY_MATERIALS = TagKey.create(Registries.ITEM, Firstworks.id("refractory_materials"));
     public static final TagKey<Item> PRIMITIVE_COPPER = TagKey.create(Registries.ITEM, Firstworks.id("primitive_copper"));

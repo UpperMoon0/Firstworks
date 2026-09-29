@@ -71,7 +71,6 @@ public enum LoomProgressProvider implements IBlockComponentProvider, IServerData
         }
         int progress = data.getInt(PROGRESS);
         int strokes = Math.max(1, data.getInt(STROKES));
-        tooltip.add(Component.translatable("hint.firstworks.loom.state", data.getString("Shed"), data.getString("RequiredShed")));
         tooltip.add(Component.translatable(data.getBoolean("ShuttleRight") ? "hint.firstworks.loom.throw_left" : "hint.firstworks.loom.throw_right"));
         tooltip.add(Component.translatable("hint.firstworks.loom.controls"));
         tooltip.add(Component.translatable("jade.firstworks.loom.weaving",

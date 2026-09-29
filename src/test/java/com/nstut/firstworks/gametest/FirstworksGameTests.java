@@ -137,7 +137,7 @@ public final class FirstworksGameTests {
         helper.useBlock(anvilPos, player);
         hold(player, new ItemStack(ModItems.STONE_HAMMER.get()));
         helper.setBlock(anvilPos.south(), net.minecraft.world.level.block.Blocks.CAMPFIRE);
-        check(helper, anvil.reheat(player), "Stone Anvil could not reheat beside campfire");
+        AnvilGameTests.heatOnAnvil(helper, anvil);
         var actions = anvil.activeRecipe().orElseThrow().value().forge().orElseThrow().actions();
         for (int i = 0; i < actions.size(); i++) {
             final int step = i;
@@ -217,17 +217,16 @@ public final class FirstworksGameTests {
                 .map(holder -> Math.max(1, holder.value().strokes()))
                 .orElseThrow(() -> new IllegalStateException("Loom recipe missing at runtime"));
         clearHand(player);
-        for (int i = 0; i < strokes; i++) {
-            final int pass = i;
-            helper.runAtTickTime(i + 1, () -> {
-                if (!loom.getShed().equals(pass % 2 == 0 ? "A" : "B")) loom.changeShed();
-                check(helper, loom.weave(player, pass % 2 != 0), "Loom rejected basic fallback weave pass");
-                if (pass == strokes - 1) {
-                    check(helper, loom.getOutput().is(ModItems.CLOTH.get()), "Loom did not complete cloth from real manual passes");
-                    helper.succeed();
-                }
+        for (int i = 1; i <= strokes * 14; i++) {
+            helper.runAtTickTime(i, () -> {
+                LoomGameTests.aim(player, loom, 0.3);
+                loom.guide(player, true);
             });
         }
+        helper.runAtTickTime(strokes * 14 + 2, () -> {
+            check(helper, loom.getOutput().is(ModItems.CLOTH.get()), "Loom did not complete cloth from held crossings");
+            helper.succeed();
+        });
     }
 
     @GameTest(template = EMPTY, timeoutTicks = 20)

@@ -35,7 +35,7 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
     @Override public RecipeType<WorkshopRecipe> getRecipeType() { return recipeType; }
     @Override public Component getTitle() { return stationName(station); }
     @Override public int getWidth() { return 170; }
-    @Override public int getHeight() { return 208; }
+    @Override public int getHeight() { return WorkshopRecipe.STONE_ANVIL.equals(station) ? 94 : 208; }
     @Override public IDrawable getIcon() { return icon; }
 
     @Override
@@ -88,6 +88,21 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
     public void draw(WorkshopRecipe recipe, IRecipeSlotsView slots, GuiGraphics graphics, double mouseX, double mouseY) {
         arrow.draw(graphics, 91, 5);
         var font = Minecraft.getInstance().font;
+        if (WorkshopRecipe.STONE_ANVIL.equals(recipe.station())) {
+            recipe.forge().ifPresent(forge -> {
+                var sequence = Component.empty();
+                for (String action : forge.actions()) {
+                    if (!sequence.getSiblings().isEmpty()) sequence.append(" > ");
+                    sequence.append(Component.translatable("action.firstworks." + action));
+                }
+                var lines = font.split(Component.translatable("hint.firstworks.anvil.sequence", sequence), 164);
+                for (int i = 0; i < Math.min(3, lines.size()); i++) {
+                    graphics.drawString(font, lines.get(i), 3, 55 + i * 10, 0xFF606060, false);
+                }
+                if (lines.size() > 3) graphics.drawString(font, "...", 3, 85, 0xFF606060, false);
+            });
+            return;
+        }
         graphics.drawString(font,
                 Component.translatable("jei.firstworks.workshop.station", stationName(recipe.station())),
                 3, 55, 0xFF606060, false);
@@ -100,17 +115,6 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
                 3, 67, 0xFF606060, false);
 
         int detailsY = 79;
-        if (recipe.forge().isPresent()) {
-            graphics.drawWordWrap(font, Component.translatable("hint.firstworks.anvil.controls"), 3, detailsY, 164, 0xFF606060);
-            detailsY += 34;
-            if (recipe.forge().get().heatTicks() > 0) {
-                graphics.drawWordWrap(font, Component.translatable("hint.firstworks.anvil.reheat"), 3, detailsY, 164, 0xFF606060);
-                detailsY += 38;
-            }
-            String sequence = String.join(" > ", recipe.forge().get().actions());
-            graphics.drawWordWrap(font, Component.translatable("hint.firstworks.anvil.sequence", sequence.length() > 75 ? sequence.substring(0, 72) + "..." : sequence), 3, detailsY, 164, 0xFF606060);
-            return;
-        }
         if (WorkshopRecipe.POTTERY_WHEEL.equals(recipe.station()) && recipe.inputCount() <= 3) {
             graphics.drawString(font, Component.translatable("jei.firstworks.workshop.pottery_batch"),
                     3, detailsY, 0xFF606060, false);
@@ -141,7 +145,7 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
 
     @Override public void getTooltip(mezz.jei.api.gui.builder.ITooltipBuilder tooltip, WorkshopRecipe recipe,
             IRecipeSlotsView slots, double mouseX, double mouseY) {
-        if (mouseY < 79) return;
+        if (mouseY < 55) return;
         recipe.forge().ifPresent(forge -> {
             for (int i = 0; i < forge.actions().size(); i += 4) {
                 var line = Component.empty();

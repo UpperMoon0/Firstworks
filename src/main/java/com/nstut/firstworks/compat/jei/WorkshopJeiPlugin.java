@@ -23,6 +23,8 @@ public final class WorkshopJeiPlugin implements IModPlugin {
             RecipeType.create(Firstworks.MOD_ID, "stone_anvil", WorkshopRecipe.class);
     public static final RecipeType<WorkshopRecipe> CRUCIBLE_FURNACE_PROCESSING =
             RecipeType.create(Firstworks.MOD_ID, "crucible_furnace", WorkshopRecipe.class);
+    public static final RecipeType<net.minecraft.world.item.ItemStack> KILN_HEATING =
+            RecipeType.create(Firstworks.MOD_ID, "kiln_heating", net.minecraft.world.item.ItemStack.class);
     private static final ResourceLocation UID = Firstworks.id("workshop_jei_plugin");
 
     @Override public ResourceLocation getPluginUid() { return UID; }
@@ -30,7 +32,7 @@ public final class WorkshopJeiPlugin implements IModPlugin {
     @Override
     public void registerCategories(IRecipeCategoryRegistration registration) {
         var guiHelper = registration.getJeiHelpers().getGuiHelper();
-        registration.addRecipeCategories(
+        registration.addRecipeCategories(new KilnHeatingCategory(guiHelper),
                 new WorkshopRecipeCategory(guiHelper, POTTERY_WHEEL_PROCESSING, WorkshopRecipe.POTTERY_WHEEL),
                 new WorkshopRecipeCategory(guiHelper, STONE_ANVIL_PROCESSING, WorkshopRecipe.STONE_ANVIL),
                 new WorkshopRecipeCategory(guiHelper, CRUCIBLE_FURNACE_PROCESSING, WorkshopRecipe.CRUCIBLE_FURNACE));
@@ -39,6 +41,11 @@ public final class WorkshopJeiPlugin implements IModPlugin {
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
         if (Minecraft.getInstance().level == null) return;
+        registration.addRecipes(KILN_HEATING, net.minecraft.core.registries.BuiltInRegistries.ITEM.stream()
+                .map(net.minecraft.world.item.Item::getDefaultInstance)
+                .filter(stack -> com.nstut.firstworks.content.workshop.ItemHeat.capacity(stack, Minecraft.getInstance().level) > 0).toList());
+        registration.addItemStackInfo(new net.minecraft.world.item.ItemStack(ModBlocks.KILN.get()),
+                net.minecraft.network.chat.Component.translatable("jei.firstworks.kiln.description"));
         List<WorkshopRecipe> recipes = Minecraft.getInstance().level.getRecipeManager()
                 .getAllRecipesFor(ModRecipes.WORKSHOP_PROCESSING_TYPE.get()).stream()
                 .map(holder -> holder.value()).toList();
@@ -56,6 +63,7 @@ public final class WorkshopJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
+        registration.addRecipeCatalyst(ModBlocks.KILN.get(), KILN_HEATING);
         registration.addRecipeCatalyst(ModBlocks.POTTERY_WHEEL.get(), POTTERY_WHEEL_PROCESSING);
         registration.addRecipeCatalyst(ModBlocks.STONE_ANVIL.get(), STONE_ANVIL_PROCESSING);
         registration.addRecipeCatalyst(ModBlocks.CRUCIBLE_FURNACE.get(), CRUCIBLE_FURNACE_PROCESSING);

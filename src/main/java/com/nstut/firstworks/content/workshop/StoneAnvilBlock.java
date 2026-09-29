@@ -1,10 +1,5 @@
 package com.nstut.firstworks.content.workshop;
 
-import java.util.List;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import com.mojang.serialization.MapCodec;
@@ -64,12 +59,6 @@ public final class StoneAnvilBlock extends WorkshopBlock {
             case "flatten" -> Block.box(4, 10.61, 3, 12, 10.63, 11);
             default -> Shapes.empty();
         };
-    }
-
-    @Override public void appendHoverText(ItemStack stack, Item.TooltipContext context,
-            List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("hint.firstworks.anvil.controls"));
-        tooltip.add(Component.translatable("hint.firstworks.anvil.reheat"));
     }
 
     @Override

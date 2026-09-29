@@ -147,6 +147,8 @@ public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBl
         TextureAtlasSprite thread = output.isEmpty() ? wood
                 : itemRenderer.getModel(output, loom.getLevel(), null, 0).getParticleIcon();
         int threadTint = output.isEmpty() ? 0xFFFFFFFF : outputTint(output);
+        var player = Minecraft.getInstance().player;
+        if (player != null && LoomBlock.hitsShuttle(player, loom)) threadTint = 0xFFFFDF85;
         VertexConsumer vertices = buffers.getBuffer(Sheets.cutoutBlockSheet());
         Matrix4f matrix = poseStack.last().pose();
         float x = 0.5F + loom.getShuttleOffset(partialTick);
@@ -154,6 +156,12 @@ public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBl
         renderBox(vertices, matrix, 3.0F / 16.0F, 6.5F / 16.0F, (6.0F - beat) / 16.0F,
                 13.0F / 16.0F, 7.0F / 16.0F, (6.5F - beat) / 16.0F,
                 wood, 0xFFFFFFFF, packedLight, packedOverlay);
+        // A loose weft follows the shuttle, then travels down into the packed fabric.
+        float startX = loom.isShuttleRight() ? 0.7F : 0.3F;
+        float rowY = loom.isPacking() ? Mth.lerp(loom.getPackingProgress(partialTick), 9.0F / 16, (6.75F + 4.75F * (loom.getProgress() + 1) / loom.getRequiredStrokes()) / 16) : 9.0F / 16;
+        if (Math.abs(x - startX) > 0.001F)
+            renderBox(vertices, matrix, Math.min(x, startX), rowY - 0.006F, 7.2F / 16,
+                    Math.max(x, startX), rowY + 0.006F, 7.4F / 16, thread, threadTint, packedLight, packedOverlay);
         float y = 9.0F / 16.0F;
         float z = 5.35F / 16.0F;
         renderBox(vertices, matrix, x - 3.0F / 16.0F, y - 0.65F / 16.0F, z - 0.65F / 16.0F,
