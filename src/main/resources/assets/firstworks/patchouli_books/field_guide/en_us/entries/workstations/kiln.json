@@ -12,7 +12,7 @@
     {
       "type": "patchouli:text",
       "title": "Carry the Heat",
-      "text": "One workpiece heats from cold to its item-defined maximum in about five seconds. Burning fuel maintains heat. Empty-hand use retrieves it for the anvil. Absolute Celsius temperature survives transfers, with cooling based on world time. Jade shows current/max temperature; Kilns do not require Bellows."
+      "text": "One workpiece heats from cold to its item-defined maximum in about 30 seconds. Burning fuel maintains heat. Empty-hand use retrieves it for the anvil. Absolute Celsius temperature survives transfers, with cooling based on world time. Jade shows current/max temperature; Kilns do not require Bellows."
     },
     {
       "type": "patchouli:text",

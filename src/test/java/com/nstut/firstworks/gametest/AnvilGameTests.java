@@ -149,7 +149,7 @@ public final class AnvilGameTests {
         check(h, kiln.insert(work, false), "Kiln rejected workpiece");
         kiln.insertFuel(new ItemStack(Items.CHARCOAL), false);
         check(h, kiln.getBurnTicks() > 0 || kiln.ignite(), "Kiln could not be lit");
-        for (int i = 0; i < 100; i++) WorkshopBlockEntity.serverTick(h.getLevel(), kiln.getBlockPos(), kiln.getBlockState(), kiln);
+        for (int i = 0; i < 600; i++) WorkshopBlockEntity.serverTick(h.getLevel(), kiln.getBlockPos(), kiln.getBlockState(), kiln);
         check(h, kiln.getProgress() == 0 && kiln.getOutput().isEmpty(), "Kiln performed anvil work");
         ItemStack hot = kiln.getItemHandler(null).extractItem(0, 64, false);
         check(h, ItemHeat.workable(hot, h.getLevel()), "Kiln did not heat the workpiece");

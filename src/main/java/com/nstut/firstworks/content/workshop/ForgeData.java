@@ -19,7 +19,7 @@ public record ForgeData(List<String> actions, int heatTicks, Optional<Visual> vi
             ACTION.listOf().validate(list -> !list.isEmpty() && list.size() <= 64
                     ? DataResult.success(list) : DataResult.error(() -> "Forge needs 1 to 64 actions"))
                     .fieldOf("actions").forGetter(ForgeData::actions),
-            Codec.intRange(0, 72000).optionalFieldOf("heat_ticks", 1200).forGetter(ForgeData::heatTicks),
+            Codec.intRange(0, 72000).optionalFieldOf("heat_ticks", 3600).forGetter(ForgeData::heatTicks),
             Visual.CODEC.optionalFieldOf("visual").forGetter(ForgeData::visual),
             Codec.intRange(0, 5000).optionalFieldOf("minimum_temperature", 500).forGetter(ForgeData::minimumTemperature)
     ).apply(instance, ForgeData::new));

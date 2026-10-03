@@ -35,12 +35,13 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
     @Override public RecipeType<WorkshopRecipe> getRecipeType() { return recipeType; }
     @Override public Component getTitle() { return stationName(station); }
     @Override public int getWidth() { return 170; }
-    @Override public int getHeight() { return WorkshopRecipe.STONE_ANVIL.equals(station) ? 94 : 208; }
+    @Override public int getHeight() { return WorkshopRecipe.STONE_ANVIL.equals(station) ? 94 : WorkshopRecipe.CRUCIBLE_FURNACE.equals(station) ? 100 : 208; }
     @Override public IDrawable getIcon() { return icon; }
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, WorkshopRecipe recipe, IFocusGroup focuses) {
-        builder.addSlot(RecipeIngredientRole.CATALYST, 3, 5)
+        boolean crucible = WorkshopRecipe.CRUCIBLE_FURNACE.equals(recipe.station());
+        if (!crucible) builder.addSlot(RecipeIngredientRole.CATALYST, 3, 5)
                 .setStandardSlotBackground()
                 .addItemStack(stationStack(recipe.station()));
         builder.addSlot(RecipeIngredientRole.INPUT, 35, 5)
@@ -48,13 +49,15 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
                 .addItemStacks(Arrays.stream(recipe.ingredient().getItems())
                         .map(stack -> stack.copyWithCount(recipe.inputCount()))
                         .toList());
-        recipe.catalyst().ifPresent(catalyst ->
-                builder.addSlot(RecipeIngredientRole.CATALYST, 63, 5)
-                        .setStandardSlotBackground()
-                        .addItemStacks(Arrays.stream(catalyst.getItems())
-                                .map(stack -> stack.copyWithCount(recipe.catalystCount()))
-                                .toList()));
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 122, 5)
+        recipe.catalyst().ifPresent(catalyst -> {
+            var slot = builder.addSlot(recipe.consumeCatalyst() ? RecipeIngredientRole.INPUT : RecipeIngredientRole.CATALYST,
+                            crucible ? 75 : 63, 5)
+                    .setStandardSlotBackground()
+                    .addItemStacks(Arrays.stream(catalyst.getItems())
+                            .map(stack -> stack.copyWithCount(recipe.catalystCount())).toList());
+            if (!recipe.consumeCatalyst()) markReusable(slot);
+        });
+        builder.addSlot(RecipeIngredientRole.OUTPUT, crucible ? 135 : 122, 5)
                 .setStandardSlotBackground()
                 .addItemStack(recipe.result());
 
@@ -67,10 +70,13 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
                     .setStandardSlotBackground()
                     .addItemStacks(Arrays.stream(Ingredient.of(ModTags.HAMMERS).getItems()).toList());
             case WorkshopRecipe.CRUCIBLE_FURNACE -> {
-                addFuelSlot(builder, 35);
-                builder.addSlot(RecipeIngredientRole.CATALYST, 63, 31)
+                builder.addSlot(RecipeIngredientRole.INPUT, 35, 45).setStandardSlotBackground()
+                        .addItemStacks(furnaceFuels())
+                        .addRichTooltipCallback((slot, lines) -> lines.add(Component.translatable("jei.firstworks.workshop.fuel")));
+                builder.addSlot(RecipeIngredientRole.CATALYST, 75, 45)
                         .setStandardSlotBackground()
-                        .addItemStack(new ItemStack(ModItems.BELLOWS.get()));
+                        .addItemStack(new ItemStack(ModItems.BELLOWS.get()))
+                        .addRichTooltipCallback((slot, lines) -> lines.add(Component.translatable("jei.firstworks.workshop.bellows")));
             }
             default -> {
                 // Pottery Wheel work is performed by empty-hand interaction and needs no extra item slot.
@@ -78,10 +84,19 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
         }
     }
 
-    private static void addFuelSlot(IRecipeLayoutBuilder builder, int x) {
-        builder.addSlot(RecipeIngredientRole.CATALYST, x, 31)
-                .setStandardSlotBackground()
-                .addItemStacks(furnaceFuels());
+    private static void markReusable(mezz.jei.api.gui.builder.IRecipeSlotBuilder slot) {
+        slot.setOverlay(new IDrawable() {
+            @Override public int getWidth() { return 16; }
+            @Override public int getHeight() { return 16; }
+            @Override public void draw(GuiGraphics graphics, int x, int y) {
+                graphics.pose().pushPose();
+                graphics.pose().translate(x + 10, y - 2, 200);
+                graphics.pose().scale(0.5F, 0.5F, 1);
+                graphics.drawString(Minecraft.getInstance().font, "NC", 0, 0, 0xFFFFFFFF, true);
+                graphics.pose().popPose();
+            }
+        }, 0, 0).addRichTooltipCallback((view, lines) ->
+                lines.add(Component.translatable("jei.firstworks.workshop.not_consumed")));
     }
 
     static java.util.List<ItemStack> furnaceFuels() {
@@ -93,7 +108,10 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
 
     @Override
     public void draw(WorkshopRecipe recipe, IRecipeSlotsView slots, GuiGraphics graphics, double mouseX, double mouseY) {
-        arrow.draw(graphics, 91, 5);
+        boolean crucible = WorkshopRecipe.CRUCIBLE_FURNACE.equals(recipe.station());
+        arrow.draw(graphics, crucible ? 105 : 91, 5);
+        if (crucible) graphics.blitSprite(net.minecraft.resources.ResourceLocation.withDefaultNamespace("container/furnace/lit_progress"),
+                36, 26, 14, 14);
         var font = Minecraft.getInstance().font;
         if (WorkshopRecipe.STONE_ANVIL.equals(recipe.station())) {
             recipe.forge().ifPresent(forge -> {
@@ -112,15 +130,15 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
             });
             return;
         }
-        graphics.drawString(font,
+        if (!crucible) graphics.drawString(font,
                 Component.translatable("jei.firstworks.workshop.station", stationName(recipe.station())),
                 3, 55, 0xFF606060, false);
         boolean heated = WorkshopRecipe.CRUCIBLE_FURNACE.equals(recipe.station());
         graphics.drawString(font,
                 Component.translatable(heated
-                                ? "jei.firstworks.workshop.processing_ticks"
+                                ? "jei.firstworks.workshop.processing_seconds"
                                 : "jei.firstworks.workshop.manual_actions",
-                        recipe.requiredWork()),
+                        heated ? seconds(recipe.requiredWork()) : recipe.requiredWork()),
                 3, 67, 0xFF606060, false);
 
         int detailsY = 79;
@@ -135,13 +153,10 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
                     3, detailsY, 0xFF606060, false);
             detailsY += 12;
         }
-        if (recipe.hasCatalyst()) {
-            graphics.drawString(font,
-                    Component.translatable(recipe.consumeCatalyst()
-                            ? "jei.firstworks.workshop.catalyst_consumed"
-                            : "jei.firstworks.workshop.catalyst_reusable"),
-                    3, detailsY, 0xFF606060, false);
-        }
+    }
+
+    public static String seconds(int ticks) {
+        return ticks % 20 == 0 ? Integer.toString(ticks / 20) : String.format(java.util.Locale.ROOT, "%.2f", ticks / 20.0);
     }
 
     private static ItemStack stationStack(String station) {

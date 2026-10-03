@@ -99,8 +99,9 @@ public final class WorkshopIgnitionGameTests {
         tick(h, furnace, 2);
         h.assertTrue(furnace.getProgress() == 0 && furnace.getFuel().isEmpty() && furnace.isHot(), "Explicit crucible ignition failed");
         h.assertTrue(furnace.getProgress() == 0, "Cold fire bypassed required temperature");
-        furnace.stoke(240);
-        tick(h, furnace, 120);
+        tick(h, furnace, 780);
+        furnace.stoke(900);
+        tick(h, furnace, 300);
         int progress = furnace.getProgress();
         h.assertTrue(progress > 0, "Boosted fire did not heat enough to cast");
         var saved = furnace.saveWithoutMetadata(h.getLevel().registryAccess());
@@ -109,8 +110,8 @@ public final class WorkshopIgnitionGameTests {
         tick(h, furnace, 1);
         h.assertTrue(furnace.getProgress() == progress && furnace.isHot() && furnace.getTemperature() <= 800,
                 "Falling ceiling did not clamp temperature and pause processing");
-        furnace.stoke(240);
-        tick(h, furnace, 40);
+        furnace.stoke(900);
+        tick(h, furnace, 300);
         h.assertTrue(furnace.getProgress() > progress && furnace.isHot(), "Fresh boost did not resume work");
         furnace.getBlockState().useItemOn(tool, h.getLevel(), player, InteractionHand.MAIN_HAND, hit);
         h.assertTrue(tool.getDamageValue() == 1, "Live fire consumed duplicate ignition durability");

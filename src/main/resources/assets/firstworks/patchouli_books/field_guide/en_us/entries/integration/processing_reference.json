@@ -162,7 +162,7 @@
     {
       "type": "patchouli:text",
       "title": "Copper Fasteners",
-      "text": "Stone Anvil. Input: 1 Copper Ingot. Heat to at least 500°C, then Flatten > Draw > Bend with a Stone Hammer. Output: 8 Copper Fasteners. Cooling duration: 1200 ticks from maximum temperature to ambient."
+      "text": "Stone Anvil. Input: 1 Copper Ingot. Heat to at least 500°C, then Flatten > Draw > Bend with a Stone Hammer. Output: 8 Copper Fasteners. Cooling duration: 3600 ticks from maximum temperature to ambient."
     }
   ]
 }

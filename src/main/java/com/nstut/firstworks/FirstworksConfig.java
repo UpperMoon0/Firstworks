@@ -126,13 +126,16 @@ public final class FirstworksConfig {
     public static final ModConfigSpec.IntValue CRUCIBLE_BOOST_TEMPERATURE = BUILDER
             .comment("Bellows-assisted temperature ceiling in Celsius; never below the base ceiling.").defineInRange("crucibleBoostTemperature", 1150, 21, 5000);
     public static final ModConfigSpec.DoubleValue CRUCIBLE_HEATING_RATE = BUILDER
-            .comment("Crucible temperature rise per tick in Celsius.").defineInRange("crucibleHeatingRate", 10, 0.01, 100);
+            .comment("Crucible temperature rise per tick in Celsius.").defineInRange("crucibleHeatingRate", 1, 0.01, 100);
     public static final ModConfigSpec.DoubleValue STATION_COOLING_RATE = BUILDER
-            .comment("Idle crucible cooling per tick in Celsius.").defineInRange("stationCoolingRate", 2, 0.01, 100);
+            .comment("Idle crucible cooling per tick in Celsius.").defineInRange("stationCoolingRate", 0.25, 0.01, 100);
+    public static final ModConfigSpec.IntValue KILN_HEATING_TICKS = BUILDER
+            .comment("Ticks to heat one kiln workpiece from ambient to its maximum; 600 ticks is 30 seconds.")
+            .defineInRange("kilnHeatingTicks", 600, 20, 72000);
     public static final ModConfigSpec.IntValue BELLOWS_HOLD_TICKS = BUILDER
-            .comment("Full ceiling boost duration after a successful blow.").defineInRange("bellowsHoldTicks", 160, 1, 1200);
+            .comment("Full ceiling boost duration after a successful blow.").defineInRange("bellowsHoldTicks", 600, 1, 1200);
     public static final ModConfigSpec.IntValue BELLOWS_DECAY_TICKS = BUILDER
-            .comment("Ticks over which the boosted ceiling returns to the base ceiling.").defineInRange("bellowsDecayTicks", 80, 1, 1200);
+            .comment("Ticks over which the boosted ceiling returns to the base ceiling.").defineInRange("bellowsDecayTicks", 300, 1, 1200);
     public static final ModConfigSpec.IntValue BELLOWS_COOLDOWN_TICKS = BUILDER
             .comment("Minimum time between successful blows on one furnace.").defineInRange("bellowsCooldownTicks", 20, 1, 1200);
     public static final ModConfigSpec.IntValue BELLOWS_FOOD_COST = BUILDER

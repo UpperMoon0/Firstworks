@@ -9,11 +9,11 @@ final class ThermalTestSupport {
         if(needsHeat) {
             var saved=station.saveWithoutMetadata(level.registryAccess());
             saved.putDouble("TemperatureCelsius",1150);
-            saved.putInt("StokeTicks",240);
+            saved.putInt("StokeTicks",900);
             station.loadWithComponents(saved,level.registryAccess());
         }
         for(int i=0;i<ticks;i++) {
-            if(needsHeat && i%100==0) station.stoke(240);
+            if(needsHeat && i%100==0) station.stoke(900);
             WorkshopBlockEntity.serverTick(level,pos,station.getBlockState(),station);
         }
     }

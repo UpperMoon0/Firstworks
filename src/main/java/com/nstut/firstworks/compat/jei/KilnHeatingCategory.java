@@ -23,16 +23,24 @@ public final class KilnHeatingCategory implements IRecipeCategory<ItemStack> {
     @Override public Component getTitle() { return Component.translatable("block.firstworks.kiln"); }
     @Override public IDrawable getIcon() { return icon; }
     @Override public int getWidth() { return 170; }
-    @Override public int getHeight() { return 96; }
+    @Override public int getHeight() { return 94; }
     @Override public void setRecipe(IRecipeLayoutBuilder builder, ItemStack item, IFocusGroup focus) {
-        builder.addSlot(RecipeIngredientRole.INPUT, 35, 5).setStandardSlotBackground().addItemStack(item);
-        builder.addSlot(RecipeIngredientRole.CATALYST, 3, 5).setStandardSlotBackground().addItemLike(ModItems.KILN.get());
-        builder.addSlot(RecipeIngredientRole.CATALYST, 63, 5).setStandardSlotBackground()
-                .addItemStacks(WorkshopRecipeCategory.furnaceFuels());
+        builder.addSlot(RecipeIngredientRole.INPUT, 35, 5).setStandardSlotBackground().addItemStack(item.copyWithCount(1));
+        builder.addSlot(RecipeIngredientRole.INPUT, 35, 45).setStandardSlotBackground()
+                .addItemStacks(WorkshopRecipeCategory.furnaceFuels())
+                .addRichTooltipCallback((slot, lines) -> lines.add(Component.translatable("jei.firstworks.workshop.fuel")));
         builder.addSlot(RecipeIngredientRole.CATALYST, 91, 5).setStandardSlotBackground()
+                .addRichTooltipCallback((slot, lines) -> lines.add(Component.translatable("jei.firstworks.kiln.igniter")))
                 .addItemLike(ModItems.FIRE_STARTER.get()).addItemLike(Items.FLINT_AND_STEEL).addItemLike(Items.FIRE_CHARGE);
     }
     @Override public void draw(ItemStack item, IRecipeSlotsView slots, GuiGraphics graphics, double x, double y) {
-        graphics.drawWordWrap(Minecraft.getInstance().font, Component.translatable("jei.firstworks.kiln.heating"), 3, 32, getWidth() - 6, 0xFF606060);
+        graphics.blitSprite(net.minecraft.resources.ResourceLocation.withDefaultNamespace("container/furnace/lit_progress"), 36, 26, 14, 14);
+        var unit = com.nstut.firstworks.FirstworksClientConfig.HEAT_UNIT.get();
+        var font = Minecraft.getInstance().font;
+        graphics.drawString(font, Component.translatable("jei.firstworks.kiln.maximum",
+                unit.format(com.nstut.firstworks.content.workshop.HeatTemperature.maximum(item))), 3, 69, 0xFF606060, false);
+        graphics.drawString(font, Component.translatable("jei.firstworks.kiln.heat_time",
+                unit.format(com.nstut.firstworks.content.workshop.ThermalModel.AMBIENT),
+                WorkshopRecipeCategory.seconds(com.nstut.firstworks.FirstworksConfig.KILN_HEATING_TICKS.get())), 3, 81, 0xFF606060, false);
     }
 }

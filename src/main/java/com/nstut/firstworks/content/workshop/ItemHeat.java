@@ -67,7 +67,7 @@ public record ItemHeat(int ticks, int capacity, long updatedAt, double temperatu
         int recipeHeat = level.getRecipeManager().getAllRecipesFor(ModRecipes.WORKSHOP_PROCESSING_TYPE.get()).stream()
                 .map(h -> h.value()).filter(r -> WorkshopRecipe.STONE_ANVIL.equals(r.station()) && r.ingredient().test(stack))
                 .flatMap(r -> r.forge().stream()).mapToInt(ForgeData::heatTicks).max().orElse(0);
-        return recipeHeat > 0 ? recipeHeat : stack.is(ModTags.HEATABLE_ITEMS) ? 1200 : 0;
+        return recipeHeat > 0 ? recipeHeat : stack.is(ModTags.HEATABLE_ITEMS) ? 3600 : 0;
     }
     public static void set(ItemStack stack, Level level, int ticks, int capacity) {
         setTemperature(stack, level, HeatTemperature.celsius((float) Math.min(ticks, capacity) / capacity,

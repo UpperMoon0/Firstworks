@@ -270,7 +270,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
         if (burning) {
             if (capacity > 0) {
                 double maximum = HeatTemperature.maximum(input);
-                double rate = (maximum - ThermalModel.AMBIENT) / (100.0 * input.getCount());
+                double rate = (maximum - ThermalModel.AMBIENT) / (FirstworksConfig.KILN_HEATING_TICKS.get() * (double) input.getCount());
                 ItemHeat.setTemperature(input, level, ThermalModel.approach(ItemHeat.celsius(input, level), maximum,
                         rate + ItemHeat.coolingRate(input)), capacity);
             }

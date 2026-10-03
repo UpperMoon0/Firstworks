@@ -17,7 +17,7 @@
     {
       "type": "patchouli:text",
       "title": "Threshold and Scale",
-      "text": "Items define maximum temperatures through synchronized server settings. Forge recipes define minimum_temperature (500°C for copper) and heat_ticks (1200 by default, cooling from maximum to 20°C in 60 seconds). The old 25% threshold no longer determines workability."
+      "text": "Items define maximum temperatures through synchronized server settings. Forge recipes define minimum_temperature (500°C for copper) and heat_ticks (3600 by default, cooling from maximum to 20°C in 180 seconds). The old 25% threshold no longer determines workability."
     },
     {
       "type": "patchouli:text",

@@ -67,6 +67,5 @@ public final class WorkshopJeiPlugin implements IModPlugin {
         registration.addRecipeCatalyst(ModBlocks.POTTERY_WHEEL.get(), POTTERY_WHEEL_PROCESSING);
         registration.addRecipeCatalyst(ModBlocks.STONE_ANVIL.get(), STONE_ANVIL_PROCESSING);
         registration.addRecipeCatalyst(ModBlocks.CRUCIBLE_FURNACE.get(), CRUCIBLE_FURNACE_PROCESSING);
-        registration.addRecipeCatalyst(ModBlocks.BELLOWS.get(), CRUCIBLE_FURNACE_PROCESSING);
     }
 }

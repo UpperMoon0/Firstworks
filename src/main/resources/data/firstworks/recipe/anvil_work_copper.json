@@ -15,7 +15,7 @@
       "bend",
       "flatten"
     ],
-    "heat_ticks": 1200,
+    "heat_ticks": 3600,
     "visual": {
       "type": "deformable",
       "initial_profile": "billet"

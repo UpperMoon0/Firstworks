@@ -255,5 +255,12 @@
   "jei.firstworks.workshop.temperature": "Requires: %s",
   "jei.firstworks.kiln.heating": "Load the workpiece and fuel, then ignite the kiln. When Workable, retrieve with an empty hand and forge on the Stone Anvil.",
   "jei.firstworks.kiln.description": "Load a solid workpiece and fuel, then ignite with a Fire Starter, Flint and Steel, Fire Charge, or compatible igniter. Watch the item's Heat tooltip. When Workable, retrieve it with an empty hand and shape it on the Stone Anvil before it cools. Reheat unfinished work as needed; forging progress is preserved. The kiln heats the loaded item without changing its type, smelting it, or advancing forging actions.",
-  "hint.firstworks.loom.packing": "Packing the row…"
+  "hint.firstworks.loom.packing": "Packing the row…",
+  "jei.firstworks.workshop.processing_seconds": "Processing: %s s",
+  "jei.firstworks.workshop.not_consumed": "NC: Not consumed — this catalyst is reusable.",
+  "jei.firstworks.workshop.fuel": "Fuel — consumed for its native furnace burn time. Ignite the furnace to start burning.",
+  "jei.firstworks.workshop.bellows": "Place Bellows beside the furnace. Blow to raise its temperature ceiling.",
+  "jei.firstworks.kiln.maximum": "Max heat: %s",
+  "jei.firstworks.kiln.heat_time": "%s to max: %s s",
+  "jei.firstworks.kiln.igniter": "Ignite the loaded kiln. Retrieve the heated workpiece with an empty hand."
 }

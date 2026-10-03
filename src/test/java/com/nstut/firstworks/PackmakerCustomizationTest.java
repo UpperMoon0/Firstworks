@@ -103,8 +103,8 @@ public class PackmakerCustomizationTest {
         assertTrue(src.contains("ModBlocks.POTTERY_WHEEL.get(), POTTERY_WHEEL_PROCESSING"));
         assertTrue(src.contains("ModBlocks.STONE_ANVIL.get(), STONE_ANVIL_PROCESSING"));
         assertTrue(src.contains("ModBlocks.CRUCIBLE_FURNACE.get(), CRUCIBLE_FURNACE_PROCESSING"));
-        assertTrue(src.contains("ModBlocks.BELLOWS.get(), CRUCIBLE_FURNACE_PROCESSING"),
-                "Bellows must expose only Crucible Furnace processing in JEI");
+        assertFalse(src.contains("ModBlocks.BELLOWS.get(), CRUCIBLE_FURNACE_PROCESSING"),
+                "Bellows must not appear as a Crucible Furnace machine variant");
     }
 
     @Test

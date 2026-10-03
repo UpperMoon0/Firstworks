@@ -244,17 +244,17 @@ public final class WorkshopSelectionGameTests {
         player.getFoodData().setFoodLevel(20);
         helper.useBlock(bellowsPos, player);
         int firstPress = furnace.getStokeTicks();
-        check(helper, firstPress == 240,
+        check(helper, firstPress == 900,
                 "First Bellows press did not add one full airflow pulse");
 
         helper.useBlock(bellowsPos, player);
-        check(helper, furnace.getStokeTicks() == 240,
+        check(helper, furnace.getStokeTicks() == 900,
                 "Cooldown press stacked the boost");
 
         for (int i = 0; i < 6; i++) {
             helper.useBlock(bellowsPos, player);
         }
-        check(helper, furnace.getStokeTicks() == 240,
+        check(helper, furnace.getStokeTicks() == 900,
                 "Repeated clicks stacked Bellows boost duration");
 
         helper.succeed();

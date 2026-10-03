@@ -11,7 +11,7 @@ class WorkstationMetadataTest {
     @Test void forgeDefaultsAndProfilesRoundTrip() {
         var json = JsonParser.parseString("{\"actions\":[\"flatten\",\"draw\",\"bend\"],\"visual\":{\"initial_profile\":\"billet\"}}");
         var data = ForgeData.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow();
-        assertEquals(1200, data.heatTicks());
+        assertEquals(3600, data.heatTicks());
         assertEquals(data, ForgeData.CODEC.parse(JsonOps.INSTANCE, ForgeData.CODEC.encodeStart(JsonOps.INSTANCE, data).getOrThrow()).getOrThrow());
     }
     @Test void invalidForgeRequirementsAreRejected() {

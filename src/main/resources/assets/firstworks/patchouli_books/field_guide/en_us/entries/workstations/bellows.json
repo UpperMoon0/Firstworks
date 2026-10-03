@@ -12,7 +12,7 @@
     {
       "type": "patchouli:text",
       "title": "Pump and Check",
-      "text": "A successful survival blow costs one food point (half a hunger icon), with a one-second cooldown shared by that furnace. Failed or cooldown clicks cost nothing. Creative blows are free. Repeated blows refresh the eight-second hold and four-second decay; they never bank unlimited time."
+      "text": "A successful survival blow costs one food point (half a hunger icon), with a one-second cooldown shared by that furnace. Failed or cooldown clicks cost nothing. Creative blows are free. Repeated blows refresh the 30-second hold and 15-second decay; they never bank unlimited time."
     },
     {
       "type": "patchouli:crafting",

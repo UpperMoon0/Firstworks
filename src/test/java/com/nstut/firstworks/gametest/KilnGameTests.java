@@ -51,7 +51,7 @@ public final class KilnGameTests {
         });
     }
 
-    @GameTest(template = "empty", timeoutTicks = 160)
+    @GameTest(template = "empty", timeoutTicks = 660)
     public static void heatTransferResumeAndLightFade(GameTestHelper h) {
         BlockPos kp = new BlockPos(3, 1, 3), ap = new BlockPos(5, 1, 3);
         h.setBlock(kp, ModBlocks.KILN.get());
@@ -65,7 +65,8 @@ public final class KilnGameTests {
         h.assertTrue(kiln.getForgeHeat() == 0, "Kiln heated without fuel");
         h.assertTrue(kiln.insertFuel(new ItemStack(Items.CHARCOAL), false), "Kiln rejected fuel");
         h.assertTrue(kiln.ignite(), "Kiln ignition failed");
-        h.runAtTickTime(105, () -> {
+        h.runAtTickTime(105, () -> h.assertTrue(!ItemHeat.workable(kiln.getInput(), h.getLevel()), "Kiln reached forging temperature too quickly"));
+        h.runAtTickTime(605, () -> {
             h.assertTrue(ItemHeat.fraction(kiln.getInput(), h.getLevel()) > 0.95F, "Billet did not heat fully");
             h.assertTrue(kiln.getOutput().isEmpty() && kiln.getProgress() == 0, "Kiln transformed or worked the item");
             h.assertTrue(kiln.getBlockState().getValue(WorkshopBlock.HEAT_LIGHT) == 12, "Kiln heat emitted no light");
@@ -79,18 +80,18 @@ public final class KilnGameTests {
             h.assertTrue(anvil.getBlockState().getValue(WorkshopBlock.HEAT_LIGHT) == 0, "Empty anvil kept emitting light");
             h.assertTrue(kiln.insert(partial, false), "Kiln rejected partially forged item");
         });
-        h.runAtTickTime(115, () -> {
+        h.runAtTickTime(615, () -> {
             h.assertTrue(kiln.getInput().get(ModDataComponents.FORGE_PROGRESS.get()).completed() == 1, "Kiln advanced or erased anvil actions");
             var hot = kiln.getItemHandler(null).extractItem(0, 64, false);
             anvil.insert(hot, false);
             h.assertTrue(anvil.getProgress() == 1 && anvil.forge(player, "draw"), "Reheated work did not resume at next action");
             h.assertTrue(anvil.getBlockState().getValue(WorkshopBlock.HEAT_LIGHT) >= 11, "Hot anvil workpiece emitted no light");
         });
-        h.runAtTickTime(120, () -> {
+        h.runAtTickTime(620, () -> {
             h.assertTrue(h.getLevel().getBrightness(LightLayer.BLOCK, anvil.getBlockPos().above()) > 0, "Light engine did not illuminate anvil surroundings");
             ItemHeat.set(anvil.getInput(), h.getLevel(), 3, 1200);
         });
-        h.runAtTickTime(126, () -> {
+        h.runAtTickTime(626, () -> {
             h.assertTrue(anvil.getForgeHeat() == 0 && anvil.getProgress() == 2, "Cooling lost work or retained heat");
             h.assertTrue(!anvil.forge(player, "bend"), "Cold workpiece was forged");
             h.assertTrue(anvil.getBlockState().getValue(WorkshopBlock.HEAT_LIGHT) == 0, "Cold anvil still emitted light");

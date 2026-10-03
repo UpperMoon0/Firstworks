@@ -17,7 +17,7 @@
     {
       "type": "patchouli:text",
       "title": "Air Loss",
-      "text": "A blow holds the boosted ceiling for eight seconds, then it falls over four seconds toward 800°C. Current temperature drops with that ceiling. Blow again to maintain casting heat; boosts refresh rather than stack. Jade shows current/max temperature and the recipe requirement."
+      "text": "A blow holds the boosted ceiling for 30 seconds, then it falls over 15 seconds toward 800°C. Current temperature drops with that ceiling. Blow again to maintain casting heat; boosts refresh rather than stack. Jade shows current/max temperature and the recipe requirement."
     },
     {
       "type": "patchouli:text",
