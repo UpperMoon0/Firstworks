@@ -262,5 +262,9 @@
   "jei.firstworks.workshop.bellows": "Place Bellows beside the furnace. Blow to raise its temperature ceiling.",
   "jei.firstworks.kiln.maximum": "Max heat: %s",
   "jei.firstworks.kiln.heat_time": "%s to max: %s s",
-  "jei.firstworks.kiln.igniter": "Ignite the loaded kiln. Retrieve the heated workpiece with an empty hand."
+  "jei.firstworks.kiln.igniter": "Ignite the loaded kiln. Retrieve the heated workpiece with an empty hand.",
+  "jei.firstworks.workshop.label.fuel": "Fuel",
+  "jei.firstworks.workshop.label.bellows": "Bellows",
+  "jei.firstworks.workshop.label.igniter": "Igniter",
+  "jei.firstworks.workshop.igniter": "Use on the furnace to ignite loaded fuel. Consumes the igniter or its durability."
 }

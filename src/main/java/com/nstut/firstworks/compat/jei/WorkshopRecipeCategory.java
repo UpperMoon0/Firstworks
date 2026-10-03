@@ -35,7 +35,7 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
     @Override public RecipeType<WorkshopRecipe> getRecipeType() { return recipeType; }
     @Override public Component getTitle() { return stationName(station); }
     @Override public int getWidth() { return 170; }
-    @Override public int getHeight() { return WorkshopRecipe.STONE_ANVIL.equals(station) ? 94 : WorkshopRecipe.CRUCIBLE_FURNACE.equals(station) ? 100 : 208; }
+    @Override public int getHeight() { return WorkshopRecipe.STONE_ANVIL.equals(station) ? 94 : WorkshopRecipe.CRUCIBLE_FURNACE.equals(station) ? 110 : 208; }
     @Override public IDrawable getIcon() { return icon; }
 
     @Override
@@ -71,17 +71,33 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
                     .addItemStacks(Arrays.stream(Ingredient.of(ModTags.HAMMERS).getItems()).toList());
             case WorkshopRecipe.CRUCIBLE_FURNACE -> {
                 builder.addSlot(RecipeIngredientRole.INPUT, 35, 45).setStandardSlotBackground()
+                        .setSlotName("fuel")
                         .addItemStacks(furnaceFuels())
                         .addRichTooltipCallback((slot, lines) -> lines.add(Component.translatable("jei.firstworks.workshop.fuel")));
                 builder.addSlot(RecipeIngredientRole.CATALYST, 75, 45)
+                        .setSlotName("bellows")
                         .setStandardSlotBackground()
                         .addItemStack(new ItemStack(ModItems.BELLOWS.get()))
                         .addRichTooltipCallback((slot, lines) -> lines.add(Component.translatable("jei.firstworks.workshop.bellows")));
+                addIgniterSlot(builder, 135, 45);
             }
             default -> {
                 // Pottery Wheel work is performed by empty-hand interaction and needs no extra item slot.
             }
         }
+    }
+
+    static void addIgniterSlot(IRecipeLayoutBuilder builder, int x, int y) {
+        builder.addSlot(RecipeIngredientRole.CATALYST, x, y).setStandardSlotBackground().setSlotName("igniter")
+                .addItemStacks(net.minecraft.core.registries.BuiltInRegistries.ITEM.stream().map(ItemStack::new)
+                        .filter(com.nstut.firstworks.content.workshop.WorkshopIgnition::isIgniter).toList())
+                .addRichTooltipCallback((slot, lines) -> lines.add(Component.translatable("jei.firstworks.workshop.igniter")));
+    }
+
+    static void drawSlotLabel(GuiGraphics graphics, String role, int centerX, int y) {
+        var font = Minecraft.getInstance().font;
+        var label = Component.translatable("jei.firstworks.workshop.label." + role);
+        graphics.drawString(font, label, centerX - font.width(label) / 2, y, 0xFF606060, false);
     }
 
     private static void markReusable(mezz.jei.api.gui.builder.IRecipeSlotBuilder slot) {
@@ -113,6 +129,11 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
         if (crucible) graphics.blitSprite(net.minecraft.resources.ResourceLocation.withDefaultNamespace("container/furnace/lit_progress"),
                 36, 26, 14, 14);
         var font = Minecraft.getInstance().font;
+        if (crucible) {
+            drawSlotLabel(graphics, "fuel", 43, 65);
+            drawSlotLabel(graphics, "bellows", 83, 65);
+            drawSlotLabel(graphics, "igniter", 143, 65);
+        }
         if (WorkshopRecipe.STONE_ANVIL.equals(recipe.station())) {
             recipe.forge().ifPresent(forge -> {
                 var sequence = Component.empty();
@@ -139,9 +160,9 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
                                 ? "jei.firstworks.workshop.processing_seconds"
                                 : "jei.firstworks.workshop.manual_actions",
                         heated ? seconds(recipe.requiredWork()) : recipe.requiredWork()),
-                3, 67, 0xFF606060, false);
+                3, crucible ? 81 : 67, 0xFF606060, false);
 
-        int detailsY = 79;
+        int detailsY = crucible ? 93 : 79;
         if (WorkshopRecipe.POTTERY_WHEEL.equals(recipe.station()) && recipe.inputCount() <= 3) {
             graphics.drawString(font, Component.translatable("jei.firstworks.workshop.pottery_batch"),
                     3, detailsY, 0xFF606060, false);
