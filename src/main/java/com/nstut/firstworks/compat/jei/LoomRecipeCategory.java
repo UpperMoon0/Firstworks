@@ -29,7 +29,7 @@ public final class LoomRecipeCategory implements IRecipeCategory<LoomRecipe> {
     }
     @Override public Component getTitle() { return Component.translatable("jei.firstworks.loom_weaving"); }
     @Override public int getWidth() { return 180; }
-    @Override public int getHeight() { return 104; }
+    @Override public int getHeight() { return 44; }
     @Override public IDrawable getIcon() { return icon; }
 
     @Override
@@ -48,11 +48,6 @@ public final class LoomRecipeCategory implements IRecipeCategory<LoomRecipe> {
             double mouseX, double mouseY) {
         arrow.draw(graphics, 43, 5);
         graphics.drawString(Minecraft.getInstance().font,
-                Component.translatable("jei.firstworks.strokes", recipe.passes()), 8, 30, 0xFF606060, false);
-        graphics.drawWordWrap(Minecraft.getInstance().font,
-                Component.translatable("hint.firstworks.loom.pattern", String.join(" ", recipe.weaving().pattern())),
-                8, 42, 164, 0xFF606060);
-        graphics.drawWordWrap(Minecraft.getInstance().font,
-                Component.translatable("hint.firstworks.loom.controls"), 8, 66, 164, 0xFF606060);
+                Component.translatable("jei.firstworks.loom.crossings", recipe.passes()), 8, 30, 0xFF606060, false);
     }
 }
