@@ -2,7 +2,6 @@ package com.nstut.firstworks.client;
 
 import com.nstut.firstworks.Firstworks;
 import com.nstut.firstworks.content.workshop.StoneAnvilBlock;
-import com.nstut.firstworks.content.workshop.WorkshopBlock;
 import com.nstut.firstworks.registry.ModTags;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -22,7 +21,7 @@ public final class WorkshopInteractionHints {
         var state = mc.level.getBlockState(hit.getBlockPos());
         if (!(state.getBlock() instanceof StoneAnvilBlock)) return;
         String action = StoneAnvilBlock.actionAt(state, hit.getBlockPos(), hit);
-        var shape = WorkshopBlock.makeHorizontalShapes(StoneAnvilBlock.zone(action)).get(state.getValue(WorkshopBlock.FACING));
+        var shape = StoneAnvilBlock.zone(state, action);
         if (shape.isEmpty()) return;
         var camera = event.getCamera().getPosition();
         var pose = event.getPoseStack();

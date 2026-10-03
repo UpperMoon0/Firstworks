@@ -80,6 +80,12 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
         CompoundTag data = accessor.getServerData();
         String station = data.getString(STATION);
+        if (WorkshopRecipe.STONE_ANVIL.equals(station)) {
+            String action = com.nstut.firstworks.content.workshop.StoneAnvilBlock.actionAt(
+                    accessor.getBlockState(), accessor.getPosition(), accessor.getHitResult());
+            tooltip.add(Component.translatable("jade.firstworks.anvil.target",
+                    Component.translatable("action.firstworks." + action)).withStyle(ChatFormatting.YELLOW));
+        }
         var unit = com.nstut.firstworks.FirstworksClientConfig.HEAT_UNIT.get();
         if (WorkshopRecipe.KILN.equals(station) || WorkshopRecipe.CRUCIBLE_FURNACE.equals(station))
             tooltip.add(Component.translatable("jade.firstworks.workshop.temperature",

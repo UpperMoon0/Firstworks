@@ -13,6 +13,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.Map;
+import java.util.List;
 
 public final class StoneAnvilBlock extends WorkshopBlock {
     public static final MapCodec<StoneAnvilBlock> CODEC = simpleCodec(StoneAnvilBlock::new);
@@ -27,6 +28,30 @@ public final class StoneAnvilBlock extends WorkshopBlock {
             Block.box(6, 3.4, 1.7, 10, 5.2, 4.7)
     ).optimize();
     private static final Map<Direction, VoxelShape> SHAPES = makeHorizontalShapes(NORTH_SHAPE);
+    private record WorkingSurface(double x0, double z0, double x1, double z1, double height) {
+        boolean contains(Vec3 hit) {
+            return hit.x >= x0 / 16 && hit.x < x1 / 16
+                    && hit.z >= z0 / 16 && hit.z < z1 / 16
+                    && Math.abs(hit.y - height / 16) < 0.0001;
+        }
+        VoxelShape outline() {
+            return Block.box(x0, height + 0.01, z0, x1, height + 0.03, z1);
+        }
+    }
+    // All coordinates describe exposed model surfaces in the NORTH orientation.
+    // Half-open rectangles assign a shared boundary to exactly one action.
+    private static final Map<String, List<WorkingSurface>> WORKING_SURFACES = Map.of(
+            "flatten", List.of(new WorkingSurface(6, 6, 10, 10, 10.6)),
+            "draw", List.of(new WorkingSurface(2, 3, 6, 13, 10.6),
+                    new WorkingSurface(10, 3, 14, 13, 10.6),
+                    new WorkingSurface(6, 3, 10, 6, 10.6),
+                    new WorkingSurface(6, 10, 10, 13, 10.6)),
+            "bend", List.of(new WorkingSurface(6, 0.5, 10, 1.5, 9.7),
+                    new WorkingSurface(5, 1.5, 11, 3, 9.7)));
+    private static final Map<String, Map<Direction, VoxelShape>> ZONES = Map.of(
+            "flatten", makeHorizontalShapes(zone("flatten")),
+            "draw", makeHorizontalShapes(zone("draw")),
+            "bend", makeHorizontalShapes(zone("bend")));
 
     public StoneAnvilBlock(Properties properties) {
         super(properties, WorkshopRecipe.STONE_ANVIL);
@@ -45,20 +70,21 @@ public final class StoneAnvilBlock extends WorkshopBlock {
 
     public static String actionAt(BlockState state, BlockPos pos, BlockHitResult hit) {
         var local = localHit(state, pos, hit.getLocation());
-        if (hit.getDirection() != Direction.UP || local.y < 9.0 / 16.0) return "none";
-        if (local.z < 3.0 / 16.0) return "bend";
-        if (local.x < 4.0 / 16.0 || local.x > 12.0 / 16.0 || local.z > 11.0 / 16.0) return "draw";
-        return "flatten";
+        if (hit.getDirection() != Direction.UP) return "none";
+        for (var entry : WORKING_SURFACES.entrySet()) {
+            if (entry.getValue().stream().anyMatch(surface -> surface.contains(local))) return entry.getKey();
+        }
+        return "none";
     }
 
     public static VoxelShape zone(String action) {
-        return switch (action) {
-            case "bend" -> Shapes.or(Block.box(6, 9.71, 0.5, 10, 9.73, 1.5), Block.box(5, 9.71, 1.5, 11, 9.73, 3));
-            case "draw" -> Shapes.or(Block.box(2, 10.61, 3, 4, 10.63, 13),
-                    Block.box(12, 10.61, 3, 14, 10.63, 13), Block.box(4, 10.61, 11, 12, 10.63, 13));
-            case "flatten" -> Block.box(4, 10.61, 3, 12, 10.63, 11);
-            default -> Shapes.empty();
-        };
+        return WORKING_SURFACES.getOrDefault(action, List.of()).stream()
+                .map(WorkingSurface::outline).reduce(Shapes.empty(), Shapes::or).optimize();
+    }
+
+    public static VoxelShape zone(BlockState state, String action) {
+        var rotated = ZONES.get(action);
+        return rotated == null ? Shapes.empty() : rotated.get(state.getValue(FACING));
     }
 
     @Override

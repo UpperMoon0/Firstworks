@@ -126,7 +126,7 @@ public final class AnvilGameTests {
             for (String action : new String[]{"flatten", "draw", "bend"}) {
                 double x = action.equals("draw") ? 0.18 : 0.5;
                 double z = action.equals("bend") ? 0.1 : 0.5;
-                Vec3 local = new Vec3(x - 0.5, 0.6625, z - 0.5);
+                Vec3 local = new Vec3(x - 0.5, (action.equals("bend") ? 9.7 : 10.6) / 16.0, z - 0.5);
                 Vec3 world = switch (facing) {
                     case EAST -> new Vec3(-local.z, local.y, local.x);
                     case SOUTH -> new Vec3(-local.x, local.y, -local.z);
@@ -136,6 +136,52 @@ public final class AnvilGameTests {
                 world = world.add(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
                 check(h, StoneAnvilBlock.actionAt(state, pos, new BlockHitResult(world, Direction.UP, pos, false)).equals(action), "Rotated zone mismatch: " + facing + " " + action);
                 check(h, StoneAnvilBlock.actionAt(state, pos, new BlockHitResult(world, facing, pos, false)).equals("none"), "Side face became forge zone");
+            }
+        }
+        h.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void workingPadsMatchRayHitsAndOutlinesInEveryFacing(GameTestHelper h) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        double[][] samples = {{8, 8, 10.6}, {6.5, 8, 10.6}, {9.5, 8, 10.6},
+                {4, 8, 10.6}, {12, 8, 10.6}, {8, 4, 10.6}, {8, 12, 10.6},
+                {5.5, 8, 10.6}, {10.5, 8, 10.6}, {6, 8, 10.6}, {10, 8, 10.6},
+                {8, 1, 9.7}, {5.5, 2.5, 9.7}, {2, 1, 9.7}, {8, 1, 10.6}, {8, 8, 9.7}};
+        String[] expected = {"flatten", "flatten", "flatten", "draw", "draw", "draw", "draw",
+                "draw", "draw", "flatten", "draw", "bend", "bend", "none", "none", "none"};
+        for (Direction facing : Direction.Plane.HORIZONTAL) {
+            var state = ModBlocks.STONE_ANVIL.get().defaultBlockState().setValue(WorkshopBlock.FACING, facing);
+            for (int i = 0; i < samples.length; i++) {
+                var sample = samples[i];
+                double x = sample[0] / 16 - 0.5, z = sample[1] / 16 - 0.5;
+                var offset = switch (facing) {
+                    case EAST -> new Vec3(-z, sample[2] / 16, x);
+                    case SOUTH -> new Vec3(-x, sample[2] / 16, -z);
+                    case WEST -> new Vec3(z, sample[2] / 16, -x);
+                    default -> new Vec3(x, sample[2] / 16, z);
+                };
+                var world = offset.add(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
+                var hit = new BlockHitResult(world, Direction.UP, pos, false);
+                check(h, StoneAnvilBlock.actionAt(state, pos, hit).equals(expected[i]),
+                        "Wrong pad at sample " + i + " facing " + facing);
+                if (expected[i].equals("none")) continue;
+                var ray = state.getShape(h.getLevel(), pos).clip(world.add(0, 1, 0), world.add(0, -1, 0), pos);
+                check(h, ray != null && StoneAnvilBlock.actionAt(state, pos, ray).equals(expected[i]),
+                        "Actual surface ray selected a different pad: " + facing + " sample " + i);
+                var outlinePoint = world.subtract(Vec3.atLowerCornerOf(pos)).add(0, 0.02 / 16, 0);
+                check(h, StoneAnvilBlock.zone(state, expected[i]).toAabbs().stream().anyMatch(box ->
+                                outlinePoint.x >= box.minX && outlinePoint.x <= box.maxX
+                                && outlinePoint.y >= box.minY && outlinePoint.y <= box.maxY
+                                && outlinePoint.z >= box.minZ && outlinePoint.z <= box.maxZ),
+                        "Target lies outside its outline: " + facing + " sample " + i);
+                // Shared border lines belong to both drawn rectangles, but the hit has one action.
+                if (i == 9 || i == 10) continue;
+                for (String other : new String[]{"flatten", "draw", "bend"}) {
+                    if (other.equals(expected[i])) continue;
+                    check(h, StoneAnvilBlock.zone(state, other).toAabbs().stream().noneMatch(box -> box.contains(outlinePoint)),
+                            "Working pads overlap: " + facing + " sample " + i);
+                }
             }
         }
         h.succeed();
