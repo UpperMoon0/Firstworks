@@ -1,0 +1,300 @@
+{
+  "name": "Crafting Recipe Reference",
+  "category": "firstworks:integration",
+  "icon": "minecraft:crafting_table",
+  "sortnum": 90,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:acacia_barrel"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:acacia_loom"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:bamboo_barrel"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:bamboo_loom"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:barrel"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:basket"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:bellows"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:birch_barrel"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:birch_loom"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:bone_axe"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:bone_hoe"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:bone_knife"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:bone_pickaxe"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:bone_shovel"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:bone_sword"
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "firstworks:bread_from_smelting_dough"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:brick_mold"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:cherry_barrel"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:cherry_loom"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:copper_knife"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:crimson_barrel"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:crimson_loom"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:crucible_furnace"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:crude_cordage"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:dark_oak_barrel"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:dark_oak_loom"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:dough_from_clay_water"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:dough_from_water_bottle"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:dough_from_water_bucket"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:field_guide"
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "firstworks:fire_clay_brick_from_smelting"
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "firstworks:fire_clay_bucket_from_smelting"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:fire_starter"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:flint_axe"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:flint_hoe"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:flint_knife"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:flint_pickaxe"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:flint_shovel"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:flint_sword"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:hafting_compound"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:hand_spindle"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:jungle_barrel"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:jungle_loom"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:kiln"
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "firstworks:leather_from_tannin_soaked_hide"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:loom"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:mangrove_barrel"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:mangrove_loom"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:mortar_and_pestle"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:mortar_and_pestle_cobblestone"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:mortar_bound_brick_block"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:plaster"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:plaster_block"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:plaster_from_block"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:pottery_wheel"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:quern"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:refractory_clay"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:resin_tap"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:rope"
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "firstworks:smelt_anneal_copper"
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "firstworks:smelt_casting_mold"
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "firstworks:smelt_crucible"
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "firstworks:smelt_lime"
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "firstworks:smelt_refractory_brick"
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "firstworks:smelt_tuyere"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:spruce_barrel"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:spruce_loom"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:standing_torch"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:stone_anvil"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:stone_hammer"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:unfired_clay_bucket"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:warped_barrel"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:warped_loom"
+    }
+  ]
+}

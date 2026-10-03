@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "com.nstut.firstworks.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": ["ItemStackHeatMixin"],
+  "injectors": {"defaultRequire": 1}
+}

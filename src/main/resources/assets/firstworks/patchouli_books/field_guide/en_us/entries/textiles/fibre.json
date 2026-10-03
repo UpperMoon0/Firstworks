@@ -1,0 +1,26 @@
+{
+  "name": "From Fibre to Twine",
+  "category": "firstworks:textiles",
+  "icon": "firstworks:retted_fibre",
+  "sortnum": 16,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Retting",
+      "text": "Seal four Plant Fibre with 250 mB water in a barrel for 1200 ticks, or one minute, to receive four Retted Fibre. A water bottle provides exactly this fluid amount. Retting prepares fibre; Crude Cordage can be made earlier without retting."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Spin and Bind",
+      "text": "A Hand Spindle turns two Retted Fibre into two Twine. Three compatible strings make Rope. Four strings and four loom passes make Cloth. Cordage, Twine, and Rope serve different recipe/tag roles; they are not interchangeable in every recipe."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:crude_cordage"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:rope"
+    }
+  ]
+}

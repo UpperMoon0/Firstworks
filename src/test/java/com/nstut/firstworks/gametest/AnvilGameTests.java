@@ -1,0 +1,231 @@
+package com.nstut.firstworks.gametest;
+
+import com.nstut.firstworks.Firstworks;
+import com.nstut.firstworks.content.workshop.*;
+import com.nstut.firstworks.registry.ModBlocks;
+import com.nstut.firstworks.registry.ModItems;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.gametest.GameTestHolder;
+import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+
+@GameTestHolder(Firstworks.MOD_ID)
+@PrefixGameTestTemplate(false)
+public final class AnvilGameTests {
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void overlappingSequencesUseSelectedRecipeAndLockAfterFirstStrike(GameTestHelper h) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        h.setBlock(pos, ModBlocks.STONE_ANVIL.get());
+        WorkshopBlockEntity anvil = h.getBlockEntity(pos);
+        Player player = h.makeMockPlayer(GameType.SURVIVAL);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.STONE_HAMMER.get()));
+        anvil.insert(new ItemStack(Items.ECHO_SHARD), false);
+        check(h, anvil.getMatchingRecipeCount() == 2, "Overlapping recipes were not reported");
+        check(h, anvil.activeRecipe().orElseThrow().id().getPath().equals("gametest_anvil_overlap_high"),
+                "Wrong automatically selected recipe");
+        check(h, !anvil.forge(player, "draw"), "Alternative recipe's sequence bypassed the selected sequence");
+        check(h, anvil.forge(player, "flatten"), "Selected sequence could not start");
+        check(h, anvil.getMatchingRecipeCount() == 1, "Started work did not lock its selected recipe");
+        var saved = anvil.saveWithoutMetadata(h.getLevel().registryAccess());
+        anvil.loadWithComponents(saved, h.getLevel().registryAccess());
+        check(h, anvil.getMatchingRecipeCount() == 1 && anvil.activeRecipe().orElseThrow().value().result().is(Items.DIAMOND),
+                "Reload changed the selected recipe");
+        h.runAtTickTime(2, () -> {
+            check(h, anvil.forge(player, "flatten") && anvil.getOutput().is(Items.DIAMOND),
+                    "Selected sequence produced the alternative result");
+            h.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 40)
+    public static void coolingOrderReloadAndCustomVisualFallback(GameTestHelper h) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        h.setBlock(pos, ModBlocks.STONE_ANVIL.get());
+        WorkshopBlockEntity anvil = h.getBlockEntity(pos);
+        Player player = h.makeMockPlayer(GameType.SURVIVAL);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.STONE_HAMMER.get()));
+        anvil.insert(new ItemStack(Items.AMETHYST_SHARD), false);
+        check(h, !anvil.forge(player, "draw"), "Cold workpiece advanced");
+        check(h, anvil.getForgeHeat() == 0, "Cold item invented heat");
+        h.setBlock(pos.south(), Blocks.CAMPFIRE);
+        heatOnAnvil(h, anvil);
+        check(h, !anvil.work(player), "Generic work bypassed forge sequence");
+        check(h, !anvil.forge(player, "bend") && anvil.getProgress() == 0, "Wrong order advanced");
+        check(h, anvil.forge(player, "draw"), "Correct action rejected");
+        check(h, !anvil.forge(player, "bend"), "Two simultaneous strikes advanced");
+        check(h, !anvil.insert(new ItemStack(Items.AMETHYST_SHARD), false), "Insertion reset partial forging");
+        var saved = anvil.saveWithoutMetadata(h.getLevel().registryAccess());
+        anvil.loadWithComponents(saved, h.getLevel().registryAccess());
+        check(h, anvil.getProgress() == 1 && anvil.getForgeHeat() == 3 && anvil.getLastForgeAction().equals("draw"), "Reload lost heat/action/shape state");
+        h.runAtTickTime(5, () -> {
+            check(h, anvil.getForgeHeat() == 0 && !anvil.forge(player, "bend"), "Cooling did not block forging");
+            check(h, anvil.getProgress() == 1, "Cooling reset partial work");
+            heatOnAnvil(h, anvil);
+            check(h, anvil.getProgress() == 1, "Kiln transfer lost the completed action");
+            player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            check(h, !anvil.forge(player, "bend"), "Missing hammer advanced");
+            player.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(ModItems.STONE_HAMMER.get()));
+            BlockPos absolute = h.absolutePos(pos);
+            var hit = new BlockHitResult(new Vec3(absolute.getX() + 0.5, absolute.getY() + 9.7 / 16.0, absolute.getZ() + 0.1), Direction.UP, absolute, false);
+            check(h, anvil.getBlockState().useWithoutItem(h.getLevel(), player, hit) == net.minecraft.world.InteractionResult.PASS,
+                    "Empty main hand swallowed offhand hammer interaction");
+            anvil.getBlockState().useItemOn(player.getOffhandItem(), h.getLevel(), player, InteractionHand.OFF_HAND, hit);
+            check(h, player.getOffhandItem().getDamageValue() == 1, "Offhand hammer strike did not consume one durability");
+            check(h, anvil.getOutput().is(Items.DIAMOND) && anvil.getInput().isEmpty() && anvil.getForgeHeat() == 0, "Wrong completion state");
+            check(h, anvil.takeOutput(player), "Output not retrievable");
+            h.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void arbitrarySmashingAndRecipeNetworkRoundTrip(GameTestHelper h) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        h.setBlock(pos, ModBlocks.STONE_ANVIL.get());
+        WorkshopBlockEntity anvil = h.getBlockEntity(pos);
+        Player player = h.makeMockPlayer(GameType.SURVIVAL);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.STONE_HAMMER.get()));
+        anvil.insert(new ItemStack(Items.FLINT), false);
+        check(h, anvil.forge(player, "flatten") && anvil.forge(player, "flatten"), "Legacy smashing recipe stopped working");
+        check(h, anvil.getOutput().is(Items.GRAVEL), "Legacy smashing produced wrong output");
+        anvil.takeOutput(player);
+        anvil.insert(new ItemStack(ModItems.ANNEALED_COPPER_BILLET.get()), false);
+        var recipe = anvil.activeRecipe().orElseThrow().value();
+        var buffer = new net.minecraft.network.RegistryFriendlyByteBuf(io.netty.buffer.Unpooled.buffer(), h.getLevel().registryAccess());
+        try {
+            var codec = new WorkshopRecipe.Serializer().streamCodec();
+            codec.encode(buffer, recipe);
+            var decoded = codec.decode(buffer);
+            check(h, decoded.forge().equals(recipe.forge()), "Network lost forge sequence/profile/heat");
+        } finally { buffer.release(); }
+        check(h, anvil.takeStored(player) && anvil.getProgress() == 0 && anvil.getForgeHeat() == 0, "Retrieval left stale work");
+        anvil.insert(new ItemStack(Items.BLAZE_POWDER), false);
+        check(h, anvil.activeRecipe().orElseThrow().value().forge().orElseThrow().actions().size() == 2, "KubeJS custom recipe lost forge metadata");
+        check(h, anvil.forge(player, "draw"), "Cold-capable KubeJS forge recipe rejected");
+        h.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void legacyPartialProgressMigratesToForgeSequence(GameTestHelper h) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        h.setBlock(pos, ModBlocks.STONE_ANVIL.get());
+        WorkshopBlockEntity anvil = h.getBlockEntity(pos);
+        anvil.insert(new ItemStack(ModItems.ANNEALED_COPPER_BILLET.get()), false);
+
+        var legacy = anvil.saveWithoutMetadata(h.getLevel().registryAccess());
+        legacy.putInt("Progress", 6);
+        legacy.putBoolean("Running", true);
+        legacy.remove("ForgeHeat");
+        legacy.remove("LastForgeTick");
+        legacy.remove("LastForgeAction");
+        legacy.remove("LegacyForgeProgressPending");
+        anvil.loadWithComponents(legacy, h.getLevel().registryAccess());
+
+        WorkshopBlockEntity.serverTick(h.getLevel(), anvil.getBlockPos(), anvil.getBlockState(), anvil);
+        check(h, anvil.getProgress() == 3, "Legacy 6/8 anvil progress did not migrate to 3/4 forge actions");
+        check(h, anvil.getForgeHeat() == 0, "Legacy anvil migration invented heat");
+
+        Player player = h.makeMockPlayer(GameType.SURVIVAL);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.STONE_HAMMER.get()));
+        h.setBlock(pos.south(), Blocks.CAMPFIRE);
+        heatOnAnvil(h, anvil);
+        check(h, anvil.forge(player, "flatten"), "Migrated legacy billet could not finish its remaining forge action");
+        check(h, anvil.getOutput().is(Items.COPPER_INGOT), "Migrated legacy anvil produced the wrong result");
+        h.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void zonesRotateAndRejectSideFaces(GameTestHelper h) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        for (Direction facing : Direction.Plane.HORIZONTAL) {
+            var state = ModBlocks.STONE_ANVIL.get().defaultBlockState().setValue(WorkshopBlock.FACING, facing);
+            for (String action : new String[]{"flatten", "draw", "bend"}) {
+                double x = action.equals("draw") ? 0.18 : 0.5;
+                double z = action.equals("bend") ? 0.1 : 0.5;
+                Vec3 local = new Vec3(x - 0.5, (action.equals("bend") ? 9.7 : 10.6) / 16.0, z - 0.5);
+                Vec3 world = switch (facing) {
+                    case EAST -> new Vec3(-local.z, local.y, local.x);
+                    case SOUTH -> new Vec3(-local.x, local.y, -local.z);
+                    case WEST -> new Vec3(local.z, local.y, -local.x);
+                    default -> local;
+                };
+                world = world.add(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
+                check(h, StoneAnvilBlock.actionAt(state, pos, new BlockHitResult(world, Direction.UP, pos, false)).equals(action), "Rotated zone mismatch: " + facing + " " + action);
+                check(h, StoneAnvilBlock.actionAt(state, pos, new BlockHitResult(world, facing, pos, false)).equals("none"), "Side face became forge zone");
+            }
+        }
+        h.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void workingPadsMatchRayHitsAndOutlinesInEveryFacing(GameTestHelper h) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        double[][] samples = {{8, 8, 10.6}, {6.5, 8, 10.6}, {9.5, 8, 10.6},
+                {4, 8, 10.6}, {12, 8, 10.6}, {8, 4, 10.6}, {8, 12, 10.6},
+                {5.5, 8, 10.6}, {10.5, 8, 10.6}, {6, 8, 10.6}, {10, 8, 10.6},
+                {8, 1, 9.7}, {5.5, 2.5, 9.7}, {2, 1, 9.7}, {8, 1, 10.6}, {8, 8, 9.7}};
+        String[] expected = {"flatten", "flatten", "flatten", "draw", "draw", "draw", "draw",
+                "draw", "draw", "flatten", "draw", "bend", "bend", "none", "none", "none"};
+        for (Direction facing : Direction.Plane.HORIZONTAL) {
+            var state = ModBlocks.STONE_ANVIL.get().defaultBlockState().setValue(WorkshopBlock.FACING, facing);
+            for (int i = 0; i < samples.length; i++) {
+                var sample = samples[i];
+                double x = sample[0] / 16 - 0.5, z = sample[1] / 16 - 0.5;
+                var offset = switch (facing) {
+                    case EAST -> new Vec3(-z, sample[2] / 16, x);
+                    case SOUTH -> new Vec3(-x, sample[2] / 16, -z);
+                    case WEST -> new Vec3(z, sample[2] / 16, -x);
+                    default -> new Vec3(x, sample[2] / 16, z);
+                };
+                var world = offset.add(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
+                var hit = new BlockHitResult(world, Direction.UP, pos, false);
+                check(h, StoneAnvilBlock.actionAt(state, pos, hit).equals(expected[i]),
+                        "Wrong pad at sample " + i + " facing " + facing);
+                if (expected[i].equals("none")) continue;
+                var ray = state.getShape(h.getLevel(), pos).clip(world.add(0, 1, 0), world.add(0, -1, 0), pos);
+                check(h, ray != null && StoneAnvilBlock.actionAt(state, pos, ray).equals(expected[i]),
+                        "Actual surface ray selected a different pad: " + facing + " sample " + i);
+                var outlinePoint = world.subtract(Vec3.atLowerCornerOf(pos)).add(0, 0.02 / 16, 0);
+                check(h, StoneAnvilBlock.zone(state, expected[i]).toAabbs().stream().anyMatch(box ->
+                                outlinePoint.x >= box.minX && outlinePoint.x <= box.maxX
+                                && outlinePoint.y >= box.minY && outlinePoint.y <= box.maxY
+                                && outlinePoint.z >= box.minZ && outlinePoint.z <= box.maxZ),
+                        "Target lies outside its outline: " + facing + " sample " + i);
+                // Shared border lines belong to both drawn rectangles, but the hit has one action.
+                if (i == 9 || i == 10) continue;
+                for (String other : new String[]{"flatten", "draw", "bend"}) {
+                    if (other.equals(expected[i])) continue;
+                    check(h, StoneAnvilBlock.zone(state, other).toAabbs().stream().noneMatch(box -> box.contains(outlinePoint)),
+                            "Working pads overlap: " + facing + " sample " + i);
+                }
+            }
+        }
+        h.succeed();
+    }
+    static void heatOnAnvil(GameTestHelper h, WorkshopBlockEntity anvil) {
+        BlockPos kilnPos = new BlockPos(7, 1, 7);
+        h.setBlock(kilnPos, ModBlocks.KILN.get());
+        WorkshopBlockEntity kiln = h.getBlockEntity(kilnPos);
+        ItemStack work = anvil.getItemHandler(null).extractItem(0, 64, false);
+        check(h, !work.isEmpty(), "Unfinished work could not be extracted");
+        check(h, kiln.insert(work, false), "Kiln rejected workpiece");
+        kiln.insertFuel(new ItemStack(Items.CHARCOAL), false);
+        check(h, kiln.getBurnTicks() > 0 || kiln.ignite(), "Kiln could not be lit");
+        for (int i = 0; i < 600; i++) WorkshopBlockEntity.serverTick(h.getLevel(), kiln.getBlockPos(), kiln.getBlockState(), kiln);
+        check(h, kiln.getProgress() == 0 && kiln.getOutput().isEmpty(), "Kiln performed anvil work");
+        ItemStack hot = kiln.getItemHandler(null).extractItem(0, 64, false);
+        check(h, ItemHeat.workable(hot, h.getLevel()), "Kiln did not heat the workpiece");
+        check(h, anvil.insert(hot, false), "Anvil rejected heated workpiece");
+    }
+
+    private static void check(GameTestHelper h, boolean value, String message) { h.assertTrue(value, message); }
+}

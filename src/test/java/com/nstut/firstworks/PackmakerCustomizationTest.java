@@ -103,30 +103,30 @@ public class PackmakerCustomizationTest {
         assertTrue(src.contains("ModBlocks.POTTERY_WHEEL.get(), POTTERY_WHEEL_PROCESSING"));
         assertTrue(src.contains("ModBlocks.STONE_ANVIL.get(), STONE_ANVIL_PROCESSING"));
         assertTrue(src.contains("ModBlocks.CRUCIBLE_FURNACE.get(), CRUCIBLE_FURNACE_PROCESSING"));
-        assertTrue(src.contains("ModBlocks.BELLOWS.get(), CRUCIBLE_FURNACE_PROCESSING"),
-                "Bellows must expose only Crucible Furnace processing in JEI");
+        assertFalse(src.contains("ModBlocks.BELLOWS.get(), CRUCIBLE_FURNACE_PROCESSING"),
+                "Bellows must not appear as a Crucible Furnace machine variant");
     }
 
     @Test
-    public void workshopJeiShowsRequiredManualToolsTaggedFuelAndAir() throws Exception {
+    public void workshopJeiShowsRequiredManualToolsNativeFuelAndAir() throws Exception {
         String src = Files.readString(WORKSHOP_JEI_CATEGORY);
         assertTrue(src.contains("Ingredient.of(ModTags.HAMMERS)"),
                 "Stone Anvil JEI recipes must show the pack-extensible hammer requirement");
-        assertTrue(src.contains("Ingredient.of(ModTags.CRUCIBLE_FURNACE_FUELS)"),
-                "heated workshop JEI recipes must show the same pack-extensible fuel tag accepted at runtime");
+        assertTrue(src.contains("stack.getBurnTime(net.minecraft.world.item.crafting.RecipeType.SMELTING) > 0"),
+                "heated workshop JEI recipes must list the native furnace fuels accepted at runtime");
         assertTrue(src.contains("new ItemStack(ModItems.BELLOWS.get())"),
                 "Crucible Furnace JEI recipes must show Bellows as an air-control requirement");
     }
 
     @Test
-    public void crucibleFuelIsPublicAndDatapackExtensible() throws Exception {
+    public void crucibleFuelUsesNativeBurnValuesAndRetainsLegacyTag() throws Exception {
         String tags = Files.readString(MOD_TAGS);
         String entity = Files.readString(WORKSHOP_BE);
         String defaults = Files.readString(CRUCIBLE_FUEL_TAG);
         assertTrue(tags.contains("CRUCIBLE_FURNACE_FUELS"),
                 "Crucible Furnace fuel must have a public ModTags key");
-        assertTrue(entity.contains("stack.is(ModTags.CRUCIBLE_FURNACE_FUELS)"),
-                "runtime fuel acceptance must use the public tag instead of hardcoded items");
+        assertTrue(entity.contains("stack.getBurnTime(RecipeType.SMELTING) > 0"),
+                "runtime fuel acceptance must use native fuel values instead of hardcoded items");
         assertTrue(defaults.contains("minecraft:coal") && defaults.contains("minecraft:charcoal"),
                 "the shipped fuel tag must preserve coal and charcoal defaults");
     }

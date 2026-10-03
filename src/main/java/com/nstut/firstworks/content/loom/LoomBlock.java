@@ -51,6 +51,14 @@ public class LoomBlock extends BaseEntityBlock {
     @Override protected MapCodec<? extends BaseEntityBlock> codec() { return CODEC; }
 
     @Override
+    public void appendHoverText(ItemStack stack, net.minecraft.world.item.Item.TooltipContext context,
+            java.util.List<net.minecraft.network.chat.Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
+        super.appendHoverText(stack, context, tooltip, flag);
+        tooltip.add(net.minecraft.network.chat.Component.translatable("hint.firstworks.loom.controls"));
+        tooltip.add(net.minecraft.network.chat.Component.translatable("hint.firstworks.loom.retrieve"));
+    }
+
+    @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING);
     }
@@ -64,7 +72,14 @@ public class LoomBlock extends BaseEntityBlock {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPES.get(state.getValue(FACING));
+        VoxelShape frame = SHAPES.get(state.getValue(FACING));
+        if (level.getBlockEntity(pos) instanceof LoomBlockEntity loom && (!loom.getInput().isEmpty() || !loom.getOutput().isEmpty())) {
+            double x = 0.5 + loom.getShuttleOffset(0);
+            VoxelShape grip = Shapes.box(x - 3.5 / 16, 8.1 / 16, 4.45 / 16, x + 3.5 / 16, 9.9 / 16, 6.25 / 16);
+            int turns = switch (state.getValue(FACING)) { case EAST -> 1; case SOUTH -> 2; case WEST -> 3; default -> 0; };
+            return Shapes.or(frame, rotate(grip, turns));
+        }
+        return frame;
     }
 
     @Override
@@ -94,14 +109,13 @@ public class LoomBlock extends BaseEntityBlock {
             Player player, BlockHitResult hitResult) {
         if (!(level.getBlockEntity(pos) instanceof LoomBlockEntity loom)) return InteractionResult.PASS;
         if (!level.isClientSide) {
-            if (loom.takeOutput(player)) return InteractionResult.SUCCESS;
             if (player.isShiftKeyDown()) {
                 if (loom.takeInput(player)) {
                     level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 0.5F, 1.0F);
                 }
                 return InteractionResult.SUCCESS;
             }
-            loom.weave(player);
+            if (loom.takeOutput(player)) return InteractionResult.SUCCESS;
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
@@ -113,6 +127,48 @@ public class LoomBlock extends BaseEntityBlock {
             Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, loom.getOutput());
         }
         super.onRemove(state, level, pos, newState, moving);
+    }
+
+    @Override
+    public <T extends BlockEntity> net.minecraft.world.level.block.entity.BlockEntityTicker<T> getTicker(
+            Level level, BlockState state, net.minecraft.world.level.block.entity.BlockEntityType<T> type) {
+        return createTickerHelper(type, ModBlockEntities.LOOM.get(), LoomBlockEntity::tick);
+    }
+
+    public static net.minecraft.world.phys.Vec3 local(BlockState state, BlockPos pos, net.minecraft.world.phys.Vec3 hit) {
+        double x = hit.x - pos.getX() - 0.5, z = hit.z - pos.getZ() - 0.5;
+        return switch (state.getValue(FACING)) {
+            case EAST -> new net.minecraft.world.phys.Vec3(0.5 + z, hit.y - pos.getY(), 0.5 - x);
+            case SOUTH -> new net.minecraft.world.phys.Vec3(0.5 - x, hit.y - pos.getY(), 0.5 - z);
+            case WEST -> new net.minecraft.world.phys.Vec3(0.5 - z, hit.y - pos.getY(), 0.5 + x);
+            default -> new net.minecraft.world.phys.Vec3(0.5 + x, hit.y - pos.getY(), 0.5 + z);
+        };
+    }
+
+    public static boolean hitsShuttle(Player player, LoomBlockEntity loom) {
+        if (!(player.pick(player.blockInteractionRange(), 1, false) instanceof BlockHitResult hit)
+                || !hit.getBlockPos().equals(loom.getBlockPos())) return false;
+        var point = local(loom.getBlockState(), loom.getBlockPos(), hit.getLocation());
+        return Math.abs(point.x - (0.5 + loom.getShuttleOffset(0))) <= 3.6 / 16
+                && point.y >= 8.0 / 16 && point.y <= 10.0 / 16 && point.z <= 6.4 / 16;
+    }
+
+    /** Intersect a broad loom plane, retaining the grip when the ray crosses a frame gap. */
+    public static @Nullable net.minecraft.world.phys.Vec3 trackAim(Player player, BlockPos pos, BlockState state) {
+        var eye = player.getEyePosition();
+        var end = eye.add(player.getLookAngle().scale(player.blockInteractionRange()));
+        var from = local(state, pos, eye);
+        var to = local(state, pos, end);
+        double dz = to.z - from.z;
+        if (Math.abs(dz) < 0.00001) return null;
+        double t = (5.35 / 16 - from.z) / dz;
+        if (t < 0 || t > 1) return null;
+        var point = from.lerp(to, t);
+        if (point.x < -0.3 || point.x > 1.3 || point.y < 0.1 || point.y > 1.1) return null;
+        var hit = player.level().clip(new net.minecraft.world.level.ClipContext(eye, eye.lerp(end, t),
+                net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, player));
+        if (hit.getType() != net.minecraft.world.phys.HitResult.Type.MISS && !hit.getBlockPos().equals(pos)) return null;
+        return point;
     }
 
     private static Map<Direction, VoxelShape> makeShapes() {

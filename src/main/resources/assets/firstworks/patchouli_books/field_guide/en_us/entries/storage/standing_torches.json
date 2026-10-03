@@ -1,0 +1,22 @@
+{
+  "name": "Standing Torches",
+  "category": "firstworks:storage",
+  "icon": "firstworks:standing_torch",
+  "sortnum": 28,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Workshop Lighting",
+      "text": "A Torch, Stick, and primitive binding make a floor-supported Standing Torch. Place it on a supporting surface to light a rustic workshop."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Keep the Support",
+      "text": "The torch cannot remain floating after its support is removed. It provides light but is not itself a kiln/crucible igniter."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:standing_torch"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "type": "firstworks:workshop_processing",
+  "station": "stone_anvil",
+  "ingredient": {
+    "item": "minecraft:flint"
+  },
+  "result": {
+    "id": "minecraft:gravel"
+  },
+  "work": 2
+}

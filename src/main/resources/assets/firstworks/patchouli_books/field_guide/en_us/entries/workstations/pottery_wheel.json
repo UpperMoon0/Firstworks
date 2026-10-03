@@ -1,0 +1,39 @@
+{
+  "name": "Pottery Wheel",
+  "category": "firstworks:workstations",
+  "icon": "firstworks:pottery_wheel",
+  "sortnum": 11,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Batch Placement",
+      "text": "Use valid clay on the wheel. Sneak-place primary input on the top plate: centre loads one, middle two, outer ring three. This special placement targets primary input, rather than an optional recipe catalyst."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Shape by Hand",
+      "text": "Empty-hand use works the wheel or collects ready output. Sneak-empty-hand use retrieves stored material. The default Tuyere needs one Refractory Clay and six work; Casting Mold needs two and eight; Crucible needs three and eight."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Fire the Parts",
+      "text": "Output ceramics are unfired. Smelt them in a normal furnace before construction. The Kiln heats workpieces and cannot fire pottery. Packs can add workshop ingredients, catalysts, catalyst consumption, and work requirements."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:pottery_wheel"
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "firstworks:smelt_tuyere"
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "firstworks:smelt_casting_mold"
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "firstworks:smelt_crucible"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Workstations",
+  "description": "Controls, loading, processing, and recovery.",
+  "icon": "firstworks:loom",
+  "sortnum": 10
+}

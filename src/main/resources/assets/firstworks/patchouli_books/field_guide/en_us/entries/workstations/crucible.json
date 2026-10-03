@@ -1,0 +1,32 @@
+{
+  "name": "Crucible Furnace",
+  "category": "firstworks:workstations",
+  "icon": "firstworks:crucible_furnace",
+  "sortnum": 14,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Load the Charge",
+      "text": "Load three Raw Copper, one reusable fired Casting Mold, and furnace fuel. The mold slot holds only one item; copper and fuel can stack. Ignite explicitly. Fuel burns continuously using its Minecraft furnace duration, including between recipes. The unassisted ceiling is 800°C: too cool for copper casting."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Cast with Air",
+      "text": "Bellows raise the ceiling to 1150°C, but heat rises gradually. Copper casting requires 1085°C and 240 ticks at or above that temperature. Below the requirement, progress pauses without being erased. Completing a recipe does not extinguish the fire."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Air Loss",
+      "text": "A blow holds the boosted ceiling for 30 seconds, then it falls over 15 seconds toward 800°C. Current temperature drops with that ceiling. Blow again to maintain casting heat; boosts refresh rather than stack. Jade shows current/max temperature and the recipe requirement."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Loading Roles",
+      "text": "Empty-hand use collects output; sneak-empty-hand use retrieves stored material. Normal insertion favours input and catalyst. Sneak-use a valid fuel to force the fuel role when a pack also uses that item as a recipe ingredient."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:crucible_furnace"
+    }
+  ]
+}

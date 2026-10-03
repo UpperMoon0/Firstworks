@@ -43,7 +43,8 @@ public final class MortarBlockEntityRenderer implements BlockEntityRenderer<Mort
             poseStack.translate(0.5F, 0.24F, 0.5F);
             poseStack.mulPose(Axis.YP.rotationDegrees(facingRotation));
             poseStack.mulPose(Axis.XP.rotationDegrees(90.0F));
-            poseStack.scale(0.28F, 0.28F, 0.28F);
+            float size = mortar.getStageIndex() > 0 ? 0.23F : 0.28F;
+            poseStack.scale(size, size, size);
             itemRenderer.renderStatic(visible, ItemDisplayContext.FIXED, packedLight, packedOverlay,
                     poseStack, buffers, mortar.getLevel(), 0);
             poseStack.popPose();
@@ -55,9 +56,12 @@ public final class MortarBlockEntityRenderer implements BlockEntityRenderer<Mort
                 .getBlockModel(Blocks.STONE.defaultBlockState()).getParticleIcon();
 
         poseStack.pushPose();
-        poseStack.translate(0.5F, 0.54F + Math.abs(stroke) * 0.025F, 0.5F);
+        float radius = mortar.isGrinding() ? 0.055F : 0;
+        poseStack.translate(0.5F + Math.cos(phase * 0.35F) * radius,
+                0.54F + mortar.getCrushPulse(partialTick) * 0.13F,
+                0.5F + Math.sin(phase * 0.35F) * radius);
         poseStack.mulPose(Axis.YP.rotationDegrees(facingRotation));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(27.0F + stroke * 13.0F));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(mortar.getCrushPulse(partialTick) > 0 ? 0 : 27.0F + stroke * 6.0F));
         renderCuboid(poseStack, buffers.getBuffer(Sheets.solidBlockSheet()), stone,
                 -0.09375F, -0.3125F, -0.09375F,
                  0.09375F,  0.3125F,  0.09375F,
@@ -75,7 +79,7 @@ public final class MortarBlockEntityRenderer implements BlockEntityRenderer<Mort
         return Mth.lerp(t, sprite.getV0(), sprite.getV1());
     }
 
-    private static void renderCuboid(PoseStack poseStack, VertexConsumer vertices, TextureAtlasSprite sprite,
+    static void renderCuboid(PoseStack poseStack, VertexConsumer vertices, TextureAtlasSprite sprite,
             float minX, float minY, float minZ, float maxX, float maxY, float maxZ,
             int light, int overlay) {
         float sizeX = Math.min(16.0F, Math.max(1.0F, (maxX - minX) * 16.0F));

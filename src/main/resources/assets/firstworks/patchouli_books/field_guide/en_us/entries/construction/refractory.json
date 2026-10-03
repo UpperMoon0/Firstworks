@@ -1,0 +1,31 @@
+{
+  "name": "Grog and Refractory Clay",
+  "category": "firstworks:construction",
+  "icon": "firstworks:refractory_clay",
+  "sortnum": 19,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Crushed Ceramic",
+      "text": "A Mortar and Pestle turns one fired Brick into one Grog. Later the Quern yields two Grog per Brick. Grog is fired ceramic powder, not raw clay."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Mix and Shape",
+      "text": "Two Clay Balls and one Grog make two Refractory Clay. Use a Brick Mold for refractory bricks and a Pottery Wheel for crucibles, tuyères, and casting molds. Fire every unfired part in a normal furnace."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Furnace Construction",
+      "text": "Refractory Bricks, a fired Crucible, and a fired Tuyere build the Crucible Furnace. A fired Casting Mold is loaded separately as a reusable catalyst. Prepare all parts before attempting raw-copper casting."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:refractory_clay"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:crucible_furnace"
+    }
+  ]
+}

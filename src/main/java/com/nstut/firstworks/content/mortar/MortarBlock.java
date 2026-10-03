@@ -1,5 +1,9 @@
 package com.nstut.firstworks.content.mortar;
 
+import java.util.List;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.Item;
 import com.mojang.serialization.MapCodec;
 import com.nstut.firstworks.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
@@ -42,6 +46,18 @@ public final class MortarBlock extends BaseEntityBlock {
             box(4, 2, 11, 12, 6, 13),
             box(3, 2, 5, 5, 6, 11),
             box(11, 2, 5, 13, 6, 11)).optimize();
+
+    public static String actionAt(BlockPos pos, BlockHitResult hit) {
+        if (hit.getDirection() != Direction.UP) return "none";
+        double x = hit.getLocation().x - pos.getX() - 0.5;
+        double z = hit.getLocation().z - pos.getZ() - 0.5;
+        return x * x + z * z <= 0.13 * 0.13 ? "crush" : "grind";
+    }
+
+    @Override public void appendHoverText(ItemStack stack, Item.TooltipContext context,
+            List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.translatable("hint.firstworks.mortar.controls"));
+    }
 
     public MortarBlock(Properties properties) {
         super(properties);
@@ -109,16 +125,11 @@ public final class MortarBlock extends BaseEntityBlock {
                 level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 0.5F, 1.0F);
                 return InteractionResult.SUCCESS;
             }
-            ItemStack material = mortar.getInput().copyWithCount(1);
-            if (!player.isShiftKeyDown() && mortar.startGrinding()) {
-                level.playSound(null, pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 0.55F, 0.8F);
-                if (level instanceof ServerLevel serverLevel && !material.isEmpty()) {
-                    serverLevel.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, material),
-                            pos.getX() + 0.5, pos.getY() + 0.35, pos.getZ() + 0.5,
-                            5, 0.10, 0.03, 0.10, 0.012);
-                }
-                return InteractionResult.SUCCESS;
+            String action = actionAt(pos, hitResult);
+            if (!player.isShiftKeyDown() && action.equals("crush")) {
+                if (!mortar.operate(player, action)) player.displayClientMessage(mortar.hint(action), true);
             }
+
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

@@ -8,7 +8,8 @@
     {"name": "catalyst_count", "role": "input", "type": {"type": "int", "min": 1, "max": 64}, "function_names": ["catalystCount"], "optional": 1},
     {"name": "consume_catalyst", "role": "other", "type": "boolean", "function_names": ["consumeCatalyst"], "optional": false},
     {"name": "work", "role": "other", "type": {"type": "int", "min": 1, "max": 72000}, "optional": 20},
-    {"name": "priority", "role": "other", "type": "int", "function_names": ["priority"], "optional": 0}
+    {"name": "priority", "role": "other", "type": "int", "function_names": ["priority"], "optional": 0},
+    {"name": "required_temperature", "role": "other", "type": {"type": "int", "min": 0, "max": 5000}, "function_names": ["requiredTemperature"], "optional": 1085}
   ],
   "unique": ["station", "ingredient", "input_count", "catalyst", "catalyst_count", "priority", "result"],
   "constructors": [{"keys": ["result", "station", "ingredient"]}]

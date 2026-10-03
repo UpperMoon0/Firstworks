@@ -1,0 +1,19 @@
+{
+  "type": "firstworks:mortar_grinding",
+  "ingredient": {
+    "item": "minecraft:amethyst_shard"
+  },
+  "result": {
+    "id": "minecraft:diamond"
+  },
+  "processing": [
+    {
+      "action": "crush",
+      "count": 1
+    },
+    {
+      "action": "grind",
+      "duration": 3
+    }
+  ]
+}

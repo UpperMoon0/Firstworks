@@ -14,6 +14,8 @@ import com.nstut.firstworks.content.quern.QuernBlock;
 import com.nstut.firstworks.content.workshop.CrucibleFurnaceBlock;
 import com.nstut.firstworks.content.workshop.PotteryWheelBlock;
 import com.nstut.firstworks.content.workshop.StoneAnvilBlock;
+import com.nstut.firstworks.content.workshop.KilnBlock;
+import com.nstut.firstworks.content.workshop.WorkshopBlock;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -82,9 +84,12 @@ public final class ModBlocks {
     public static final DeferredHolder<Block, PotteryWheelBlock> POTTERY_WHEEL = BLOCKS.register(
             "pottery_wheel",
             () -> new PotteryWheelBlock(Block.Properties.ofFullCopy(Blocks.SMOOTH_STONE).noOcclusion()));
+    public static final DeferredHolder<Block, KilnBlock> KILN = BLOCKS.register("kiln",
+            () -> new KilnBlock(Block.Properties.ofFullCopy(Blocks.BRICKS).noOcclusion()
+                    .lightLevel(s -> s.getValue(WorkshopBlock.HEAT_LIGHT))));
     public static final DeferredHolder<Block, StoneAnvilBlock> STONE_ANVIL = BLOCKS.register(
             "stone_anvil",
-            () -> new StoneAnvilBlock(Block.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+            () -> new StoneAnvilBlock(Block.Properties.ofFullCopy(Blocks.STONE).noOcclusion().lightLevel(s -> s.getValue(WorkshopBlock.HEAT_LIGHT))));
     public static final DeferredHolder<Block, BellowsBlock> BELLOWS = BLOCKS.register(
             "bellows",
             () -> new BellowsBlock(Block.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion()));

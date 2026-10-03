@@ -1,5 +1,9 @@
 package com.nstut.firstworks.client;
 
+import net.minecraft.client.renderer.Sheets;
+import com.nstut.firstworks.content.workshop.ItemHeat;
+import net.minecraft.world.level.block.Blocks;
+import com.nstut.firstworks.content.workshop.ForgeData;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.nstut.firstworks.Firstworks;
@@ -27,6 +31,7 @@ import net.neoforged.neoforge.client.model.data.ModelData;
  * wheel motion and shaped clay, anvil deformation, bellows-fed molten copper.
  */
 public final class WorkshopBlockEntityRenderer implements BlockEntityRenderer<WorkshopBlockEntity> {
+    public static final ModelResourceLocation KILN_EMBERS = ModelResourceLocation.standalone(Firstworks.id("block/kiln_embers"));
     public static final ModelResourceLocation POTTERY_HEAD = ModelResourceLocation.standalone(Firstworks.id("block/pottery_wheel_head"));
     public static final ModelResourceLocation CRUCIBLE_CONTENTS = ModelResourceLocation.standalone(Firstworks.id("block/crucible_furnace_contents"));
 
@@ -43,12 +48,18 @@ public final class WorkshopBlockEntityRenderer implements BlockEntityRenderer<Wo
         pose.pushPose();
         rotateToFacing(pose, facing);
         switch (workshop.station()) {
+            case WorkshopRecipe.KILN -> renderKiln(workshop, pose, buffers, packedLight);
             case WorkshopRecipe.POTTERY_WHEEL -> renderPotteryWheel(workshop, partialTick, pose, buffers, packedLight);
             case WorkshopRecipe.STONE_ANVIL -> renderStoneAnvil(workshop, partialTick, pose, buffers, packedLight);
             case WorkshopRecipe.CRUCIBLE_FURNACE -> renderCrucibleFurnace(workshop, pose, buffers, packedLight);
             default -> { }
         }
         pose.popPose();
+    }
+
+    private void renderKiln(WorkshopBlockEntity kiln, PoseStack pose, MultiBufferSource buffers, int light) {
+        if (kiln.getBurnTicks() > 0) renderPartial(kiln, KILN_EMBERS, pose, buffers, LightTexture.FULL_BRIGHT);
+        if (!kiln.getInput().isEmpty()) renderFurnaceItem(kiln, kiln.getInput(), 0.36, 0.39, pose, buffers, light);
     }
 
     private void renderPotteryWheel(WorkshopBlockEntity workshop, float partialTick, PoseStack pose,
@@ -83,21 +94,80 @@ public final class WorkshopBlockEntityRenderer implements BlockEntityRenderer<Wo
                                   MultiBufferSource buffers, int light) {
         ItemStack visible = workshop.getOutput().isEmpty() ? workshop.getInput() : workshop.getOutput();
         if (visible.isEmpty()) return;
+        var forge = workshop.activeRecipe().flatMap(h -> h.value().forge());
+        if (workshop.getOutput().isEmpty() && forge.isPresent() && forge.get().visual().isPresent()) {
+            renderForgeWorkpiece(workshop, forge.get(), pose, buffers, light);
+            return;
+        }
         float fraction = workshop.getProgressFraction();
         float impact = workshop.getActionPulse(partialTick);
         pose.pushPose();
         pose.translate(0.5, 0.71 + impact * 0.025, 0.5);
         pose.mulPose(Axis.XP.rotationDegrees(90.0F));
         pose.mulPose(Axis.ZP.rotationDegrees(90.0F));
-        pose.scale(0.40F + fraction * 0.13F, 0.40F + fraction * 0.13F, 0.24F - fraction * 0.055F - impact * 0.025F);
+        if (forge.isPresent()) pose.scale(0.40F, 0.40F, 0.40F);
+        else pose.scale(0.40F + fraction * 0.13F, 0.40F + fraction * 0.13F, 0.24F - fraction * 0.055F - impact * 0.025F);
         Minecraft.getInstance().getItemRenderer().renderStatic(visible, ItemDisplayContext.FIXED,
                 light, OverlayTexture.NO_OVERLAY, pose, buffers, workshop.getLevel(), 0);
         pose.popPose();
     }
 
+    private void renderForgeWorkpiece(WorkshopBlockEntity workshop, ForgeData data,
+                                      PoseStack pose, MultiBufferSource buffers, int light) {
+        var visual = data.visual().orElseThrow();
+        float heat = ItemHeat.fraction(workshop.getInput(), workshop.getLevel());
+        int workLight = light;
+        if (visual.type().equals("stages") && !visual.models().isEmpty()) {
+            var location = ModelResourceLocation.standalone(visual.models().get(Math.min(workshop.getProgress(), visual.models().size() - 1)));
+            var models = Minecraft.getInstance().getModelManager();
+            if (models.getModel(location) != models.getMissingModel()) {
+                renderPartial(workshop, location, pose, buffers, workLight);
+                if (heat > 0) {
+                    var consumer = new HeatOverlay(buffers.getBuffer(HeatRenderType.GLOW), heat);
+                    Minecraft.getInstance().getBlockRenderer().getModelRenderer().renderModel(pose.last(), consumer,
+                            workshop.getBlockState(), models.getModel(location), 1, 1, 1, LightTexture.FULL_BRIGHT,
+                            OverlayTexture.NO_OVERLAY, ModelData.EMPTY, null);
+                }
+                return;
+            }
+        }
+        float length = visual.length();
+        float width = visual.width();
+        float height = visual.initialProfile().equals("plate") ? visual.height() * 0.5F : visual.height();
+        float bend = 0;
+        for (String action : data.actions().subList(0, Math.min(workshop.getProgress(), data.actions().size()))) {
+            switch (action) {
+                case "flatten" -> { height *= 0.75F; width *= 1.2F; }
+                case "draw" -> { length *= 1.2F; width *= 0.9F; }
+                case "bend" -> bend = Math.min(60, bend + 25);
+            }
+        }
+        length = Math.min(0.6F, length);
+        width = Math.min(0.45F, width);
+        height = Math.max(0.025F, height);
+        var sprite = Minecraft.getInstance().getBlockRenderer().getBlockModel(
+                Blocks.COPPER_BLOCK.defaultBlockState()).getParticleIcon();
+        var vertices = buffers.getBuffer(Sheets.solidBlockSheet());
+        pose.pushPose();
+        pose.translate(0.5, 10.62 / 16.0, 0.5);
+        for (int pass = 0; pass < (heat > 0 ? 2 : 1); pass++) {
+            var consumer = pass == 0 ? vertices : new HeatOverlay(
+                    buffers.getBuffer(HeatRenderType.GLOW), heat);
+            float expansion = pass == 0 ? 0 : 0.0005F;
+            pose.pushPose();
+            MortarBlockEntityRenderer.renderCuboid(pose, consumer, sprite, -width / 2 - expansion, -expansion, -length / 2 - expansion,
+                    width / 2 + expansion, height + expansion, expansion, workLight, OverlayTexture.NO_OVERLAY);
+            pose.mulPose(Axis.XP.rotationDegrees(-bend));
+            MortarBlockEntityRenderer.renderCuboid(pose, consumer, sprite, -width / 2 - expansion, -expansion, -expansion,
+                    width / 2 + expansion, height + expansion, length / 2 + expansion, workLight, OverlayTexture.NO_OVERLAY);
+            pose.popPose();
+        }
+        pose.popPose();
+    }
+
     private void renderCrucibleFurnace(WorkshopBlockEntity workshop, PoseStack pose,
                                        MultiBufferSource buffers, int light) {
-        if (workshop.isRunning() || workshop.getStokeTicks() > 0 || workshop.getProgress() > 0) {
+        if (workshop.hasHotCrucibleContents()) {
             renderPartial(workshop, CRUCIBLE_CONTENTS, pose, buffers, LightTexture.FULL_BRIGHT);
         }
 
@@ -105,9 +175,9 @@ public final class WorkshopBlockEntityRenderer implements BlockEntityRenderer<Wo
         if (castingMold) {
             renderPartial(workshop, CASTING_MOLD, pose, buffers, light);
             if (workshop.getOutput().is(ModItems.CAST_COPPER_BILLET.get())
-                    || workshop.isRunning() && workshop.getProgressFraction() > 0.5F) {
+                    || workshop.hasHotCrucibleContents() && workshop.getProgressFraction() > 0.5F) {
                 renderPartial(workshop, CASTING_METAL, pose, buffers,
-                        workshop.isRunning() ? LightTexture.FULL_BRIGHT : light);
+                        workshop.hasHotCrucibleContents() ? LightTexture.FULL_BRIGHT : light);
             }
         } else if (!workshop.getCatalyst().isEmpty()) {
             renderFurnaceItem(workshop, workshop.getCatalyst(), 0.82, 0.82, pose, buffers, light);
@@ -117,7 +187,7 @@ public final class WorkshopBlockEntityRenderer implements BlockEntityRenderer<Wo
             if (!castingMold || !workshop.getOutput().is(ModItems.CAST_COPPER_BILLET.get())) {
                 renderFurnaceItem(workshop, workshop.getOutput(), 0.85, 0.82, pose, buffers, light);
             }
-        } else if (!workshop.getInput().isEmpty() && !workshop.isRunning()) {
+        } else if (!workshop.getInput().isEmpty() && !workshop.hasHotCrucibleContents()) {
             renderFurnaceItem(workshop, workshop.getInput(), 0.66, 0.44, pose, buffers, light);
         }
     }

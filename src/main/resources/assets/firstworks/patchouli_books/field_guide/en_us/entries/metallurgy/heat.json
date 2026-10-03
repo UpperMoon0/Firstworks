@@ -1,0 +1,28 @@
+{
+  "name": "Item Heat and Temperature",
+  "category": "firstworks:metallurgy",
+  "icon": "firstworks:annealed_copper_billet",
+  "sortnum": 25,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Read the Line",
+      "text": "A heatable item shows one line, such as Heat: 794°C - Workable ~17s. This is actual stored temperature. The timer estimates cooling time until the recipe’s minimum workable temperature, not time until cold. Warm/cold items omit it."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Item-Owned State",
+      "text": "Heat survives inventories, drops, storage, and transfers. Cooling uses world time, including unloaded storage, but does not progress while the world is closed. Expired heat can be cleared to merge equivalent cold stacks without losing forging progress."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Threshold and Scale",
+      "text": "Items define maximum temperatures through synchronized server settings. Forge recipes define minimum_temperature (500°C for copper) and heat_ticks (3600 by default, cooling from maximum to 20°C in 180 seconds). The old 25% threshold no longer determines workability."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Units and Settings",
+      "text": "Client heatTemperatureUnit selects CELSIUS, FAHRENHEIT, or KELVIN for item tooltips, Jade, and JEI. All gameplay temperatures remain Celsius. Server settings control crucible ceilings, heating/cooling rates, Bellows hold/decay/cooldown, hunger cost, and item maxima."
+    }
+  ]
+}

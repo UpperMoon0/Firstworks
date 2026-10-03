@@ -1,0 +1,32 @@
+{
+  "name": "Hide Tanning",
+  "category": "firstworks:textiles",
+  "icon": "firstworks:tannin_soaked_hide",
+  "sortnum": 18,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Soak and Scrape",
+      "text": "Seal one Raw Hide with 250 mB water for 2400 ticks, or two minutes. Craft the resulting Soaked Hide with a primitive knife for Scraped Hide, using knife durability. Raw Hide cannot skip straight to tanning."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Brew Tannin",
+      "text": "Seal four Tree Bark with 1000 mB water for 6000 ticks, or five minutes. The output is 1000 mB Tannin Solution in the separate output tank. Drain it with a bucket before reusing the barrel for another fluid batch."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Tan and Dry",
+      "text": "Seal one Scraped Hide with 250 mB Tannin Solution for 12000 ticks, or ten minutes, to get Tannin-Soaked Hide. Smelt it for 600 ticks to dry into Leather. Raw, soaked, scraped, and tanned hide are distinct stages."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Heavy Leather",
+      "text": "Seal two Leather with 500 mB Tannin Solution for 12000 ticks to make one Heavy Leather. This is required by Bellows. A bucket carries 1000 mB, while these barrel recipes consume smaller portions."
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "firstworks:leather_from_tannin_soaked_hide"
+    }
+  ]
+}

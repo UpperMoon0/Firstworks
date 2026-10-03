@@ -1,0 +1,28 @@
+{
+  "name": "Earthen Charcoal Mounds",
+  "category": "firstworks:metallurgy",
+  "icon": "minecraft:charcoal",
+  "sortnum": 23,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Build a Charge",
+      "text": "Use 4–64 connected logs by default. Cover all exposed faces with supported dirt, grass, mud, clay, or other sealants, leaving exactly one exposed log face as the opening. Ordinary uncovered trees are not valid mounds."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Ignite and Seal",
+      "text": "Use a Fire Starter or Flint and Steel on the exposed log face. Seal that opening within the default 60 seconds. Smoke and sound signal ignition and carbonization. Keep the shell intact; opening too early or failing to seal can spoil the charge."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Wait and Harvest",
+      "text": "Default carbonization takes five minutes. Consumed logs become physical Charcoal Piles bottom-up. Normal yield is 75%; breached yield is 25%. Server settings change sizes, timings, and yields. Saved mounds continue their tracked progress instead of starting over."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Charcoal Piles",
+      "text": "Each supported pile contains one to four Charcoal. Break it to recover that amount. Use Charcoal on a pile to add layers up to four. Piles store fuel physically rather than through a menu."
+    }
+  ]
+}

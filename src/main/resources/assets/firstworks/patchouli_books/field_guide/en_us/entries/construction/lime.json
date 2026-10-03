@@ -1,0 +1,34 @@
+{
+  "name": "Lime and Plaster",
+  "category": "firstworks:construction",
+  "icon": "firstworks:plaster_block",
+  "sortnum": 21,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Burn Calcite",
+      "text": "Smelt one Calcite for 180 ticks into two Lime. Combine one Lime, one Sand, and a Water Clay Bucket for four Plaster; the vessel returns through its crafting remainder."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Build and Reclaim",
+      "text": "Four Plaster form one Plaster Block. Craft the block back into four Plaster. This reversible building-material loop needs no powered processing machine."
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "firstworks:smelt_lime"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:plaster"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:plaster_block"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:plaster_from_block"
+    }
+  ]
+}

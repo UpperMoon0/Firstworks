@@ -1,0 +1,40 @@
+{
+  "name": "Your First Workshop",
+  "category": "firstworks:getting_started",
+  "icon": "firstworks:flint_knife",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Start Small",
+      "text": "Gather sticks, flint, plant fibre, clay, and stone. Three Plant Fibre make Crude Cordage. Use a binding, stick, and flint to make a knife for reliable fibre gathering. Craft this guide from a Book and Plant Fibre."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "A Practical Route",
+      "text": "Build a barrel for water and retting, a Hand Spindle for Twine, and a Loom for Cloth. Press clay bricks in a Brick Mold and fire them. A Mortar and Pestle makes grog and charcoal powder before copper; these unlock refractory clay and strong bindings."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Copper Workshop",
+      "text": "Shape refractory parts on a Pottery Wheel and fire them in a normal furnace. Build a Crucible Furnace, Bellows, Stone Anvil, hammer, and Kiln. Cast raw copper, anneal the billet, heat it in the lit kiln, then forge it. The metallurgy category explains the complete route."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Using This Guide",
+      "text": "Most stations have no menu: use their visible working parts. Empty-hand use works or collects; sneak controls retrieve unfinished material. Crafting and smelting pages resolve live recipes. Processing-reference pages describe bundled defaults; pack changes and server settings take precedence."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:field_guide"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:crude_cordage"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:flint_knife"
+    }
+  ]
+}

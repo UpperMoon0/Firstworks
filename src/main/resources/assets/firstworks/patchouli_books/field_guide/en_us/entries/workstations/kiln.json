@@ -1,0 +1,27 @@
+{
+  "name": "Kiln",
+  "category": "firstworks:workstations",
+  "icon": "firstworks:kiln",
+  "sortnum": 12,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Load and Light",
+      "text": "Load one heatable workpiece and furnace fuel, then ignite with Flint and Steel, Fire Starter, Fire Charge, or a supported igniter. The heating slot holds one loose item or one complete partly forged batch; the fuel slot remains stackable. Fuel insertion never lights a cold kiln."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Carry the Heat",
+      "text": "One workpiece heats from cold to its item-defined maximum in about 30 seconds. Burning fuel maintains heat. Empty-hand use retrieves it for the anvil. Absolute Celsius temperature survives transfers, with cooling based on world time. Jade shows current/max temperature; Kilns do not require Bellows."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Not a Furnace",
+      "text": "The kiln never smelts, fires pottery, or advances forge actions. It accepts forge ingredients and tagged heatable items. Glow and light show hot work. Retrieve an unfinished forging batch as a whole to reheat it. Its completed actions are preserved, and larger batches take proportionally longer to heat."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:kiln"
+    }
+  ]
+}

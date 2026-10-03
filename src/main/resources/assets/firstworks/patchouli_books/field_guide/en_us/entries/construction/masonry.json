@@ -1,0 +1,26 @@
+{
+  "name": "Mortar and Brickwork",
+  "category": "firstworks:construction",
+  "icon": "firstworks:mortar",
+  "sortnum": 20,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Wet Mortar",
+      "text": "Seal two Sand with 250 mB water for 1200 ticks to produce four Mortar. Mortar is a building binder, distinct from the Mortar and Pestle workstation."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Structural Bricks",
+      "text": "The shown 2×2 recipe combines three fired Bricks and one Mortar into a Bricks block. The masonry progression setting controls the vanilla recipe replacement. Mortar also binds the Kiln construction recipe."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:mortar_bound_brick_block"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:kiln"
+    }
+  ]
+}

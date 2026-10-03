@@ -3,7 +3,6 @@ package com.nstut.firstworks.compat.jade;
 import com.nstut.firstworks.Firstworks;
 import com.nstut.firstworks.content.quern.QuernBlock;
 import com.nstut.firstworks.content.quern.QuernBlockEntity;
-import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -43,8 +42,7 @@ public enum QuernProgressProvider implements IBlockComponentProvider, IServerDat
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
         CompoundTag data = accessor.getServerData();
         if (data.contains("Out")) {
-            tooltip.add(Component.translatable("jade.firstworks.quern.ready", data.getInt("OutCount"),
-                    Component.translatable(data.getString("Out")).withStyle(ChatFormatting.GOLD)));
+            tooltip.add(Component.translatable("hint.firstworks.collect"));
             return;
         }
         if (!data.contains("In")) {
@@ -52,7 +50,6 @@ public enum QuernProgressProvider implements IBlockComponentProvider, IServerDat
             return;
         }
 
-        tooltip.add(Component.translatable(data.getString("In")).withStyle(ChatFormatting.GOLD));
         int required = Math.max(1, data.getInt("Need"));
         tooltip.add(Component.translatable("jade.firstworks.quern.progress",
                 Math.min(100, data.getInt("Done") * 100 / required)));

@@ -1,6 +1,25 @@
 {
-  "type": "minecraft:crafting_shapeless",
-  "category": "misc",
-  "ingredients": [{"item": "minecraft:copper_ingot"}],
-  "result": {"id": "firstworks:copper_fasteners", "count": 8}
+  "type": "firstworks:workshop_processing",
+  "station": "stone_anvil",
+  "ingredient": {
+    "item": "minecraft:copper_ingot"
+  },
+  "result": {
+    "id": "firstworks:copper_fasteners",
+    "count": 8
+  },
+  "work": 3,
+  "forge": {
+    "actions": [
+      "flatten",
+      "draw",
+      "bend"
+    ],
+    "heat_ticks": 3600,
+    "visual": {
+      "type": "deformable",
+      "initial_profile": "billet"
+    },
+    "minimum_temperature": 500
+  }
 }

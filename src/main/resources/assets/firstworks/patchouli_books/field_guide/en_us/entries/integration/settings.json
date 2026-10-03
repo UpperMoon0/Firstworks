@@ -1,0 +1,28 @@
+{
+  "name": "Settings and Progression",
+  "category": "firstworks:integration",
+  "icon": "minecraft:comparator",
+  "sortnum": 31,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Server Config",
+      "text": "Gameplay settings live in the world serverconfig/firstworks-server.toml, with pack defaults under defaultconfigs. They synchronize to clients. Textile, masonry, grain, tool-binding, and primitive-copper switches control recipe replacements."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Other Settings",
+      "text": "Rain collection, gathering chances, Quern work per crank, charcoal size, seal window, carbonization duration, and yields are configurable. This book gives defaults; the actual server settings take precedence."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Client Config",
+      "text": "firstworks-client.toml contains loomInputAssistance and heatTemperatureUnit. Assistance removes repeated aiming while preserving loom timing; units convert temperature display without changing gameplay."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Pack Content",
+      "text": "Public tags extend tools, bindings, fuels, heatable items, igniters, trees, gathering sources, and animals. Species profiles define materials. Datapack recipes define counts, timing, catalysts, priorities, forge actions, and outputs."
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "name": "Renewable Resin",
+  "category": "firstworks:materials",
+  "icon": "firstworks:resin_tap",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Tap a Living Tree",
+      "text": "Use a Resin Tap or primitive knife on a horizontal side of a supported living tree log. The adjacent space must be replaceable. Tapping costs one durability and places a Resin Scar. The tree must remain intact and living to support it."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Harvest Again",
+      "text": "The scar grows through four visible ages on random ticks. At its final age, empty-hand right-click drops one Resin and resets its age. Leave the tree intact to repeat. Random-tick growth has no fixed stopwatch guarantee."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Strong Bindings",
+      "text": "Resin, Charcoal Powder, and Twine make two Hafting Compound. Rope and Hafting Compound are strong bindings by default. They unlock the Stone Hammer, Bellows, Copper Knife, and stronger workshop construction."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:resin_tap"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:hafting_compound"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:rope"
+    }
+  ]
+}

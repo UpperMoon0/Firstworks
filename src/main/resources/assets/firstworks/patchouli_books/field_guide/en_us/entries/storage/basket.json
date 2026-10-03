@@ -1,0 +1,22 @@
+{
+  "name": "Woven Baskets",
+  "category": "firstworks:storage",
+  "icon": "firstworks:basket",
+  "sortnum": 26,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Small Storage",
+      "text": "Craft a basket from sticks and compatible strings. Right-click to open its nine-slot menu. Unlike processing stations, it is a normal small inventory container."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Transfer and Signals",
+      "text": "Hoppers and item automation transfer contents; a comparator reports fullness. Breaking the basket drops its stored items rather than making a portable sealed inventory. Place one beside manual stations for materials and finished goods."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:basket"
+    }
+  ]
+}

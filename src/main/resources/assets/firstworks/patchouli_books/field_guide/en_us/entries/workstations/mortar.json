@@ -1,0 +1,31 @@
+{
+  "name": "Mortar and Pestle",
+  "category": "firstworks:workstations",
+  "icon": "firstworks:mortar_and_pestle",
+  "sortnum": 8,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Crush Then Grind",
+      "text": "Load a matching material. Empty-hand strikes at the bowl centre perform crushing; held Use on the inner bowl or rim performs grinding. Recipe stages must be followed in order. Clicks cannot substitute for a held grind stage."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Pause and Recover",
+      "text": "Releasing pauses grinding. Resume at the same stage later. Empty-hand use collects ready output; sneak-empty-hand use retrieves unfinished input. The visible pestle and fill follow the operation; there is no autonomous finish timer."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Bundled Recipes",
+      "text": "Charcoal needs one crush and 40 grind ticks for two Charcoal Powder. Bone needs two crushes and 32 ticks for three Bone Meal. Raw Ochre needs two crushes and 48 ticks for two Ground Ochre. Brick needs three crushes and 40 ticks for one Grog."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:mortar_and_pestle"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:mortar_and_pestle_cobblestone"
+    }
+  ]
+}

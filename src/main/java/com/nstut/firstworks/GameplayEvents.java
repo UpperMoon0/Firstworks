@@ -40,6 +40,14 @@ import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
 @EventBusSubscriber(modid = Firstworks.MOD_ID)
 public final class GameplayEvents {
+    @SubscribeEvent
+    public static void allowAnvilHammerControls(PlayerInteractEvent.RightClickBlock event) {
+        if (event.getLevel().getBlockState(event.getPos()).getBlock() instanceof com.nstut.firstworks.content.workshop.StoneAnvilBlock
+                && event.getItemStack().is(ModTags.HAMMERS)) {
+            event.setUseBlock(net.neoforged.neoforge.common.util.TriState.TRUE);
+        }
+    }
+
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void tapResinTree(PlayerInteractEvent.RightClickBlock event) {
         Direction face = event.getFace();

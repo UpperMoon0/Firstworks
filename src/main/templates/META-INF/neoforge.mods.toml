@@ -45,3 +45,14 @@ type="optional"
 versionRange="[19.43.0,)"
 ordering="AFTER"
 side="CLIENT"
+
+
+[[dependencies.${mod_id}]]
+modId="patchouli"
+type="required"
+versionRange="[1.21.1-93,)"
+ordering="AFTER"
+side="BOTH"
+
+[[mixins]]
+config="firstworks.mixins.json"

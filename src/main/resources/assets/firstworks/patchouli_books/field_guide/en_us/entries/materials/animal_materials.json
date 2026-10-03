@@ -1,0 +1,23 @@
+{
+  "name": "Bones and Raw Hides",
+  "category": "firstworks:materials",
+  "icon": "firstworks:raw_hide",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Animal Drops",
+      "text": "Firstworks can replace leather with Raw Hide and add bones to tagged animals. Species profiles and exclusion tags let packs choose eligible animals and quantities. Looting and profiles affect yields; not every creature necessarily supplies hides."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Fleece and Tools",
+      "text": "Sheep drops and shearing retain fleece colour. Shears gather Raw Fleece; a primitive knife can also shear a wool-bearing sheep for one fleece, using durability. Bones become tools or Bone Meal. Wash fleece before bedding; tan hides before using them as Leather."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Pack Rules",
+      "text": "Unexpected drops may come from changed server settings, entity tags, or material profiles. Firstworks respects configured exclusions. Tanning is a multi-stage chain, and Raw Hide is not interchangeable with finished Leather."
+    }
+  ]
+}

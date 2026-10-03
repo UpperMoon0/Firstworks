@@ -104,6 +104,7 @@ public final class ModItems {
             "stone_hammer", () -> new Item(new Item.Properties().durability(192).stacksTo(1)));
 
     public static final DeferredHolder<Item, Item> POTTERY_WHEEL = blockItem("pottery_wheel", ModBlocks.POTTERY_WHEEL);
+    public static final DeferredHolder<Item, Item> KILN = blockItem("kiln", ModBlocks.KILN);
     public static final DeferredHolder<Item, Item> STONE_ANVIL = blockItem("stone_anvil", ModBlocks.STONE_ANVIL);
     public static final DeferredHolder<Item, Item> BELLOWS = blockItem("bellows", ModBlocks.BELLOWS);
     public static final DeferredHolder<Item, Item> CRUCIBLE_FURNACE =

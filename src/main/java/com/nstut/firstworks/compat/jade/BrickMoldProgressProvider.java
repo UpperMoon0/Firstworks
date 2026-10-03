@@ -49,9 +49,7 @@ public enum BrickMoldProgressProvider implements IBlockComponentProvider, IServe
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
         CompoundTag data = accessor.getServerData();
         if (data.contains(OUTPUT)) {
-            tooltip.add(Component.translatable("jade.firstworks.brick_mold.ready",
-                    data.getInt("OutputCount"),
-                    Component.translatable(data.getString(OUTPUT)).withStyle(ChatFormatting.GOLD)));
+            tooltip.add(Component.translatable("hint.firstworks.collect"));
             return;
         }
         int loaded = data.getInt(INPUT_COUNT);

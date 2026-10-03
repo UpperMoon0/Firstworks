@@ -112,6 +112,34 @@ public final class FirstworksConfig {
                     "Range: 1 ~ 100")
             .defineInRange("quernManualWorkPerCrank", 5, 1, 100);
 
+    public static final ModConfigSpec.IntValue DEFAULT_MAX_HEAT_CELSIUS = BUILDER
+            .comment("Maximum modeled temperature for heatable items without an override. Cold is 20 Celsius; forge readiness uses the recipe minimum temperature.")
+            .defineInRange("defaultMaxHeatCelsius", 1000, 21, 5000);
+    public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> ITEM_MAX_HEAT_CELSIUS = BUILDER
+            .comment("Per-item maximum temperature, as namespace:item=degreesCelsius. Synced to clients. Last duplicate wins; supports modded item IDs.")
+            .defineListAllowEmpty("itemMaxHeatCelsius", java.util.List.of(
+                    "minecraft:copper_ingot=1100", "firstworks:cast_copper_billet=1100",
+                    "firstworks:annealed_copper_billet=1100", "minecraft:iron_ingot=1250",
+                    "minecraft:gold_ingot=1000"), com.nstut.firstworks.content.workshop.HeatTemperature::validOverride);
+    public static final ModConfigSpec.IntValue CRUCIBLE_BASE_TEMPERATURE = BUILDER
+            .comment("Unassisted crucible temperature ceiling in Celsius.").defineInRange("crucibleBaseTemperature", 800, 21, 5000);
+    public static final ModConfigSpec.IntValue CRUCIBLE_BOOST_TEMPERATURE = BUILDER
+            .comment("Bellows-assisted temperature ceiling in Celsius; never below the base ceiling.").defineInRange("crucibleBoostTemperature", 1150, 21, 5000);
+    public static final ModConfigSpec.DoubleValue CRUCIBLE_HEATING_RATE = BUILDER
+            .comment("Crucible temperature rise per tick in Celsius.").defineInRange("crucibleHeatingRate", 1, 0.01, 100);
+    public static final ModConfigSpec.DoubleValue STATION_COOLING_RATE = BUILDER
+            .comment("Idle crucible cooling per tick in Celsius.").defineInRange("stationCoolingRate", 0.25, 0.01, 100);
+    public static final ModConfigSpec.IntValue KILN_HEATING_TICKS = BUILDER
+            .comment("Ticks to heat one kiln workpiece from ambient to its maximum; 600 ticks is 30 seconds.")
+            .defineInRange("kilnHeatingTicks", 600, 20, 72000);
+    public static final ModConfigSpec.IntValue BELLOWS_HOLD_TICKS = BUILDER
+            .comment("Full ceiling boost duration after a successful blow.").defineInRange("bellowsHoldTicks", 600, 1, 1200);
+    public static final ModConfigSpec.IntValue BELLOWS_DECAY_TICKS = BUILDER
+            .comment("Ticks over which the boosted ceiling returns to the base ceiling.").defineInRange("bellowsDecayTicks", 300, 1, 1200);
+    public static final ModConfigSpec.IntValue BELLOWS_COOLDOWN_TICKS = BUILDER
+            .comment("Minimum time between successful blows on one furnace.").defineInRange("bellowsCooldownTicks", 20, 1, 1200);
+    public static final ModConfigSpec.IntValue BELLOWS_FOOD_COST = BUILDER
+            .comment("Food points charged per successful survival blow; one point is half a hunger icon.").defineInRange("bellowsFoodCost", 1, 1, 20);
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     private FirstworksConfig() {}

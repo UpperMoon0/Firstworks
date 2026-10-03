@@ -25,8 +25,8 @@ Looking to configure recipes, progression gates, custom wood types, KubeJS event
 
 ### 🧵 Textile Crafting & Hand Weaving
 - **Hand Spindle**: Hold in main hand with Retted Fibre in off-hand to hand-spin Twine.
-- **Looms**: Load Twine or String into a wooden Loom and manually work the shuttle to weave Cloth.
-- **Automation**: Empty-handed Create Deployers can operate the Loom shuttle when Create is present.
+- **Looms**: Load a stack of Twine or String in one action, hold Use on the shuttle, and guide it back and forth. Basic Cloth needs four completed crossings. An optional client assistance setting removes repeated aim movement.
+- **Automation**: Loom item insertion/extraction remains supported. Weaving requires held shuttle input; a fixed generic click does not weave automatically.
 - **Sheep & Fleece**: Sheep drop color-aware Raw Fleece. Wash fleece in water-filled Barrels to make Clean Wool for textile beds.
 
 ### 🌲 Resin, Bindings & Primitive Tools
@@ -44,8 +44,8 @@ Looking to configure recipes, progression gates, custom wood types, KubeJS event
 - **Wet Mortar**: Mix sand and water in sealed Barrels to create wet mortar for structural brick construction.
 
 ### 🔨 Primitive Copper Workshop
-- **Crucible Furnace**: Cast raw copper into billets using a reusable casting mold and fuel from the public `#firstworks:crucible_furnace_fuels` tag.
-- **Bellows Airflow**: Crucible processing requires active adjacent Bellows air. Repeated strokes can bank a finite airflow reserve.
+- **Crucible Furnace**: Cast raw copper into billets using a reusable casting mold and native furnace fuel with continuous burn time.
+- **Bellows Airflow**: Bellows temporarily raise the Crucible Furnace ceiling from 800°C to 1150°C. Copper casting requires 1085°C. Successful blows cost half a hunger icon and refresh a bounded boost.
 - **Annealing**: Cast billets are annealed through vanilla furnace recipes.
 - **Stone Anvil**: Manually work annealed billets with a hammer into vanilla Copper Ingots.
 - **Downstream Copper**: Copper Ingots feed Copper Fasteners and the Copper Knife.
@@ -59,7 +59,7 @@ Looking to configure recipes, progression gates, custom wood types, KubeJS event
 - **Flour & Dough**: Mill wheat into Flour (`#c:flours/wheat`), knead it into Wheat Dough (`#c:doughs/wheat`), then bake or craft it into early foods.
 
 ### 🥣 Mortar & Pestle
-- Place on any surface, add grindable materials such as Raw Ochre, Charcoal, or Bone, and right-click to grind with an animated in-world pestle.
+- Place on any surface, add materials such as Raw Ochre, Charcoal, or Bone, pound the center to crush them, then hold use on the inner bowl/rim to grind with an animated in-world pestle.
 
 ### 🔥 Earthen Charcoal Mounds
 - **Physical Construction**: Stack connected logs and encase them with suitable earthen blocks, leaving one opening.
@@ -95,8 +95,9 @@ For full JSON schemas, supported ranges, public tags, progression toggles, and K
 ## Integrations
 
 - **Jade**: Live in-world status for Barrels, Looms, Brick Molds, Mortar & Pestle, Querns, Charcoal Mounds/Piles, Pottery Wheels, Stone Anvils, Crucible Furnaces, and Bellows airflow.
-- **JEI**: Dedicated categories for Barrel Processing, Hand Spinning, Loom Weaving, Brick Molding, Mortar Grinding, Quern Grinding, Workshop Processing, and dynamic Charcoal Mound information. Workshop views include station catalysts, reusable/consumed catalyst state, Bellows requirements, and tagged Crucible fuels.
+- **JEI**: Dedicated categories for Barrel Processing, Hand Spinning, Loom Weaving, Brick Molding, Mortar Grinding, Quern Grinding, Workshop Processing, and dynamic Charcoal Mound information. Workshop views include station catalysts, reusable/consumed catalyst state, Bellows requirements, and native furnace fuels.
 - **KubeJS**: Custom wood registration, custom recipes, and process start/completion lifecycle hooks, with cancellable start events including `workshopProcessingStarting` and completion events including `workshopProcessingCompleted`.
+- **Patchouli (required)**: Install Patchouli 1.21.1-93 or newer on client and server. Craft the **Firstworks Field Guide** from Book + Plant Fibre for detailed feature instructions, controls, progression, recovery, settings, and bundled recipes.
 - **Automation**: Stable item/fluid handlers are exposed for pack machinery while manual-only mechanics remain explicitly manual.
 
 ---
@@ -122,3 +123,21 @@ CI additionally runs the NeoForge GameTest server to exercise progression and wo
 ## Credits
 
 Inspired by [TerraFirmaCraft](https://www.curseforge.com/minecraft/mc-mods/terrafirmacraft) and its tactile approach to early-game survival progression.
+
+
+### 0.0.15 manual workstation controls
+
+- **Stone Anvil:** heat a workpiece in the fueled Kiln, transfer it to the anvil, then follow the recipe's center/edge/horn actions. A cooled piece keeps its progress and can be reheated. Custom smashing recipes retain their simple hammer behavior.
+- **Mortar and Pestle:** pound the center to crush coarse material, then hold use on the inner bowl/rim to grind. Releasing pauses work; there is no autonomous finish timer.
+- **Loom:** hold Use on the shuttle and guide it across for the recipe's required crossings.
+- **Crucible Furnace:** glow and particles follow actual fuel-backed processing with airflow, independently of retained progress.
+
+See [packmaker documentation](docs/PACKMAKERS.md#0015-workstation-interactions) for optional recipe metadata and compatibility behavior.
+
+Kilns and Crucible Furnaces require player ignition: load fuel, then right-click with Flint and Steel, a Fire Starter, or a Fire Charge. Modded items implementing NeoForge `FIRESTARTER_LIGHT` work automatically; other items can be added to `#firstworks:workstation_igniters`. Successful ignition costs one durability on damageable items or consumes one nondamageable item, except in creative mode. Failed or redundant ignition costs nothing. Both hands are supported. Automation can load fuel but never ignites it.
+
+Both stations burn fuel continuously using native Minecraft furnace durations, independently of recipes. Lit fires consume queued fuel when the timer expires; cold refills require ignition. Bellows affect the Crucible Furnace temperature ceiling only: 30 seconds at 1150°C followed by 15 seconds of decay to 800°C. Current heat is clamped to the falling ceiling. Copper casting requires 1085°C; progress pauses below it. Successful blows cost one food point with a one-second cooldown; creative mode is exempt.
+
+Heatable item tooltips use one line: `Heat: 798°C - Workable ~28s`. Time is the remaining forging window while cooling, rather than time until cold. Warm and cold items omit the forging timer; no extra reheating instruction is shown. Temperature is stored in Celsius with a 20°C ambient baseline. Forge recipes set minimum_temperature; copper defaults to 500°C. heat_ticks controls cooling duration. Item maxima do not rescale already-hot items. Server config `defaultMaxHeatCelsius` supplies the default maximum (1000°C); `itemMaxHeatCelsius` accepts entries such as `minecraft:copper_ingot=1100` or `othermod:metal=1450`. Copper billets and ingots default to 1100°C, iron ingots to 1250°C, and gold ingots to 1000°C. These settings apply only to items that are heatable through a forge recipe or the heatable-item tag.
+
+Client config `heatTemperatureUnit` in `firstworks-client.toml` accepts `CELSIUS` (default), `FAHRENHEIT`, or `KELVIN`. Conversion happens automatically, including the cold baseline; it never changes item heat or forge readiness.

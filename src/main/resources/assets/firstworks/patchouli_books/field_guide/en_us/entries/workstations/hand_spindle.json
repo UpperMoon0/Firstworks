@@ -1,0 +1,22 @@
+{
+  "name": "Hand Spindle",
+  "category": "firstworks:workstations",
+  "icon": "firstworks:hand_spindle",
+  "sortnum": 6,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Spin by Hand",
+      "text": "Put the spindle in your main hand and at least two Retted Fibre in your offhand. Hold Use for the spin. The default recipe takes 32 ticks, consumes two fibre, and gives two Twine. Completing the batch uses spindle durability."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Pause and Repeat",
+      "text": "Releasing early stops the attempt without consuming input before completion. The offhand must contain a matching recipe and enough material. Twine feeds Rope, Hafting Compound, and Cloth. Packs can change spinning ingredients and durations."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:hand_spindle"
+    }
+  ]
+}

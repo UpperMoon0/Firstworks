@@ -1,0 +1,36 @@
+{
+  "name": "Stone Anvil",
+  "category": "firstworks:workstations",
+  "icon": "firstworks:stone_anvil",
+  "sortnum": 13,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Ordered Actions",
+      "text": "Load a workpiece and use a supported hammer. The small light centre pad Flattens, the wider dark top edge strips Draw, and only the projecting horn Bends. Follow the recipe order. Wrong actions do not advance work or damage the hammer. Either hand can hold the hammer."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Copper Sequence",
+      "text": "Heat an Annealed Copper Billet in a lit Kiln. Transfer it here and perform Flatten, Draw, Bend, Flatten for a Copper Ingot. The workpiece must remain at or above 500°C to be Workable."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Reheat and Resume",
+      "text": "Sneak-empty-hand use retrieves unfinished work. Item heat and completed actions survive transfer, storage, drops, and saves. Reheat and reinsert the whole batch to resume. Begun batches lock extra material insertion and cannot be split to duplicate completed actions."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Other Recipes",
+      "text": "Recipes without forge actions use simple hammer-smashing work. Packs may define cold working, ordered operations, staged models, or deformable visuals. Empty-hand use collects output. Item glow and surrounding light fade with cooling."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:stone_anvil"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:stone_hammer"
+    }
+  ]
+}

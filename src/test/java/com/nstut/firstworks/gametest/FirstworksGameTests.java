@@ -119,8 +119,9 @@ public final class FirstworksGameTests {
         check(helper, furnace.getProgress() == 0, "Crucible Furnace progressed without Bellows air");
         check(helper, !furnace.getFuel().isEmpty(), "Crucible Furnace consumed fuel while starved of air");
 
+        check(helper, furnace.ignite(), "Crucible could not be lit");
         helper.useBlock(bellowsPos, player);
-        check(helper, furnace.getStokeTicks() > 0, "Bellows did not stoke the adjacent Crucible Furnace");
+        check(helper, furnace.getStokeTicks() > 0, "Bellows did not boost the adjacent Crucible Furnace");
         tickHeated(level, helper.absolutePos(furnacePos), furnace, 120);
         helper.useBlock(bellowsPos, player);
         tickHeated(level, helper.absolutePos(furnacePos), furnace, 120);
@@ -136,10 +137,19 @@ public final class FirstworksGameTests {
         hold(player, annealResult.copy());
         helper.useBlock(anvilPos, player);
         hold(player, new ItemStack(ModItems.STONE_HAMMER.get()));
-        use(helper, anvilPos, player, 8);
-        check(helper, anvil.getOutput().is(Items.COPPER_INGOT), "Stone Anvil did not finish the vanilla copper ingot");
-
-        helper.succeed();
+        helper.setBlock(anvilPos.south(), net.minecraft.world.level.block.Blocks.CAMPFIRE);
+        AnvilGameTests.heatOnAnvil(helper, anvil);
+        var actions = anvil.activeRecipe().orElseThrow().value().forge().orElseThrow().actions();
+        for (int i = 0; i < actions.size(); i++) {
+            final int step = i;
+            helper.runAtTickTime(i + 1, () -> {
+                check(helper, anvil.forge(player, actions.get(step)), "Stone Anvil refused ordered forge action");
+                if (step == actions.size() - 1) {
+                    check(helper, anvil.getOutput().is(Items.COPPER_INGOT), "Stone Anvil did not finish the vanilla copper ingot");
+                    helper.succeed();
+                }
+            });
+        }
     }
 
     @GameTest(template = EMPTY, timeoutTicks = 20)
@@ -168,15 +178,17 @@ public final class FirstworksGameTests {
 
         level.setBlock(absoluteBellowsPos, placedState, Block.UPDATE_ALL);
         clearHand(player);
-        helper.useBlock(bellowsPos, player);
         WorkshopBlockEntity furnace = helper.getBlockEntity(furnacePos);
+        furnace.insertFuel(new ItemStack(Items.CHARCOAL), false);
+        furnace.ignite();
+        helper.useBlock(bellowsPos, player);
         check(helper, furnace.getStokeTicks() > 0,
                 "Naturally placed Bellows did not stoke the furnace in front of its nozzle");
 
         helper.succeed();
     }
 
-    @GameTest(template = EMPTY, timeoutTicks = 20)
+    @GameTest(template = EMPTY, timeoutTicks = 100)
     public static void manualMachinesRequireAndCompleteRealPlayerWork(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
@@ -208,10 +220,16 @@ public final class FirstworksGameTests {
                 .map(holder -> Math.max(1, holder.value().strokes()))
                 .orElseThrow(() -> new IllegalStateException("Loom recipe missing at runtime"));
         clearHand(player);
-        use(helper, loomPos, player, strokes);
-        check(helper, loom.getOutput().is(ModItems.CLOTH.get()), "Loom did not complete cloth from real manual strokes");
-
-        helper.succeed();
+        for (int i = 1; i <= strokes * 14; i++) {
+            helper.runAtTickTime(i, () -> {
+                LoomGameTests.aim(player, loom, 0.3);
+                loom.guide(player, true);
+            });
+        }
+        helper.runAtTickTime(strokes * 14 + 2, () -> {
+            check(helper, loom.getOutput().is(ModItems.CLOTH.get()), "Loom did not complete cloth from held crossings");
+            helper.succeed();
+        });
     }
 
     @GameTest(template = EMPTY, timeoutTicks = 20)
@@ -301,6 +319,8 @@ public final class FirstworksGameTests {
             level.setBlock(edgeBellowsPos,
                     ModBlocks.BELLOWS.get().defaultBlockState().setValue(BellowsBlock.FACING, Direction.EAST), Block.UPDATE_ALL);
             WorkshopBlockEntity edgeFurnace = (WorkshopBlockEntity) level.getBlockEntity(edgeFurnacePos);
+            edgeFurnace.insertFuel(new ItemStack(Items.CHARCOAL), false);
+            edgeFurnace.ignite();
             BlockHitResult bellowsHit = new BlockHitResult(Vec3.atCenterOf(edgeBellowsPos), Direction.UP, edgeBellowsPos, false);
             level.getBlockState(edgeBellowsPos).useWithoutItem(level, player, bellowsHit);
             check(helper, edgeFurnace != null && edgeFurnace.getStokeTicks() > 0,
@@ -317,9 +337,7 @@ public final class FirstworksGameTests {
     }
 
     private static void tickHeated(ServerLevel level, BlockPos pos, WorkshopBlockEntity workshop, int ticks) {
-        for (int i = 0; i < ticks; i++) {
-            WorkshopBlockEntity.serverTick(level, pos, level.getBlockState(pos), workshop);
-        }
+        ThermalTestSupport.tickHot(level, pos, workshop, ticks);
     }
 
     private static void use(GameTestHelper helper, BlockPos pos, Player player, int times) {

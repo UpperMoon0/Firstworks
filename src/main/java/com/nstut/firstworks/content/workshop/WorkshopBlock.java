@@ -40,6 +40,8 @@ import java.util.Map;
  * There is deliberately no machine GUI: orientation, stored workpieces, heat and motion are rendered in-world.
  */
 public abstract class WorkshopBlock extends BaseEntityBlock {
+    public static final net.minecraft.world.level.block.state.properties.IntegerProperty HEAT_LIGHT =
+            net.minecraft.world.level.block.state.properties.IntegerProperty.create("heat_light", 0, 15);
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     private static final double POTTERY_INNER_RADIUS_SQ = 0.18D * 0.18D;
     private static final double POTTERY_MIDDLE_RADIUS_SQ = 0.36D * 0.36D;
@@ -49,7 +51,15 @@ public abstract class WorkshopBlock extends BaseEntityBlock {
     protected WorkshopBlock(Properties properties, String station) {
         super(properties);
         this.station = station;
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(HEAT_LIGHT, 0));
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, net.minecraft.world.item.Item.TooltipContext context,
+            java.util.List<net.minecraft.network.chat.Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
+        super.appendHoverText(stack, context, tooltip, flag);
+        if (station.equals(WorkshopRecipe.KILN) || station.equals(WorkshopRecipe.CRUCIBLE_FURNACE))
+            tooltip.add(net.minecraft.network.chat.Component.translatable("hint.firstworks.workshop.ignite"));
     }
 
     public String station() {
@@ -58,7 +68,7 @@ public abstract class WorkshopBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(FACING, HEAT_LIGHT);
     }
 
     @Override
@@ -90,8 +100,11 @@ public abstract class WorkshopBlock extends BaseEntityBlock {
             return;
         }
         Direction facing = state.getValue(FACING);
+        if (WorkshopRecipe.KILN.equals(station) && workshop.getBurnTicks() > 0 && random.nextInt(3) == 0) {
+            level.addParticle(ParticleTypes.SMOKE, pos.getX() + 0.5, pos.getY() + 1.02, pos.getZ() + 0.5, 0, 0.035, 0);
+        }
         if (WorkshopRecipe.CRUCIBLE_FURNACE.equals(station)
-                && (workshop.isRunning() || workshop.getStokeTicks() > 0)) {
+                && workshop.isHot()) {
             int air = workshop.getStokeTicks();
             int flameChance = air >= 320 ? 1 : 2;
             if (random.nextInt(flameChance) == 0) {
@@ -115,12 +128,18 @@ public abstract class WorkshopBlock extends BaseEntityBlock {
         if (!(level.getBlockEntity(pos) instanceof WorkshopBlockEntity workshop) || stack.isEmpty()) {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
+        if ((station.equals(WorkshopRecipe.KILN) || station.equals(WorkshopRecipe.CRUCIBLE_FURNACE))
+                && WorkshopIgnition.isIgniter(stack)) {
+            if (!level.isClientSide && workshop.ignite()) WorkshopIgnition.consume(stack, player, hand);
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        }
         if (station.equals(WorkshopRecipe.STONE_ANVIL) && stack.is(ModTags.HAMMERS)) {
-            if (!level.isClientSide && workshop.work(player)) {
+            if (!level.isClientSide && workshop.forge(player, StoneAnvilBlock.actionAt(state, pos, hit))) {
                 if (!player.hasInfiniteMaterials()) {
                     stack.hurtAndBreak(1, player, slotFor(hand));
                 }
-                level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 0.65F, 1.35F);
+            } else if (!level.isClientSide) {
+                player.displayClientMessage(workshop.anvilHint(StoneAnvilBlock.actionAt(state, pos, hit), true), true);
             }
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
@@ -176,11 +195,16 @@ public abstract class WorkshopBlock extends BaseEntityBlock {
         if (!(level.getBlockEntity(pos) instanceof WorkshopBlockEntity workshop)) {
             return InteractionResult.PASS;
         }
+        if ((station.equals(WorkshopRecipe.KILN) || station.equals(WorkshopRecipe.CRUCIBLE_FURNACE))
+                && WorkshopIgnition.isIgniter(player.getOffhandItem())) return InteractionResult.PASS;
+        // Let vanilla try the offhand rather than consuming an empty main-hand interaction.
+        if (station.equals(WorkshopRecipe.STONE_ANVIL) && workshop.getOutput().isEmpty()
+                && player.getOffhandItem().is(ModTags.HAMMERS)) return InteractionResult.PASS;
         if (!level.isClientSide) {
             if (workshop.takeOutput(player)) {
                 return InteractionResult.SUCCESS;
             }
-            if (player.isShiftKeyDown()) {
+            if (player.isShiftKeyDown() || station.equals(WorkshopRecipe.KILN)) {
                 return workshop.takeStored(player) ? InteractionResult.SUCCESS : InteractionResult.PASS;
             }
             if (station.equals(WorkshopRecipe.POTTERY_WHEEL)) {

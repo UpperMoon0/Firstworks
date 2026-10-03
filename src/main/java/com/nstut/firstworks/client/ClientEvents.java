@@ -22,14 +22,32 @@ import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtension
 public final class ClientEvents {
 
     @SubscribeEvent
+    public static void heatBuffer(net.neoforged.neoforge.client.event.RegisterRenderBuffersEvent event) {
+        // Draw after the base item/block sheets, otherwise their later flush hides the glow.
+        event.registerRenderBuffer(HeatRenderType.GLOW);
+        event.registerRenderBuffer(HeatRenderType.GUI_GLOW);
+    }
+
+    @SubscribeEvent
+    public static void heatModels(ModelEvent.ModifyBakingResult event) {
+        event.getModels().replaceAll((id, model) -> id.getVariant().equals("inventory")
+                ? new HeatGlowModel(model) : model);
+    }
+
+    @SubscribeEvent
     public static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
         event.register(ModelResourceLocation.standalone(Firstworks.id("block/quern_runner")));
         event.register(WorkshopBlockEntityRenderer.POTTERY_HEAD);
+        event.register(WorkshopBlockEntityRenderer.KILN_EMBERS);
         event.register(WorkshopBlockEntityRenderer.CRUCIBLE_CONTENTS);
         event.register(WorkshopBlockEntityRenderer.CASTING_MOLD);
         event.register(WorkshopBlockEntityRenderer.CASTING_METAL);
         event.register(BellowsBlockEntityRenderer.BAG);
         event.register(BellowsBlockEntityRenderer.TOP);
+        net.minecraft.client.Minecraft.getInstance().getResourceManager()
+                .listResources("models/forge_workpieces", id -> id.getPath().endsWith(".json")).keySet().forEach(id ->
+                    event.register(ModelResourceLocation.standalone(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+                            id.getNamespace(), id.getPath().substring(7, id.getPath().length() - 5)))));
     }
 
     @SubscribeEvent
@@ -39,6 +57,10 @@ public final class ClientEvents {
 
     @SubscribeEvent
     public static void clientSetup(FMLClientSetupEvent event) {
+        com.nstut.firstworks.content.workshop.ItemHeat.setClientLevelSupplier(() -> {
+            var minecraft = net.minecraft.client.Minecraft.getInstance();
+            return minecraft.isSameThread() ? minecraft.level : null;
+        });
         event.enqueueWork(() ->
             ItemProperties.register(ModItems.HAND_SPINDLE.get(), Firstworks.id("spinning"),
                     (stack, level, entity, seed) -> {

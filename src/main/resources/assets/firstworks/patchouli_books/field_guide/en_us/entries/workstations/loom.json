@@ -1,0 +1,32 @@
+{
+  "name": "Looms",
+  "category": "firstworks:workstations",
+  "icon": "firstworks:loom",
+  "sortnum": 7,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Load Thread",
+      "text": "Use a String or Twine stack on the loom to load in one action. Basic Cloth needs four compatible strings and four completed passes. Empty your main hand before grabbing the highlighted shuttle. All wood variants share controls."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Cross and Pack",
+      "text": "Hold Use on the visible shuttle grip and guide your aim along its horizontal track. Keep holding and reverse after the beater packs the row. A crossing earns progress only after packing; a fast flick or generic click cannot instantly weave."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Pause and Collect",
+      "text": "Releasing halfway saves the crossing; grab the shuttle again to resume. Release Use and empty-hand right-click the frame to collect finished Cloth. Further batches can be woven while output waits. Sneak-empty-hand use retrieves unused thread and resets current work."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Assistance",
+      "text": "Client loomInputAssistance allows a held grip without repeated aiming, preserving timing and yields. A held shuttle captures Use through frame gaps so it cannot open a chest behind the loom. Automation transfers items but does not generate manual passes."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:loom"
+    }
+  ]
+}

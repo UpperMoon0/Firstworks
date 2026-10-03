@@ -1,0 +1,45 @@
+{
+  "name": "The Copper Chain",
+  "category": "firstworks:metallurgy",
+  "icon": "firstworks:cast_copper_billet",
+  "sortnum": 24,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Cast",
+      "text": "Use three Raw Copper, a reusable fired Casting Mold, native furnace fuel, and explicit ignition. Blow Bellows to raise the ceiling from 800°C to 1150°C. At 1085°C or hotter, the Crucible Furnace casts one Copper Billet after 240 active ticks."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Anneal",
+      "text": "Smelt the Cast Copper Billet in a normal furnace for 140 ticks to produce an Annealed Copper Billet. This transforms the item. A Kiln cannot anneal or smelt it."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Forge",
+      "text": "Heat the annealed billet in a lit Kiln, transfer it to the Stone Anvil, and perform Flatten, Draw, Bend, Flatten while Workable. The result is a Copper Ingot. Cooling retains unfinished actions; reheat to resume."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Use Copper",
+      "text": "Heat one Copper Ingot to at least 500°C in a Kiln, then forge Flatten, Draw, Bend on the Stone Anvil to make eight Copper Fasteners for the Quern. Copper and strong bindings make a Copper Knife. Primitive copper progression normally removes vanilla copper smelting/blasting bypasses."
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "firstworks:smelt_anneal_copper"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Forge Fasteners",
+      "text": "Input: 1 Copper Ingot. Output: 8 Copper Fasteners. Heat the ingot until Workable, then use a Stone Hammer for Flatten > Draw > Bend on the Stone Anvil. This is a forging recipe, not a crafting-table recipe. Unfinished work can be reheated without losing completed actions."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:copper_knife"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:quern"
+    }
+  ]
+}

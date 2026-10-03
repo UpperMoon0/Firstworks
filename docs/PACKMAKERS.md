@@ -73,7 +73,8 @@ Firstworks exposes data-driven tags for extensible pack integration. Below are t
 | `#firstworks:hammers` | `firstworks:stone_hammer` | Hammer-role tools that advance Stone Anvil work. |
 | `#firstworks:refractory_materials` | `firstworks:grog`, `firstworks:refractory_clay`, `firstworks:refractory_brick` | Shared refractory-material classification for workshop extension. |
 | `#firstworks:primitive_copper` | `firstworks:cast_copper_billet`, `firstworks:annealed_copper_billet`, `minecraft:copper_ingot`, `firstworks:copper_fasteners`, `firstworks:copper_knife` | Firstworks primitive-copper chain and products that precede mature metallurgy. |
-| `#firstworks:crucible_furnace_fuels` | `minecraft:coal`, `minecraft:charcoal` | Items accepted as Crucible Furnace reserve fuel. Add coke, peat, charcoal variants, or other pack fuels here. |
+| `#firstworks:workstation_igniters` | `firstworks:fire_starter`, `minecraft:flint_and_steel`, `minecraft:fire_charge` | Ignition fallback for items without NeoForge `FIRESTARTER_LIGHT`. Damageable items cost one durability; other items cost one item on successful ignition. |
+| `#firstworks:crucible_furnace_fuels` | `minecraft:coal`, `minecraft:charcoal` | Legacy compatibility tag. Fuel acceptance now follows native furnace burn values. |
 | `#firstworks:charcoal_igniters` | `firstworks:fire_starter`, `minecraft:flint_and_steel` | Items capable of igniting charcoal mounds. |
 | `#firstworks:raw_hides` | `firstworks:raw_hide` | Raw hide items removed during animal drop normalization before adding `firstworks:raw_hide`. Packs integrating third-party animal mods should add items like `naturalist:hide` here. |
 | `#firstworks:tree_bark` | `firstworks:tree_bark` | Stripped bark items used for brewing tannin solution in barrels. |
@@ -177,9 +178,14 @@ Processes items and/or fluids over time in a sealed or open barrel.
   "ingredient": { "tag": "c:strings" },
   "input_count": 4,
   "result": { "id": "firstworks:cloth", "count": 1 },
-  "strokes": 16
+  "strokes": 8,
+  "weaving": { "pattern": ["A", "A", "B", "B"], "passes": 8 }
 }
 ```
+
+`weaving` is optional. Its `pattern` accepts 1–16 entries (`"A"` or `"B"`) and repeats for successive successful shuttle passes. `weaving.passes` optionally overrides `strokes` (1–64); without it, the existing `strokes` value is preserved. The pattern controls internal thread animation only; it adds no player action and is not shown in JEI. Recipes without `weaving` use alternating thread positions. Built-in cloth uses four passes.
+
+Use thread on the loom to load up to one stack in a single action. Empty-hand held Use grabs the visible shuttle; guide your aim horizontally to carry the weft across. The grip survives gaps in the frame and delayed samples; another player can take over a stale grip at the actual shuttle. Each crossing takes at least eight held server samples, followed by six packing ticks; only packing completion credits the row and swaps the shuttle side. Ordinary clicks cannot advance weaving. Release pauses a partial crossing; saves preserve its position and any pending packing. Sneak-use returns thread and resets work. Item insertion is rejected during an active batch. The client option `loomInputAssistance` in `firstworks-client.toml` replaces aim movement with held input at the same maximum speed and with the same outputs. Finished output waits in the loom; release the shuttle and empty-hand right-click the frame to collect it without resetting the current batch. Item transfer remains automatable; mechanical input still requires a player. Starting/completed KubeJS events remain available, and the starting event fires once per batch. `event.loom.getShed()` and `event.loom.isShuttleRight()` expose the mechanism state. The old instantaneous `weave` and manual `changeShed` scripting methods have been removed; recipes retain their existing pattern/pass format.
 
 ### 3. Hand Spinning (`firstworks:spinning`)
 Held in main hand with Hand Spindle and input in offhand.
@@ -503,8 +509,8 @@ FirstworksEvents.workshopProcessingStarting(event => {
   // event.result     (ItemStack copy)
   // event.cancel()
   //
-  // Fires before the first manual work unit, or before a Crucible Furnace
-  // consumes reserve fuel. Cancelling therefore has no fuel/progress side effect.
+  // Fires before the first manual work unit or the first temperature-qualified crucible processing tick.
+  // Cancellation prevents recipe work; it does not extinguish an independently burning fire.
 })
 FirstworksEvents.workshopProcessingCompleted(event => {
   console.info(`Workshop ${event.station} completed ${event.recipeId} at ${event.pos}`)
@@ -525,7 +531,7 @@ For ticking Crucible Furnaces, a cancelled workshop start is latched until relev
   - **Redstone**: Rising redstone edge toggles the lid state.
 - **Loom (`firstworks:loom`)**:
   - Exposes item input/output capabilities.
-  - Can be operated by automated deployers (e.g. Create Deployer in empty-hand "Use" mode).
+  - Mechanism operation requires held shuttle input. Generic repeated clicks from a fixed deployer do not complete weaving; Create-specific layouts have not been validated.
 - **Brick Mold (`firstworks:brick_mold`)**:
   - All faces expose the same two-slot item handler: slot 0 accepts valid mold ingredients and slot 1 exposes completed output.
   - Create Deployer in empty-hand "Use" mode performs presses.
@@ -540,8 +546,9 @@ For ticking Crucible Furnaces, a cancelled workshop start is latched until relev
   - **Processing**: Has no powered processing capability. Automated transfer does not advance work; only a player's empty-hand crank does.
 - **Workshop stations (`pottery_wheel`, `stone_anvil`, `crucible_furnace`)**:
   - All faces expose the same four-slot handler: slot 0 input, slot 1 catalyst, slot 2 fuel, slot 3 output.
+  - The Crucible Furnace catalyst slot holds exactly one item; its recipes must use `catalyst_count: 1`. Input and fuel remain stackable. Older saved catalyst stacks keep one installed item and return surplus as dropped items on the next server tick.
   - Automation may insert into the first three valid slots and may extract only completed output from slot 3.
-  - Normal player right-click favors recipe input/catalyst roles. On heated stations, sneak-right-click any item in `#firstworks:crucible_furnace_fuels` forces it into slot 2, so fuel remains reachable even when a pack recipe also uses that item as input or catalyst.
+  - Normal player right-click favors recipe input/catalyst roles. On heated stations, sneak-right-click any item with a native furnace burn value forces it into slot 2, so fuel remains reachable even when a pack recipe also uses that item as input or catalyst.
   - Adding recipe input or catalyst preserves active progress and running state when the selected recipe id remains unchanged; if the insertion changes the selected recipe, processing resets before the new recipe begins. Reserve-fuel top-ups also preserve progress and do not consume another fuel item while the current batch is already running.
 
 ---
@@ -612,7 +619,7 @@ Because all Firstworks routes match by common tag (`#c:flours/wheat`, `#c:doughs
 - **JEI Categories**:
   - Barrel Processing, Hand Spinning, Loom Weaving, Brick Molding, Mortar Grinding, Quern Grinding, **Workshop Processing**, and dynamic Charcoal Mound Information guide.
   - The base Hand Spindle is a catalyst for Hand Spinning, the Quern is a catalyst for Quern Grinding, the Loom block family is discovered for Loom Weaving, and the Pottery Wheel, Stone Anvil, Crucible Furnace, and Bellows are catalysts for their Workshop Processing views.
-  - Crucible Furnace recipe views enumerate `#firstworks:crucible_furnace_fuels`, so pack-added fuels appear in JEI without code changes.
+  - Crucible Furnace recipe views enumerate items with native furnace burn values, so pack-added fuels appear in JEI without code changes.
 
 ---
 
@@ -645,8 +652,112 @@ Because all Firstworks routes match by common tag (`#c:flours/wheat`, `#c:doughs
 2. **Quern Recipe Priority**: `firstworks:quern_grinding` gains an optional `priority` field (default `0`). When multiple quern recipes match the same ingredient, the highest `priority` wins (ties break by recipe id). The previous requirement that quern ingredient matchers be mutually exclusive is relaxed — overlapping matchers now resolve deterministically.
 3. **Quern Visual Speed**: the grinding stone's rotation advances with the work applied per crank (`quernManualWorkPerCrank`); there are still no per-source labor or duration fields on recipes.
 4. **Workshop Catalyst Semantics**: `firstworks:workshop_processing` distinguishes an omitted catalyst from a declared catalyst whose ingredient/tag resolves empty. Declared-empty catalysts match nothing instead of becoming catalyst-free recipes.
-5. **Workshop Role Routing**: player insertion now resolves recipe roles before fuel; sneak-right-click a `#firstworks:crucible_furnace_fuels` item on a heated workshop station explicitly targets the fuel reserve. Automation retains fixed slots 0=input, 1=catalyst, 2=fuel, 3=output. Same-recipe input/catalyst top-ups preserve heated progress.
+5. **Workshop Role Routing**: player insertion now resolves recipe roles before fuel; sneak-right-click a native furnace fuel item on a heated workshop station explicitly targets the fuel reserve. Automation retains fixed slots 0=input, 1=catalyst, 2=fuel, 3=output. Same-recipe input/catalyst top-ups preserve heated progress.
 6. **Primitive Copper Progression Toggle**: `enablePrimitiveCopperProgression` defaults to `true`. Disabling it leaves the winning vanilla/datapack copper smelting and blasting recipes untouched while retaining Firstworks copper mechanics.
-7. **Crucible Fuel Tag**: Crucible Furnace reserve fuel is now controlled by `#firstworks:crucible_furnace_fuels`, which contains Coal and Charcoal by default and is shared by runtime insertion and JEI.
+7. **Crucible Fuel Tag**: `#firstworks:crucible_furnace_fuels` remains a legacy compatibility tag. Runtime insertion and JEI use native furnace burn values, including modded fuels.
 8. **Workshop Priority and Bounds**: `firstworks:workshop_processing` adds optional integer `priority` (default `0`). `input_count` / `catalyst_count` are `1–64`, `work` is `1–72000`, and the KubeJS schema exposes the same limits.
 9. **Workshop KubeJS Lifecycle**: `workshopProcessingStarting` is cancellable before progress/fuel consumption and `workshopProcessingCompleted` fires after output production, with level/position/station/recipe/input/catalyst/result context.
+
+
+## 0.0.15 workstation interactions
+
+### Stone Anvil: ordered forging and workability
+
+Existing `workshop_processing` Stone Anvil recipes without `forge` retain their cold hammer-smashing behavior and `work` count. Adding `forge` replaces the generic work count with an ordered action sequence:
+
+```json
+{
+  "type": "firstworks:workshop_processing",
+  "station": "stone_anvil",
+  "ingredient": { "item": "firstworks:annealed_copper_billet" },
+  "result": { "id": "minecraft:copper_ingot" },
+  "forge": {
+    "actions": ["flatten", "draw", "bend", "flatten"],
+    "heat_ticks": 1200,
+    "visual": {
+      "type": "deformable",
+      "initial_profile": "billet",
+      "length": 0.32,
+      "width": 0.16,
+      "height": 0.12
+    }
+  }
+}
+```
+
+- `actions`: 1–64 entries, each `flatten`, `draw`, or `bend`. The next entry advances only when the matching working-surface zone is struck with an item in `#firstworks:hammers`. A wrong action does not consume work or tool durability.
+- The small center pad selects Flatten, the surrounding top edge strips select Draw, and only the exposed projecting horn selects Bend. Coordinates rotate with the block; input item geometry never changes the controls. A subtle outline and contextual hint identify the targeted zone.
+- Jade shows the selected recipe's sequence, not a combined sequence for all matching recipes. Multiple matches are labeled as automatic selection using the normal priority/batch/catalyst/id ordering. The first successful forging action stores the recipe id with the workpiece, locking subsequent strikes and reheated work to that recipe.
+- `heat_ticks`: the full-to-cold cooling capacity in world ticks, default 3600 (180 seconds), range 0–72000. Work requires the recipe minimum_temperature (default 500°C). Zero enables cold working for custom recipes. This is separate from progress and tool durability.
+- For heat-requiring recipes, heat the workpiece in a fueled Kiln and transfer it to the anvil. Heat and recipe-specific completed actions are item data components, preserved during transfer, drops, and saves. Heat cools against world game time even in unloaded storage (not while the world is closed). Only the anvil advances actions. Work requires the recipe minimum_temperature. Kiln fuel uses native furnace fuel durations. The input slot accepts one loose item or one complete, indivisible partly forged batch; the fuel slot remains stackable. One item heats to its configured maximum in about 600 ticks; a worked batch takes proportionally longer according to its material count. `firstworks:heatable_items` additionally enables items without a hot forging recipe (3600-tick capacity). Hot forge ingredients are automatically heatable using their recipe `heat_ticks`; matching recipes use the largest value. The kiln has no workshop-processing recipes and never smelts or transforms items.
+- Multi-item forge recipes can assemble separately heated ingredients on the anvil. Only heat differences are ignored during assembly; all other components, including recipe progress and custom names, must match. The combined workpiece takes the lower temperature and shorter cooling capacity, so assembly never grants free heat or a longer cooling window. A cold ingredient cools the combined batch to ambient. Once forging starts, the complete batch can be retrieved and reheated in the kiln without splitting its materials or resetting its actions. Automation simulation does not modify counts or heat.
+- Empty-hand use collects output. Sneak-empty-hand use retrieves stored items and resets work. Adding input/catalysts during partial forging is rejected to preserve progress.
+- `visual` is optional. Without it, the original input item/model is rendered until completion. Built-in metalworking uses a solid workpiece; drawing lengthens it, flattening spreads/thins it, and bending raises its profile.
+- `visual.type: "deformable"` supports `initial_profile: "billet"` or `"plate"`; dimensions are block units with length 0.05–0.6, width 0.05–0.4, and height 0.02–0.3. The generic solid visual uses copper material.
+- `visual.type: "stages"` optionally uses `models`, a list of up to 65 model ids such as `example:forge_workpieces/billet_0`. Put those JSON models under `assets/example/models/forge_workpieces/`. Index zero is the untouched shape, subsequent indices follow progress, and the last model is retained when the list is shorter than the sequence. Author stages in anvil-local block coordinates; the surface is Y=10.6/16. Missing models fall back to the generic deformable workpiece. Completed recipes always display their result item.
+- Forge metadata is valid only on Stone Anvil recipes. The existing workshop starting/completed hooks remain intact. `event.workshop.getForgeHeat()` and `getLastForgeAction()` expose the current state.
+
+### Mortar: crush and held grinding
+
+The mortar never completes work on a timer alone. Old recipes without `processing` become a single held-grind stage using their existing `duration`; no new fields are required.
+
+```json
+{
+  "type": "firstworks:mortar_grinding",
+  "ingredient": { "item": "minecraft:brick" },
+  "result": { "id": "firstworks:grog" },
+  "processing": [
+    { "action": "crush", "count": 3 },
+    { "action": "grind", "duration": 40 }
+  ]
+}
+```
+
+- `processing`: up to 16 ordered stages; an omitted/empty list uses the legacy-duration grind fallback.
+- `crush` requires `count` 1–64 (no duration). Empty-hand use aimed at the bowl center performs one discrete pestle strike. Strikes have a short four-tick debounce.
+- `grind` requires `duration` 1–72000 (no count). Hold use with an empty main hand while looking at the inner bowl/rim. Each validated server input tick earns one work tick; releasing, looking away, moving out of reach, opening a screen, changing items, or disconnecting stops further progress. Multiple players or duplicate packets cannot advance the same mortar twice in a server tick. Mouse-circle tracing is unnecessary.
+- Stages may be crush-only, grind-only, or mixed. Wrong actions never advance a stage. The pestle strikes vertically for crushing and moves in a circle during actual grinding. Effects stop when grinding pauses.
+- Stage index, stage work, recipe identity, and lifecycle state survive save/reload. A saved mortar resumes paused until a player operates it again. Reloading does not replay the starting hook for an unchanged partial recipe.
+- Empty-hand use collects output; sneak-empty-hand use retrieves input and resets work. Automation still inserts recipe inputs and extracts results, but does not supply manual work.
+- Starting/completed KubeJS hooks are preserved. A cancelled start stays blocked until input is retrieved/reloaded, avoiding one callback per held-input tick. `event.mortar.getStageIndex()` (zero-based), `getStageProgress()`, and `getStage()` expose stage state. The legacy no-player `startGrinding()` method remains callable but returns false; scripts cannot start autonomous grinding through it.
+
+Use `ServerEvents.recipes(event => event.custom({...}))` for these optional metadata objects, including `forge`, `processing`, and loom `weaving`. Existing recipe builders and recipes without metadata remain valid. The examples above can be passed directly to `event.custom`.
+
+### Crucible heat visuals
+
+Fire and sparks reflect remaining fuel burn time, including idle stations and waiting output. Molten crucible contents require an active batch at or above its recipe temperature. They do not appear in an empty lit furnace. Fuel burn time, actual temperature, Bellows boost, and recipe progress persist separately.
+
+### Controls and feedback coverage
+
+Overlapping loom and mortar recipes use the largest input count that the loaded stack can satisfy, with recipe id as the tie-breaker. Processing, hints, and previews share that selection. Before enough input is loaded, hints show the smallest matching requirement (also ordered by id). Mortars accept material up to the largest matching batch, capped by the item's stack limit; choose the batch by loading it before starting work.
+
+The 0.0.15 changes cover Stone Anvil, Loom, and Mortar controls through contextual hints, item tooltips, Jade, and JEI. Missing input counts, recipe catalysts, hammers, heat, wrong forging action, and ready output have distinct feedback. JEI exposes ordered actions and stages, with complete long sequences in the recipe tooltip. The broader audit of unchanged stations in issue #21 and the pottery visuals in issue #19 remain outside this PR.
+
+
+### Upgrade compatibility and optional guide
+
+0.0.15 migrates partial workstation state from 0.0.14 instead of interpreting old progress with the new interaction model:
+
+- Legacy Stone Anvil `Progress` is proportionally mapped from the old recipe `work` count to the new forge action sequence. The migrated workpiece resumes cold and can be reheated normally.
+- A legacy Mortar with `Grinding=true` and `FinishGameTime` is converted into equivalent paused staged progress. Input is preserved, the old process-start lifecycle is treated as already fired, and the player resumes manually.
+- Recipes without `forge`, `weaving`, or `processing` remain valid and use their documented fallback behavior.
+
+Patchouli 1.21.1-93 or newer is required on client and server. Craft `firstworks:field_guide` unconditionally from Book + Plant Fibre. Eight categories cover all features, controls, progression, recovery, settings, and bundled recipes. Crafting/smelting pages resolve live recipes; processing-reference text describes bundled defaults. The custom model uses a transparent 64×64 book texture. Resource-pack content remains replaceable. CurseForge release metadata also declares Patchouli as required.
+
+Kilns and Crucible Furnaces require player ignition: load fuel, then right-click with Flint and Steel, a Fire Starter, or a Fire Charge. Modded items implementing NeoForge `FIRESTARTER_LIGHT` work automatically; other items can be added to `#firstworks:workstation_igniters`. Successful ignition costs one durability on damageable items or consumes one nondamageable item, except in creative mode. Failed or redundant ignition costs nothing. Both hands are supported. Automation can load fuel but never ignites it.
+
+Both stations burn fuel continuously using native Minecraft furnace durations, independently of recipes. Lit fires consume queued fuel when the timer expires; cold refills require ignition. Bellows affect the Crucible Furnace temperature ceiling only: 30 seconds at 1150°C followed by 15 seconds of decay to 800°C. Current heat is clamped to the falling ceiling. Copper casting requires 1085°C; progress pauses below it. Successful blows cost one food point with a one-second cooldown; creative mode is exempt.
+
+Heatable item tooltips use one line: `Heat: 798°C - Workable ~28s`. Time is the remaining forging window while cooling, rather than time until cold. Warm and cold items omit the forging timer; no extra reheating instruction is shown. Temperature is stored in Celsius with a 20°C ambient baseline. Forge recipes set minimum_temperature; copper defaults to 500°C. heat_ticks controls cooling duration. Item maxima do not rescale already-hot items. Server config `defaultMaxHeatCelsius` supplies the default maximum (1000°C); `itemMaxHeatCelsius` accepts entries such as `minecraft:copper_ingot=1100` or `othermod:metal=1450`. Copper billets and ingots default to 1100°C, iron ingots to 1250°C, and gold ingots to 1000°C. These settings apply only to items that are heatable through a forge recipe or the heatable-item tag.
+
+Client config `heatTemperatureUnit` in `firstworks-client.toml` accepts `CELSIUS` (default), `FAHRENHEIT`, or `KELVIN`. Conversion happens automatically, including the cold baseline; it never changes item heat or forge readiness.
+
+### Unified temperature configuration
+
+All gameplay temperatures use Celsius. Item HEAT components store absolute temperature, the cooling reference maximum, and world timestamp; legacy tick-only components remain readable. Workshop saves store TemperatureCelsius, BurnTicks, and bounded Bellows boost separately. Existing fires survive migration; old saves without temperature begin at ambient without losing recipe progress.
+
+Crucible workshop recipes support `required_temperature` (default 1085°C). Forge data supports `minimum_temperature` (default 500°C when heat is required); `heat_ticks: 0` retains cold forging. KubeJS exposes `.requiredTemperature(value)`; `event.custom` accepts full forge metadata. Item maxima use `defaultMaxHeatCelsius` and `itemMaxHeatCelsius`.
+
+Server settings: `crucibleBaseTemperature=800`, `crucibleBoostTemperature=1150`, `crucibleHeatingRate=1` Celsius/tick, `stationCoolingRate=0.25` Celsius/tick, `bellowsHoldTicks=600`, `bellowsDecayTicks=300`, `bellowsCooldownTicks=20`, and `bellowsFoodCost=1`. Bellows boost cannot raise a configured ceiling below its base. Player blows refresh the bounded boost and charge hunger once; trusted scripting stoke calls refresh boost only and remain bounded. Furnace/item heating shares ThermalModel Celsius arithmetic. Block burn/boost timers run while the station ticks, like native furnaces; carried-item cooling follows world time. Client unit conversion never alters gameplay.
+
+`kilnHeatingTicks` sets ambient-to-maximum heating time (default 600 ticks, 30 seconds). New default forge cooling capacity is 3600 ticks; existing hot item components preserve their saved cooling rate until reheated. Existing server configs retain explicit values: use crucibleHeatingRate=1, stationCoolingRate=0.25, bellowsHoldTicks=600, and bellowsDecayTicks=300 for the slower balance.

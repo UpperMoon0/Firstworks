@@ -1,0 +1,32 @@
+{
+  "name": "Ignition and Fuel",
+  "category": "firstworks:metallurgy",
+  "icon": "firstworks:fire_starter",
+  "sortnum": 22,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Light the Fuel",
+      "text": "Right-click loaded Kilns and Crucible Furnaces with Flint and Steel, Fire Starter, Fire Charge, or a supported igniter. Hoppers and Bellows never ignite cold fuel. Both hands can operate an igniter."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Costs",
+      "text": "Successful ignition uses one durability on damageable tools, or one nondamageable item. Creative players pay nothing. Failed/redundant ignition costs nothing. The primitive Fire Starter has one durability and is therefore single-use."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Modded Igniters",
+      "text": "Items exposing NeoForge fire-starting ability work automatically. Packs can add other items to the workstation igniter tag. Charcoal Mounds use a separate charcoal igniter tag, including Fire Starter and Flint and Steel by default."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Burnout",
+      "text": "Both stations consume one fuel on ignition, using its native furnace burn time. A live fire automatically consumes queued fuel when the timer expires. Fire survives recipe completion and Bellows boost expiry, even while idle. Only complete burnout requires new ignition."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:fire_starter"
+    }
+  ]
+}

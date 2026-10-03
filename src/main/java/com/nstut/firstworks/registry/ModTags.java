@@ -13,6 +13,7 @@ public final class ModTags {
     public static final TagKey<Item> PRIMITIVE_BINDINGS = TagKey.create(Registries.ITEM, Firstworks.id("primitive_bindings"));
     public static final TagKey<Item> STRONG_BINDINGS = TagKey.create(Registries.ITEM, Firstworks.id("strong_bindings"));
     public static final TagKey<Item> RESIN_TAPPING_TOOLS = TagKey.create(Registries.ITEM, Firstworks.id("resin_tapping_tools"));
+    public static final TagKey<Item> HEATABLE_ITEMS = TagKey.create(Registries.ITEM, Firstworks.id("heatable_items"));
     public static final TagKey<Item> HAMMERS = TagKey.create(Registries.ITEM, Firstworks.id("hammers"));
     public static final TagKey<Item> REFRACTORY_MATERIALS = TagKey.create(Registries.ITEM, Firstworks.id("refractory_materials"));
     public static final TagKey<Item> PRIMITIVE_COPPER = TagKey.create(Registries.ITEM, Firstworks.id("primitive_copper"));
@@ -20,6 +21,7 @@ public final class ModTags {
     public static final TagKey<Block> RESIN_TREES = TagKey.create(Registries.BLOCK, Firstworks.id("resin_trees"));
     public static final TagKey<Block> CHARCOAL_SEALANTS = TagKey.create(Registries.BLOCK, Firstworks.id("charcoal_sealants"));
     public static final TagKey<Block> CHARCOAL_WOODS = TagKey.create(Registries.BLOCK, Firstworks.id("charcoal_woods"));
+    public static final TagKey<Item> WORKSTATION_IGNITERS = TagKey.create(Registries.ITEM, Firstworks.id("workstation_igniters"));
     public static final TagKey<Item> CHARCOAL_IGNITERS = TagKey.create(Registries.ITEM, Firstworks.id("charcoal_igniters"));
     public static final TagKey<EntityType<?>> DROPS_BONES = TagKey.create(Registries.ENTITY_TYPE, Firstworks.id("drops_bones"));
     public static final TagKey<EntityType<?>> NO_BONE_DROPS = TagKey.create(Registries.ENTITY_TYPE, Firstworks.id("no_bone_drops"));

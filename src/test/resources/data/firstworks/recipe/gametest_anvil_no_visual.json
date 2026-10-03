@@ -1,0 +1,17 @@
+{
+  "type": "firstworks:workshop_processing",
+  "station": "stone_anvil",
+  "ingredient": {
+    "item": "minecraft:amethyst_shard"
+  },
+  "result": {
+    "id": "minecraft:diamond"
+  },
+  "forge": {
+    "actions": [
+      "draw",
+      "bend"
+    ],
+    "heat_ticks": 3
+  }
+}

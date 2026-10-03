@@ -1,6 +1,21 @@
 {
   "type": "firstworks:mortar_grinding",
-  "ingredient": { "item": "minecraft:bone" },
-  "result": { "id": "minecraft:bone_meal", "count": 3 },
-  "duration": 32
+  "ingredient": {
+    "item": "minecraft:bone"
+  },
+  "result": {
+    "id": "minecraft:bone_meal",
+    "count": 3
+  },
+  "duration": 32,
+  "processing": [
+    {
+      "action": "crush",
+      "count": 2
+    },
+    {
+      "action": "grind",
+      "duration": 32
+    }
+  ]
 }

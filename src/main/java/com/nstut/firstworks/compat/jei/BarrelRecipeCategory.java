@@ -15,6 +15,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
 
 public final class BarrelRecipeCategory implements IRecipeCategory<BarrelRecipe> {
@@ -42,9 +43,9 @@ public final class BarrelRecipeCategory implements IRecipeCategory<BarrelRecipe>
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, BarrelRecipe recipe, IFocusGroup focuses) {
-        boolean washingFleece = recipe.ingredient().test(new net.minecraft.world.item.ItemStack(ModItems.RAW_FLEECE.get()))
+        boolean washingFleece = recipe.ingredient().test(new ItemStack(ModItems.RAW_FLEECE.get()))
                 && recipe.result().is(ModItems.CLEAN_WOOL.get());
-        boolean isTreeBark = recipe.ingredient().test(new net.minecraft.world.item.ItemStack(ModItems.TREE_BARK.get()));
+        boolean isTreeBark = recipe.ingredient().test(new ItemStack(ModItems.TREE_BARK.get()));
         IRecipeSlotBuilder inputItem = builder.addSlot(RecipeIngredientRole.INPUT, 4, 5)
                 .setStandardSlotBackground();
         if (washingFleece) {
@@ -52,7 +53,7 @@ public final class BarrelRecipeCategory implements IRecipeCategory<BarrelRecipe>
         } else if (isTreeBark) {
             inputItem.addItemStacks(FirstworksJeiPlugin.treeBarkVariants(ModItems.TREE_BARK.get(), recipe.inputCount()));
         } else {
-            inputItem.addIngredients(recipe.ingredient());
+            inputItem.addItemStacks(JeiIngredientStacks.withCount(recipe.ingredient(), recipe.inputCount()));
         }
 
         IRecipeSlotBuilder fluidSlot = builder.addSlot(RecipeIngredientRole.INPUT, 27, 5)

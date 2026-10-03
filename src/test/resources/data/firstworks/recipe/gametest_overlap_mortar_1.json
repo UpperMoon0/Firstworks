@@ -1,0 +1,16 @@
+{
+  "input_count": 1,
+  "type": "firstworks:mortar_grinding",
+  "ingredient": {
+    "item": "minecraft:emerald"
+  },
+  "result": {
+    "id": "minecraft:paper"
+  },
+  "processing": [
+    {
+      "count": 1,
+      "action": "crush"
+    }
+  ]
+}

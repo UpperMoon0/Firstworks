@@ -3,6 +3,7 @@ package com.nstut.firstworks;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
+import javax.imageio.ImageIO;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -43,12 +44,25 @@ public class WorkshopVisualAssetTest {
         for (String name : List.of(
                 "bellows", "pottery_wheel", "stone_anvil", "crucible_furnace",
                 "unfired_casting_mold", "casting_mold",
-                "unfired_crucible", "crucible", "unfired_tuyere", "tuyere",
-                "unfired_refractory_brick", "refractory_brick")) {
+                "unfired_crucible", "crucible", "unfired_tuyere", "tuyere")) {
             Path model = ASSETS.resolve("models/item/" + name + ".json");
             assertTrue(Files.exists(model), "Missing item model: " + name);
             String json = Files.readString(model);
             assertFalse(json.contains("minecraft:item/generated"), "Flat generated item model: " + name);
+        }
+    }
+
+    @Test
+    public void refractoryBrickItemsUseTransparent64PixelSprites() throws Exception {
+        for (String name : List.of("unfired_refractory_brick", "refractory_brick")) {
+            String model = Files.readString(ASSETS.resolve("models/item/" + name + ".json"));
+            assertTrue(model.contains("minecraft:item/generated"), "Brick item should use a sprite: " + name);
+            assertTrue(model.contains("firstworks:item/" + name), "Brick item should reference its sprite: " + name);
+            var sprite = ImageIO.read(ASSETS.resolve("textures/item/" + name + ".png").toFile());
+            assertTrue(sprite != null && sprite.getWidth() == 64 && sprite.getHeight() == 64,
+                    "Brick sprite must be 64x64: " + name);
+            assertTrue(sprite.getColorModel().hasAlpha() && (sprite.getRGB(0, 0) >>> 24) == 0,
+                    "Brick sprite needs a transparent background: " + name);
         }
     }
 

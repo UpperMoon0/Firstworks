@@ -36,19 +36,20 @@ public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBl
             MultiBufferSource buffers, int packedLight, int packedOverlay) {
         poseStack.pushPose();
         poseStack.translate(0.5, 0, 0.5);
-        poseStack.mulPose(Axis.YP.rotationDegrees(
-                loom.getBlockState().getValue(LoomBlock.FACING).toYRot() + 180.0F));
+        poseStack.mulPose(Axis.YP.rotationDegrees(switch (loom.getBlockState().getValue(LoomBlock.FACING)) {
+            case EAST -> -90.0F;
+            case SOUTH -> 180.0F;
+            case WEST -> 90.0F;
+            default -> 0.0F;
+        }));
         poseStack.translate(-0.5, 0, -0.5);
 
-        ItemStack visibleOutput = loom.getOutput();
-        if (visibleOutput.isEmpty()) {
-            visibleOutput = loom.getMatchingRecipe().map(holder -> holder.value().result()).orElse(ItemStack.EMPTY);
+        ItemStack fabric = loom.getMatchingRecipe().map(holder -> holder.value().result()).orElse(ItemStack.EMPTY);
+        if (!fabric.isEmpty()) {
+            renderWarpThreads(loom, fabric, poseStack, buffers, packedLight, packedOverlay);
+            renderWovenThreads(loom, fabric, poseStack, buffers, packedLight, packedOverlay);
         }
-        if (!visibleOutput.isEmpty()) {
-            renderWarpThreads(loom, visibleOutput, poseStack, buffers, packedLight, packedOverlay);
-            renderWovenThreads(loom, visibleOutput, poseStack, buffers, packedLight, packedOverlay);
-        }
-        renderShuttle(loom, visibleOutput, partialTick, poseStack, buffers, packedLight, packedOverlay);
+        renderShuttle(loom, fabric, partialTick, poseStack, buffers, packedLight, packedOverlay);
         poseStack.popPose();
     }
 
@@ -64,9 +65,7 @@ public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBl
         int totalStrands = 12;
         int requiredInput = loom.getMatchingRecipe()
                 .map(holder -> Math.max(1, holder.value().inputCount())).orElse(1);
-        float loadedFraction = loom.getOutput().isEmpty()
-                ? Mth.clamp((float) loom.getInput().getCount() / requiredInput, 0.0F, 1.0F)
-                : 1.0F;
+        float loadedFraction = Mth.clamp((float) loom.getInput().getCount() / requiredInput, 0.0F, 1.0F);
         int visibleStrands = Mth.ceil(totalStrands * loadedFraction);
         float centerV = (sprite.getV0() + sprite.getV1()) * 0.5F;
         float dv = (sprite.getV1() - sprite.getV0()) / 64.0F;
@@ -75,7 +74,9 @@ public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBl
             float halfWidth = 0.11F / 16.0F;
             float u = (sprite.getU0() + sprite.getU1()) * 0.5F;
             float du = (sprite.getU1() - sprite.getU0()) / 64.0F;
-            quadBothSides(vertices, matrix, centerX - halfWidth, minY, centerX + halfWidth, maxY, z,
+            boolean raised = (i % 2 == 0) == loom.getShed().equals("A");
+            float lift = raised ? 0.5F / 16.0F : -0.5F / 16.0F;
+            quadBothSides(vertices, matrix, centerX - halfWidth, minY + lift, centerX + halfWidth, maxY + lift, z + lift,
                     u - du, centerV + dv, u + du, centerV - dv,
                     tint, packedLight, packedOverlay);
         }
@@ -83,8 +84,7 @@ public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBl
 
     private void renderWovenThreads(LoomBlockEntity loom, ItemStack output, PoseStack poseStack,
             MultiBufferSource buffers, int packedLight, int packedOverlay) {
-        int required = loom.getRequiredStrokes();
-        float fraction = loom.getOutput().isEmpty() ? (float) loom.getProgress() / required : 1.0F;
+        float fraction = loom.getFabricFraction();
         if (fraction <= 0.0F) return;
 
         TextureAtlasSprite sprite = itemRenderer.getModel(output, loom.getLevel(), null, 0).getParticleIcon();
@@ -141,9 +141,21 @@ public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBl
         TextureAtlasSprite thread = output.isEmpty() ? wood
                 : itemRenderer.getModel(output, loom.getLevel(), null, 0).getParticleIcon();
         int threadTint = output.isEmpty() ? 0xFFFFFFFF : outputTint(output);
+        var player = Minecraft.getInstance().player;
+        if (player != null && LoomBlock.hitsShuttle(player, loom)) threadTint = 0xFFFFDF85;
         VertexConsumer vertices = buffers.getBuffer(Sheets.cutoutBlockSheet());
         Matrix4f matrix = poseStack.last().pose();
         float x = 0.5F + loom.getShuttleOffset(partialTick);
+        float beat = loom.getStrokeAnimation(partialTick);
+        renderBox(vertices, matrix, 3.0F / 16.0F, 6.5F / 16.0F, (6.0F - beat) / 16.0F,
+                13.0F / 16.0F, 7.0F / 16.0F, (6.5F - beat) / 16.0F,
+                wood, 0xFFFFFFFF, packedLight, packedOverlay);
+        // A loose weft follows the shuttle, then travels down into the packed fabric.
+        float startX = loom.isShuttleRight() ? 0.7F : 0.3F;
+        float rowY = loom.isPacking() ? Mth.lerp(loom.getPackingProgress(partialTick), 9.0F / 16, (6.75F + 4.75F * (loom.getProgress() + 1) / loom.getRequiredStrokes()) / 16) : 9.0F / 16;
+        if (Math.abs(x - startX) > 0.001F)
+            renderBox(vertices, matrix, Math.min(x, startX), rowY - 0.006F, 7.2F / 16,
+                    Math.max(x, startX), rowY + 0.006F, 7.4F / 16, thread, threadTint, packedLight, packedOverlay);
         float y = 9.0F / 16.0F;
         float z = 5.35F / 16.0F;
         renderBox(vertices, matrix, x - 3.0F / 16.0F, y - 0.65F / 16.0F, z - 0.65F / 16.0F,
@@ -199,9 +211,10 @@ public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBl
             float x3,float y3,float z3, float x4,float y4,float z4,
             float u0,float v0,float u1,float v1, int color,int light,int overlay,
             float nx,float ny,float nz) {
+        // The second corner advances height/depth (V); the third advances face width (U).
         vertex(vertices,matrix,x1,y1,z1,u0,v0,color,light,overlay,nx,ny,nz);
-        vertex(vertices,matrix,x2,y2,z2,u1,v0,color,light,overlay,nx,ny,nz);
+        vertex(vertices,matrix,x2,y2,z2,u0,v1,color,light,overlay,nx,ny,nz);
         vertex(vertices,matrix,x3,y3,z3,u1,v1,color,light,overlay,nx,ny,nz);
-        vertex(vertices,matrix,x4,y4,z4,u0,v1,color,light,overlay,nx,ny,nz);
+        vertex(vertices,matrix,x4,y4,z4,u1,v0,color,light,overlay,nx,ny,nz);
     }
 }
