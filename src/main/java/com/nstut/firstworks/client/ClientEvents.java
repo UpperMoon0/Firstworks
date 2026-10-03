@@ -25,6 +25,7 @@ public final class ClientEvents {
     public static void heatBuffer(net.neoforged.neoforge.client.event.RegisterRenderBuffersEvent event) {
         // Draw after the base item/block sheets, otherwise their later flush hides the glow.
         event.registerRenderBuffer(HeatRenderType.GLOW);
+        event.registerRenderBuffer(HeatRenderType.GUI_GLOW);
     }
 
     @SubscribeEvent

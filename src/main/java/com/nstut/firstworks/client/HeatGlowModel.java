@@ -23,8 +23,10 @@ import java.util.List;
 /** Derives an emissive overlay from the item's own quads, preserving its texture and silhouette. */
 public final class HeatGlowModel extends BakedModelWrapper<BakedModel> {
     private final float heat;
+    private final boolean gui;
     public HeatGlowModel(BakedModel original) { this(original, 0); }
-    private HeatGlowModel(BakedModel original, float heat) { super(original); this.heat = heat; }
+    private HeatGlowModel(BakedModel original, float heat) { this(original, heat, false); }
+    private HeatGlowModel(BakedModel original, float heat, boolean gui) { super(original); this.heat = heat; this.gui = gui; }
 
     @Override public ItemOverrides getOverrides() {
         return new ItemOverrides() {
@@ -37,13 +39,13 @@ public final class HeatGlowModel extends BakedModelWrapper<BakedModel> {
         };
     }
     @Override public BakedModel applyTransform(ItemDisplayContext context, PoseStack pose, boolean left) {
-        return new HeatGlowModel(originalModel.applyTransform(context, pose, left), heat);
+        return new HeatGlowModel(originalModel.applyTransform(context, pose, left), heat, context == ItemDisplayContext.GUI);
     }
     @Override public List<BakedModel> getRenderPasses(ItemStack stack, boolean fabulous) {
         var passes = originalModel.getRenderPasses(stack, fabulous);
         if (heat <= 0) return passes;
         var result = new ArrayList<BakedModel>(passes);
-        for (BakedModel pass : passes) result.add(new Overlay(pass, heat));
+        for (BakedModel pass : passes) result.add(new Overlay(pass, heat, gui));
         return result;
     }
     public static int color(float heat) {
@@ -54,9 +56,10 @@ public final class HeatGlowModel extends BakedModelWrapper<BakedModel> {
     }
     private static final class Overlay extends BakedModelWrapper<BakedModel> {
         private final float heat;
-        Overlay(BakedModel original, float heat) { super(original); this.heat = heat; }
+        private final boolean gui;
+        Overlay(BakedModel original, float heat, boolean gui) { super(original); this.heat = heat; this.gui = gui; }
         @Override public List<RenderType> getRenderTypes(ItemStack stack, boolean fabulous) {
-            return List.of(HeatRenderType.GLOW);
+            return List.of(gui ? HeatRenderType.GUI_GLOW : HeatRenderType.GLOW);
         }
         @Override public List<BakedQuad> getQuads(BlockState state, Direction side, RandomSource random) {
             return originalModel.getQuads(state, side, random).stream().map(q -> {
