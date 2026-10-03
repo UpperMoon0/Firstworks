@@ -535,12 +535,40 @@ public final class WorkshopBlockEntity extends BlockEntity {
     private boolean canInsertInput(ItemStack stack) {
         if (station().equals(WorkshopRecipe.STONE_ANVIL) && progress > 0) return false;
         if (station().equals(WorkshopRecipe.KILN) && stack.has(ModDataComponents.FORGE_PROGRESS.get())
-                && stack.get(ModDataComponents.FORGE_PROGRESS.get()).batchSize() > 1) return false;
-        return validInput(stack) && canStack(input, stack) && input.getCount() < inputLimit(stack);
+                && (!input.isEmpty() || stack.getCount() != stack.get(ModDataComponents.FORGE_PROGRESS.get()).batchSize()
+                || stack.getCount() > stack.getMaxStackSize()
+                || stack.get(ModDataComponents.FORGE_PROGRESS.get()).completed() <= 0)) return false;
+        return validInput(stack) && compatibleInput(stack) && input.getCount() < inputLimit(stack);
+    }
+
+    /** Only anvil assembly ignores heat; inventory stacking and every other component stay strict. */
+    private boolean compatibleInput(ItemStack stack) {
+        if (input.isEmpty()) return true;
+        if (!station().equals(WorkshopRecipe.STONE_ANVIL)) return canStack(input, stack);
+        ItemStack stored = input.copy(), incoming = stack.copy();
+        stored.remove(ModDataComponents.HEAT.get());
+        incoming.remove(ModDataComponents.HEAT.get());
+        return canStack(stored, incoming);
+    }
+
+    private ItemStack assembleInput(ItemStack incoming, int count) {
+        if (input.isEmpty()) return incoming.copyWithCount(count);
+        ItemStack combined = input.copyWithCount(input.getCount() + count);
+        if (station().equals(WorkshopRecipe.STONE_ANVIL)) {
+            double temperature = Math.min(ItemHeat.celsius(input, level), ItemHeat.celsius(incoming, level));
+            ItemHeat first = input.get(ModDataComponents.HEAT.get()), second = incoming.get(ModDataComponents.HEAT.get());
+            combined.remove(ModDataComponents.HEAT.get());
+            if (first != null && second != null && temperature > ThermalModel.AMBIENT)
+                ItemHeat.setTemperature(combined, level, temperature, Math.min(first.capacity(), second.capacity()));
+        }
+        return combined;
     }
 
     private int inputLimit(ItemStack stack) {
-        if (station().equals(WorkshopRecipe.KILN)) return 1;
+        if (station().equals(WorkshopRecipe.KILN)) {
+            ForgeProgress saved = stack.get(ModDataComponents.FORGE_PROGRESS.get());
+            return saved == null ? 1 : Math.min(stack.getMaxStackSize(), saved.batchSize());
+        }
         if (!station().equals(WorkshopRecipe.STONE_ANVIL)) return stack.getMaxStackSize();
         ForgeProgress saved = stack.get(ModDataComponents.FORGE_PROGRESS.get());
         if (saved != null) return saved.batchSize();
@@ -562,7 +590,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
     }
 
     private boolean recipeNeedsMoreInput(ItemStack stack) {
-        if (input.isEmpty() || !ItemStack.isSameItemSameComponents(input, stack)) {
+        if (input.isEmpty() || !compatibleInput(stack)) {
             return false;
         }
         return stationRecipes().anyMatch(holder -> holder.value().ingredient().test(input)
@@ -611,7 +639,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
 
     public boolean insert(ItemStack held, boolean creative) {
         int slot = preferredPlayerInsertionSlot(held);
-        if (slot == INPUT_SLOT && station().equals(WorkshopRecipe.STONE_ANVIL)
+        if (slot == INPUT_SLOT && (station().equals(WorkshopRecipe.STONE_ANVIL) || station().equals(WorkshopRecipe.KILN))
                 && input.isEmpty() && held.has(ModDataComponents.FORGE_PROGRESS.get())) {
             int count = held.get(ModDataComponents.FORGE_PROGRESS.get()).batchSize();
             if (held.getCount() < count) return false;
@@ -635,7 +663,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
 
         Optional<ResourceLocation> previousRecipe = slot == FUEL_SLOT ? Optional.empty() : activeRecipeId();
         if (slot == INPUT_SLOT) {
-            input = addOne(input, held);
+            input = assembleInput(held, 1);
         } else if (slot == CATALYST_SLOT) {
             catalyst = addOne(catalyst, held);
         } else if (slot == FUEL_SLOT) {
@@ -900,7 +928,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
                 return stack;
             }
             ItemStack current = getStackInSlot(slot);
-            if (!current.isEmpty() && !ItemStack.isSameItemSameComponents(current, stack)) {
+            if (!current.isEmpty() && !(slot == INPUT_SLOT ? compatibleInput(stack) : ItemStack.isSameItemSameComponents(current, stack))) {
                 return stack;
             }
             int limit = slot == INPUT_SLOT ? inputLimit(stack)
@@ -911,7 +939,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
             }
             if (!simulate) {
                 Optional<ResourceLocation> previousRecipe = slot == FUEL_SLOT ? Optional.empty() : activeRecipeId();
-                ItemStack target = current.isEmpty()
+                ItemStack target = slot == INPUT_SLOT ? assembleInput(stack, accepted) : current.isEmpty()
                         ? stack.copyWithCount(accepted)
                         : current.copyWithCount(current.getCount() + accepted);
                 if (slot == INPUT_SLOT) {
@@ -964,7 +992,8 @@ public final class WorkshopBlockEntity extends BlockEntity {
         @Override
         public int getSlotLimit(int slot) {
             return slot == INPUT_SLOT && station().equals(WorkshopRecipe.KILN)
-                    || slot == CATALYST_SLOT && station().equals(WorkshopRecipe.CRUCIBLE_FURNACE) ? 1 : 64;
+                    ? input.isEmpty() ? 1 : inputLimit(input)
+                    : slot == CATALYST_SLOT && station().equals(WorkshopRecipe.CRUCIBLE_FURNACE) ? 1 : 64;
         }
 
         @Override

@@ -17,6 +17,92 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(Firstworks.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class KilnGameTests {
+    @GameTest(template = "empty", timeoutTicks = 2500)
+    public static void separatelyHeatedIngredientsForgeAndReheatAsOneWorkpiece(GameTestHelper h) {
+        BlockPos firstPos = new BlockPos(2, 1, 2), secondPos = new BlockPos(4, 1, 2), anvilPos = new BlockPos(6, 1, 2);
+        h.setBlock(firstPos, ModBlocks.KILN.get());
+        h.setBlock(secondPos, ModBlocks.KILN.get());
+        h.setBlock(anvilPos, ModBlocks.STONE_ANVIL.get());
+        WorkshopBlockEntity first = h.getBlockEntity(firstPos), second = h.getBlockEntity(secondPos), anvil = h.getBlockEntity(anvilPos);
+        var player = h.makeMockPlayer(GameType.SURVIVAL);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.STONE_HAMMER.get()));
+        for (WorkshopBlockEntity kiln : new WorkshopBlockEntity[]{first, second}) {
+            h.assertTrue(kiln.insert(new ItemStack(Items.PRISMARINE_SHARD), false), "Kiln rejected batch ingredient");
+            h.assertTrue(!kiln.insert(new ItemStack(Items.PRISMARINE_SHARD), false), "Kiln accepted loose stacked ingredients");
+            kiln.getItemHandler(null).insertItem(2, new ItemStack(Items.COAL, 4), false);
+        }
+        h.assertTrue(first.ignite(), "First kiln failed to ignite");
+        h.runAtTickTime(40, () -> h.assertTrue(second.ignite(), "Second kiln failed to ignite"));
+        h.runAtTickTime(605, () -> {
+            ItemStack a = first.getItemHandler(null).extractItem(0, 1, false);
+            ItemStack b = second.getItemHandler(null).extractItem(0, 1, false);
+            h.assertTrue(!ItemStack.isSameItemSameComponents(a, b), "Fixture did not produce distinct heat components");
+            h.assertTrue(anvil.insert(a, false), "Player insertion rejected first heated ingredient");
+            double before = ItemHeat.celsius(anvil.getInput(), h.getLevel());
+            double cooler = Math.min(before, ItemHeat.celsius(b, h.getLevel()));
+            h.assertTrue(anvil.canInsert(b), "Player insertion rejected independently heated ingredient");
+            var handler = anvil.getItemHandler(null);
+            h.assertTrue(handler.insertItem(0, b, true).isEmpty(), "Automation simulation rejected heated batch assembly");
+            h.assertTrue(anvil.getInput().getCount() == 1 && ItemHeat.celsius(anvil.getInput(), h.getLevel()) == before,
+                    "Simulation changed stored count or heat");
+            h.assertTrue(handler.insertItem(0, b, false).isEmpty(), "Automation rejected heated batch assembly");
+            h.assertTrue(Math.abs(ItemHeat.celsius(anvil.getInput(), h.getLevel()) - cooler) < 0.001,
+                    "Batch gained heat when combined");
+            h.assertTrue(anvil.forge(player, "draw"), "Kiln-heated batch could not start forging");
+        });
+        h.runAtTickTime(1210, () -> {
+            h.assertTrue(!ItemHeat.workable(anvil.getInput(), h.getLevel()), "Batch did not cool below its forging threshold");
+            h.assertTrue(!anvil.forge(player, "bend"), "Cold batch could finish forging");
+            ItemStack partial = anvil.getItemHandler(null).extractItem(0, 64, false);
+            ItemStack incomplete = partial.copyWithCount(1);
+            h.assertTrue(!first.insert(incomplete, false), "Kiln accepted a split worked batch");
+            h.assertTrue(first.getItemHandler(null).insertItem(0, incomplete, false).getCount() == 1,
+                    "Automation accepted a split worked batch");
+            h.assertTrue(first.insert(partial, false) && partial.isEmpty(), "Player could not return complete batch to kiln");
+            h.assertTrue(first.getItemHandler(null).getSlotLimit(0) == 2, "Occupied kiln did not expose worked-batch capacity");
+            h.assertTrue(first.getItemHandler(null).extractItem(0, 1, false).isEmpty(), "Kiln split worked batch");
+            var saved = first.saveWithoutMetadata(h.getLevel().registryAccess());
+            first.loadWithComponents(saved, h.getLevel().registryAccess());
+            ItemStack roundTrip = first.getItemHandler(null).extractItem(0, 2, false);
+            h.assertTrue(first.getItemHandler(null).insertItem(0, roundTrip, true).isEmpty()
+                    && first.getInput().isEmpty(), "Worked-batch insertion simulation mutated kiln");
+            h.assertTrue(first.getItemHandler(null).insertItem(0, roundTrip, false).isEmpty(), "Automation could not return complete batch");
+        });
+        h.runAtTickTime(2415, () -> {
+            ItemStack reheated = first.getItemHandler(null).extractItem(0, 64, false);
+            h.assertTrue(reheated.getCount() == 2 && reheated.get(ModDataComponents.FORGE_PROGRESS.get()).completed() == 1,
+                    "Reheating lost materials or forging progress");
+            h.assertTrue(ItemHeat.fraction(reheated, h.getLevel()) > 0.95F, "Worked batch did not fully reheat");
+            h.assertTrue(anvil.insert(reheated, false) && anvil.getProgress() == 1, "Batch did not resume its locked recipe");
+            h.assertTrue(anvil.forge(player, "bend") && anvil.getOutput().is(Items.PRISMARINE_CRYSTALS)
+                    && anvil.getInput().isEmpty(), "Reheated batch failed to finish with the correct yield");
+            h.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void anvilAssemblyPreservesComponentsAndCannotWarmColdIngredients(GameTestHelper h) {
+        BlockPos kilnPos = new BlockPos(2, 1, 2), anvilPos = new BlockPos(4, 1, 2);
+        h.setBlock(kilnPos, ModBlocks.KILN.get());
+        h.setBlock(anvilPos, ModBlocks.STONE_ANVIL.get());
+        WorkshopBlockEntity kiln = h.getBlockEntity(kilnPos), anvil = h.getBlockEntity(anvilPos);
+        kiln.insert(new ItemStack(Items.PRISMARINE_SHARD), false);
+        kiln.insertFuel(new ItemStack(Items.COAL), false);
+        kiln.ignite();
+        WorkshopBlockEntity.serverTick(h.getLevel(), kiln.getBlockPos(), kiln.getBlockState(), kiln);
+        ItemStack warm = kiln.getItemHandler(null).extractItem(0, 1, false);
+        h.assertTrue(ItemHeat.celsius(warm, h.getLevel()) > ThermalModel.AMBIENT, "Kiln did not warm fixture");
+        anvil.insert(warm, false);
+        ItemStack named = new ItemStack(Items.PRISMARINE_SHARD);
+        named.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("Different"));
+        h.assertTrue(!anvil.canInsert(named) && !anvil.getItemHandler(null).insertItem(0, named, false).isEmpty(),
+                "Assembly ignored non-heat components");
+        h.assertTrue(anvil.insert(new ItemStack(Items.PRISMARINE_SHARD), false), "Player could not assemble different temperatures");
+        h.assertTrue(anvil.getInput().getCount() == 2 && ItemHeat.celsius(anvil.getInput(), h.getLevel()) == ThermalModel.AMBIENT,
+                "Warm ingredient gave cold ingredient free heat");
+        h.succeed();
+    }
+
     @GameTest(template = "empty", timeoutTicks = 40)
     public static void coldWorkpiecesMergeThroughHopperWithoutLosingForgeState(GameTestHelper h) {
         BlockPos hopperPos = new BlockPos(3, 2, 3), chestPos = hopperPos.east();

@@ -33,7 +33,8 @@ public final class ContinuousFireGameTests {
         handler.extractItem(0,1,false);
         var batch=new ItemStack(Items.PRISMARINE_SHARD,2);
         batch.set(ModDataComponents.FORGE_PROGRESS.get(),new ForgeProgress("firstworks:gametest_heated_batch","draw,bend",1,2));
-        h.assertTrue(!kiln.insert(batch,false) && handler.insertItem(0,batch,false).getCount()==2,"Kiln split a saved forging batch");
+        h.assertTrue(kiln.insert(batch,false) && batch.isEmpty() && kiln.getInput().getCount()==2,"Kiln failed to accept a complete worked batch");
+        h.assertTrue(handler.extractItem(0,1,false).isEmpty(),"Kiln split a saved forging batch");
         h.succeed();
     }
 

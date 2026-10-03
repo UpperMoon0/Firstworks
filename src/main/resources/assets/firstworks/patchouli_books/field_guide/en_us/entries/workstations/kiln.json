@@ -7,7 +7,7 @@
     {
       "type": "patchouli:text",
       "title": "Load and Light",
-      "text": "Load one heatable workpiece and furnace fuel, then ignite with Flint and Steel, Fire Starter, Fire Charge, or a supported igniter. The heating slot holds exactly one item; the fuel slot remains stackable. Fuel insertion never lights a cold kiln."
+      "text": "Load one heatable workpiece and furnace fuel, then ignite with Flint and Steel, Fire Starter, Fire Charge, or a supported igniter. The heating slot holds one loose item or one complete partly forged batch; the fuel slot remains stackable. Fuel insertion never lights a cold kiln."
     },
     {
       "type": "patchouli:text",
@@ -17,7 +17,7 @@
     {
       "type": "patchouli:text",
       "title": "Not a Furnace",
-      "text": "The kiln never smelts, fires pottery, or advances forge actions. It accepts forge ingredients and tagged heatable items. Glow and light show hot work. Reheating an unfinished forging batch preserves its completed actions."
+      "text": "The kiln never smelts, fires pottery, or advances forge actions. It accepts forge ingredients and tagged heatable items. Glow and light show hot work. Retrieve an unfinished forging batch as a whole to reheat it. Its completed actions are preserved, and larger batches take proportionally longer to heat."
     },
     {
       "type": "patchouli:crafting",
