@@ -211,9 +211,10 @@ public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBl
             float x3,float y3,float z3, float x4,float y4,float z4,
             float u0,float v0,float u1,float v1, int color,int light,int overlay,
             float nx,float ny,float nz) {
+        // The second corner advances height/depth (V); the third advances face width (U).
         vertex(vertices,matrix,x1,y1,z1,u0,v0,color,light,overlay,nx,ny,nz);
-        vertex(vertices,matrix,x2,y2,z2,u1,v0,color,light,overlay,nx,ny,nz);
+        vertex(vertices,matrix,x2,y2,z2,u0,v1,color,light,overlay,nx,ny,nz);
         vertex(vertices,matrix,x3,y3,z3,u1,v1,color,light,overlay,nx,ny,nz);
-        vertex(vertices,matrix,x4,y4,z4,u0,v1,color,light,overlay,nx,ny,nz);
+        vertex(vertices,matrix,x4,y4,z4,u1,v0,color,light,overlay,nx,ny,nz);
     }
 }

@@ -112,6 +112,15 @@ public final class FirstworksConfig {
                     "Range: 1 ~ 100")
             .defineInRange("quernManualWorkPerCrank", 5, 1, 100);
 
+    public static final ModConfigSpec.IntValue DEFAULT_MAX_HEAT_CELSIUS = BUILDER
+            .comment("Maximum modeled temperature for heatable items without an override. Cold is 20 Celsius; forge readiness remains 25% of heat capacity.")
+            .defineInRange("defaultMaxHeatCelsius", 1000, 21, 5000);
+    public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> ITEM_MAX_HEAT_CELSIUS = BUILDER
+            .comment("Per-item maximum temperature, as namespace:item=degreesCelsius. Synced to clients. Last duplicate wins; supports modded item IDs.")
+            .defineListAllowEmpty("itemMaxHeatCelsius", java.util.List.of(
+                    "minecraft:copper_ingot=1100", "firstworks:cast_copper_billet=1100",
+                    "firstworks:annealed_copper_billet=1100", "minecraft:iron_ingot=1250",
+                    "minecraft:gold_ingot=1000"), com.nstut.firstworks.content.workshop.HeatTemperature::validOverride);
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     private FirstworksConfig() {}

@@ -16,9 +16,8 @@ public final class WorkpieceEvents {
         if (player == null) return;
         var stack = event.getItemStack();
         if (stack.has(ModDataComponents.HEAT.get()) || ItemHeat.capacity(stack, player.level()) > 0) {
-            float heat = ItemHeat.fraction(stack, player.level());
-            event.getToolTip().add(Component.translatable("heat.firstworks." + ItemHeat.state(heat))
-                    .withStyle(heat >= 0.25F ? ChatFormatting.GOLD : heat > 0 ? ChatFormatting.RED : ChatFormatting.GRAY));
+            event.getToolTip().add(HeatTooltip.line(stack, player.level(),
+                    com.nstut.firstworks.FirstworksClientConfig.HEAT_UNIT.get()));
         }
         var progress = stack.get(ModDataComponents.FORGE_PROGRESS.get());
         if (progress != null) event.getToolTip().add(Component.translatable("jade.firstworks.workshop.progress",
