@@ -42,7 +42,7 @@
     {
       "type": "patchouli:text",
       "title": "Furnace Cast Copper",
-      "text": "Input: Raw Copper. Input count: 3. Work: 240. Catalyst: Casting Mold; reusable. Output: 1 Cast Copper Billet."
+      "text": "Crucible Furnace. Input: 3 Raw Copper and reusable Casting Mold. Requires 1085°C for 240 processing ticks. Base ceiling: 800°C; use Bellows for a temporary 1150°C ceiling. Fuel uses native furnace burn times across recipes."
     },
     {
       "type": "patchouli:text",
@@ -158,6 +158,11 @@
       "type": "patchouli:text",
       "title": "Wool Block",
       "text": "This special crafting recipe preserves item colour or tool state. See the fleece, bedding, or tanning entry for its exact layout and requirements."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Copper Fasteners",
+      "text": "Stone Anvil. Input: 1 Copper Ingot. Heat to at least 500°C, then Flatten > Draw > Bend with a Stone Hammer. Output: 8 Copper Fasteners. Cooling duration: 1200 ticks from maximum temperature to ambient."
     }
   ]
 }

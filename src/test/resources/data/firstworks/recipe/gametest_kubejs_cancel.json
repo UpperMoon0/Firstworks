@@ -1,7 +1,12 @@
 {
   "type": "firstworks:workshop_processing",
   "station": "crucible_furnace",
-  "ingredient": {"item": "minecraft:lapis_lazuli"},
-  "result": {"id": "minecraft:diamond"},
-  "work": 4
+  "ingredient": {
+    "item": "minecraft:lapis_lazuli"
+  },
+  "result": {
+    "id": "minecraft:diamond"
+  },
+  "work": 4,
+  "required_temperature": 0
 }

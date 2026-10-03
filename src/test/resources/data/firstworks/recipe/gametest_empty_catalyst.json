@@ -1,8 +1,15 @@
 {
   "type": "firstworks:workshop_processing",
   "station": "crucible_furnace",
-  "ingredient": {"item": "minecraft:charcoal"},
-  "catalyst": {"tag": "firstworks:gametest_empty_catalysts"},
-  "result": {"id": "minecraft:diamond"},
-  "work": 2
+  "ingredient": {
+    "item": "minecraft:charcoal"
+  },
+  "catalyst": {
+    "tag": "firstworks:gametest_empty_catalysts"
+  },
+  "result": {
+    "id": "minecraft:diamond"
+  },
+  "work": 2,
+  "required_temperature": 0
 }

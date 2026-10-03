@@ -7,12 +7,12 @@
     {
       "type": "patchouli:text",
       "title": "Placement",
-      "text": "Place beside a Crucible Furnace with the outlet facing it. Bellows use planks, Heavy Leather, and strong bindings, so their recipe does not require copper to bootstrap copper casting."
+      "text": "Place Bellows adjacent to a Crucible Furnace with the nozzle pointing into it. Light the furnace first. Empty-hand use operates the Bellows. It raises the heat ceiling, not a separate processing-time allowance."
     },
     {
       "type": "patchouli:text",
       "title": "Pump and Check",
-      "text": "Empty-hand press banks a finite air reserve. Watch bag motion and furnace feedback. Pumping does not ignite fuel. No air usually means the outlet faces away, the wrong station is adjacent, or the furnace moved. Kilns do not require Bellows. Each press adds 160 ticks (8 seconds); the reserve caps at 480 ticks (24 seconds)."
+      "text": "A successful survival blow costs one food point (half a hunger icon), with a one-second cooldown shared by that furnace. Failed or cooldown clicks cost nothing. Creative blows are free. Repeated blows refresh the eight-second hold and four-second decay; they never bank unlimited time."
     },
     {
       "type": "patchouli:crafting",

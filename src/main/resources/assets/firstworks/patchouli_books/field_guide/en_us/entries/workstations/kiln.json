@@ -7,12 +7,12 @@
     {
       "type": "patchouli:text",
       "title": "Load and Light",
-      "text": "Use a heatable workpiece and solid furnace fuel, then ignite with Flint and Steel, Fire Starter, Fire Charge, or a supported igniter. Fuel loading alone never lights it. Burning fuel can catch queued fuel; after complete burnout it must be lit again."
+      "text": "Load one heatable workpiece and furnace fuel, then ignite with Flint and Steel, Fire Starter, Fire Charge, or a supported igniter. The heating slot holds exactly one item; the fuel slot remains stackable. Fuel insertion never lights a cold kiln."
     },
     {
       "type": "patchouli:text",
       "title": "Carry the Heat",
-      "text": "One item takes about five seconds from cold to full heat; larger stacks heat more slowly. Burning fuel maintains heat. Empty-hand use retrieves the workpiece for the anvil. Heat belongs to the item, not just the station."
+      "text": "One workpiece heats from cold to its item-defined maximum in about five seconds. Burning fuel maintains heat. Empty-hand use retrieves it for the anvil. Absolute Celsius temperature survives transfers, with cooling based on world time. Jade shows current/max temperature; Kilns do not require Bellows."
     },
     {
       "type": "patchouli:text",

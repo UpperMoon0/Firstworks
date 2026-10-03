@@ -119,9 +119,9 @@ public final class FirstworksGameTests {
         check(helper, furnace.getProgress() == 0, "Crucible Furnace progressed without Bellows air");
         check(helper, !furnace.getFuel().isEmpty(), "Crucible Furnace consumed fuel while starved of air");
 
-        helper.useBlock(bellowsPos, player);
-        check(helper, furnace.getStokeTicks() > 0, "Bellows did not stoke the adjacent Crucible Furnace");
         check(helper, furnace.ignite(), "Crucible could not be lit");
+        helper.useBlock(bellowsPos, player);
+        check(helper, furnace.getStokeTicks() > 0, "Bellows did not boost the adjacent Crucible Furnace");
         tickHeated(level, helper.absolutePos(furnacePos), furnace, 120);
         helper.useBlock(bellowsPos, player);
         tickHeated(level, helper.absolutePos(furnacePos), furnace, 120);
@@ -178,8 +178,10 @@ public final class FirstworksGameTests {
 
         level.setBlock(absoluteBellowsPos, placedState, Block.UPDATE_ALL);
         clearHand(player);
-        helper.useBlock(bellowsPos, player);
         WorkshopBlockEntity furnace = helper.getBlockEntity(furnacePos);
+        furnace.insertFuel(new ItemStack(Items.CHARCOAL), false);
+        furnace.ignite();
+        helper.useBlock(bellowsPos, player);
         check(helper, furnace.getStokeTicks() > 0,
                 "Naturally placed Bellows did not stoke the furnace in front of its nozzle");
 
@@ -317,6 +319,8 @@ public final class FirstworksGameTests {
             level.setBlock(edgeBellowsPos,
                     ModBlocks.BELLOWS.get().defaultBlockState().setValue(BellowsBlock.FACING, Direction.EAST), Block.UPDATE_ALL);
             WorkshopBlockEntity edgeFurnace = (WorkshopBlockEntity) level.getBlockEntity(edgeFurnacePos);
+            edgeFurnace.insertFuel(new ItemStack(Items.CHARCOAL), false);
+            edgeFurnace.ignite();
             BlockHitResult bellowsHit = new BlockHitResult(Vec3.atCenterOf(edgeBellowsPos), Direction.UP, edgeBellowsPos, false);
             level.getBlockState(edgeBellowsPos).useWithoutItem(level, player, bellowsHit);
             check(helper, edgeFurnace != null && edgeFurnace.getStokeTicks() > 0,
@@ -333,9 +337,7 @@ public final class FirstworksGameTests {
     }
 
     private static void tickHeated(ServerLevel level, BlockPos pos, WorkshopBlockEntity workshop, int ticks) {
-        for (int i = 0; i < ticks; i++) {
-            WorkshopBlockEntity.serverTick(level, pos, level.getBlockState(pos), workshop);
-        }
+        ThermalTestSupport.tickHot(level, pos, workshop, ticks);
     }
 
     private static void use(GameTestHelper helper, BlockPos pos, Player player, int times) {

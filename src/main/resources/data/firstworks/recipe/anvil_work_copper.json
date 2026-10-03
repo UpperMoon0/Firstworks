@@ -19,6 +19,7 @@
     "visual": {
       "type": "deformable",
       "initial_profile": "billet"
-    }
+    },
+    "minimum_temperature": 500
   }
 }

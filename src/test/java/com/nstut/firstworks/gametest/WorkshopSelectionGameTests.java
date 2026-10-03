@@ -110,13 +110,13 @@ public final class WorkshopSelectionGameTests {
                 "KubeJS workshop start listener did not execute exactly once on first start attempt");
         check(helper, cancelled.getProgress() == 0 && !cancelled.isRunning(),
                 "Cancelled KubeJS workshop start advanced progress or entered running state");
-        check(helper, cancelled.getFuel().is(Items.COAL) && cancelled.getFuel().getCount() == 1,
-                "Cancelled KubeJS workshop start consumed Crucible Furnace fuel");
+        check(helper, cancelled.getFuel().isEmpty() && cancelled.getBurnTicks() > 0,
+                "Ignition did not pay for fire independently of cancelled recipe processing");
 
         tickHeated(level, helper.absolutePos(cancelPos), cancelled, 4);
         check(helper, cancelled.getStokeTicks() == 175,
                 "Cancelled ticking workshop start retriggered instead of remaining latched");
-        check(helper, cancelled.getProgress() == 0 && cancelled.getFuel().getCount() == 1,
+        check(helper, cancelled.getProgress() == 0 && cancelled.getFuel().isEmpty(),
                 "Cancelled ticking workshop changed progress or fuel on later ticks");
 
         BlockPos completePos = new BlockPos(8, 1, 12);
@@ -230,7 +230,7 @@ public final class WorkshopSelectionGameTests {
     }
 
     @GameTest(template = EMPTY, timeoutTicks = 20)
-    public static void bellowsPressesBankFiniteAirReserve(GameTestHelper helper) {
+    public static void bellowsPressesRefreshBoundedBoostWithoutBanking(GameTestHelper helper) {
         BlockPos bellowsPos = new BlockPos(5, 1, 4);
         BlockPos furnacePos = bellowsPos.east();
         helper.setBlock(furnacePos, ModBlocks.CRUCIBLE_FURNACE.get());
@@ -239,20 +239,23 @@ public final class WorkshopSelectionGameTests {
         WorkshopBlockEntity furnace = helper.getBlockEntity(furnacePos);
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
 
+        furnace.insertFuel(new ItemStack(Items.CHARCOAL), false);
+        furnace.ignite();
+        player.getFoodData().setFoodLevel(20);
         helper.useBlock(bellowsPos, player);
         int firstPress = furnace.getStokeTicks();
-        check(helper, firstPress == 160,
+        check(helper, firstPress == 240,
                 "First Bellows press did not add one full airflow pulse");
 
         helper.useBlock(bellowsPos, player);
-        check(helper, furnace.getStokeTicks() == 320,
-                "Second Bellows press replaced rather than banked the existing airflow pulse");
+        check(helper, furnace.getStokeTicks() == 240,
+                "Cooldown press stacked the boost");
 
         for (int i = 0; i < 6; i++) {
             helper.useBlock(bellowsPos, player);
         }
-        check(helper, furnace.getStokeTicks() == 480,
-                "Bellows airflow reserve did not clamp at the intended three-stroke capacity");
+        check(helper, furnace.getStokeTicks() == 240,
+                "Repeated clicks stacked Bellows boost duration");
 
         helper.succeed();
     }
@@ -315,9 +318,7 @@ public final class WorkshopSelectionGameTests {
     }
 
     private static void tickHeated(ServerLevel level, BlockPos pos, WorkshopBlockEntity workshop, int ticks) {
-        for (int i = 0; i < ticks; i++) {
-            WorkshopBlockEntity.serverTick(level, pos, level.getBlockState(pos), workshop);
-        }
+        ThermalTestSupport.tickHot(level, pos, workshop, ticks);
     }
 
     private static void check(GameTestHelper helper, boolean condition, String message) {

@@ -7,7 +7,7 @@
     {
       "type": "patchouli:text",
       "title": "Read the Line",
-      "text": "A heatable item shows one line, such as Heat: 794°C - Workable ~28s. The timer is its remaining forging window while cooling, not time until cold. Warm/cold items omit the timer. Glow and light fade with heat."
+      "text": "A heatable item shows one line, such as Heat: 794°C - Workable ~17s. This is actual stored temperature. The timer estimates cooling time until the recipe’s minimum workable temperature, not time until cold. Warm/cold items omit it."
     },
     {
       "type": "patchouli:text",
@@ -17,12 +17,12 @@
     {
       "type": "patchouli:text",
       "title": "Threshold and Scale",
-      "text": "Forging requires 25% remaining heat. The default 1200-tick capacity lasts 60 seconds to cold and about 45 seconds to the forging threshold. Cold uses a 20°C baseline; different items can have different configured maximum Celsius temperatures."
+      "text": "Items define maximum temperatures through synchronized server settings. Forge recipes define minimum_temperature (500°C for copper) and heat_ticks (1200 by default, cooling from maximum to 20°C in 60 seconds). The old 25% threshold no longer determines workability."
     },
     {
       "type": "patchouli:text",
       "title": "Units and Settings",
-      "text": "Client heatTemperatureUnit selects CELSIUS, FAHRENHEIT, or KELVIN with automatic conversion. It changes only display. Server defaultMaxHeatCelsius and itemMaxHeatCelsius define maxima. Forge recipe heat_ticks defines cooling duration, separately from maximum temperature."
+      "text": "Client heatTemperatureUnit selects CELSIUS, FAHRENHEIT, or KELVIN for item tooltips, Jade, and JEI. All gameplay temperatures remain Celsius. Server settings control crucible ceilings, heating/cooling rates, Bellows hold/decay/cooldown, hunger cost, and item maxima."
     }
   ]
 }

@@ -167,7 +167,7 @@ public final class WorkshopBlockEntityRenderer implements BlockEntityRenderer<Wo
 
     private void renderCrucibleFurnace(WorkshopBlockEntity workshop, PoseStack pose,
                                        MultiBufferSource buffers, int light) {
-        if (workshop.isHot()) {
+        if (workshop.hasHotCrucibleContents()) {
             renderPartial(workshop, CRUCIBLE_CONTENTS, pose, buffers, LightTexture.FULL_BRIGHT);
         }
 
@@ -175,9 +175,9 @@ public final class WorkshopBlockEntityRenderer implements BlockEntityRenderer<Wo
         if (castingMold) {
             renderPartial(workshop, CASTING_MOLD, pose, buffers, light);
             if (workshop.getOutput().is(ModItems.CAST_COPPER_BILLET.get())
-                    || workshop.isHot() && workshop.getProgressFraction() > 0.5F) {
+                    || workshop.hasHotCrucibleContents() && workshop.getProgressFraction() > 0.5F) {
                 renderPartial(workshop, CASTING_METAL, pose, buffers,
-                        workshop.isHot() ? LightTexture.FULL_BRIGHT : light);
+                        workshop.hasHotCrucibleContents() ? LightTexture.FULL_BRIGHT : light);
             }
         } else if (!workshop.getCatalyst().isEmpty()) {
             renderFurnaceItem(workshop, workshop.getCatalyst(), 0.82, 0.82, pose, buffers, light);
@@ -187,7 +187,7 @@ public final class WorkshopBlockEntityRenderer implements BlockEntityRenderer<Wo
             if (!castingMold || !workshop.getOutput().is(ModItems.CAST_COPPER_BILLET.get())) {
                 renderFurnaceItem(workshop, workshop.getOutput(), 0.85, 0.82, pose, buffers, light);
             }
-        } else if (!workshop.getInput().isEmpty() && !workshop.isHot()) {
+        } else if (!workshop.getInput().isEmpty() && !workshop.hasHotCrucibleContents()) {
             renderFurnaceItem(workshop, workshop.getInput(), 0.66, 0.44, pose, buffers, light);
         }
     }

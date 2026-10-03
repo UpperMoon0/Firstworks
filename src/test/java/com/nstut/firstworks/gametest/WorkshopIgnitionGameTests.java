@@ -80,7 +80,7 @@ public final class WorkshopIgnitionGameTests {
     }
 
     @GameTest(template = "empty", timeoutTicks = 20)
-    public static void airAndFuelNeverIgniteCrucibleAndRelightingRetainsPaidBatch(GameTestHelper h) {
+    public static void airAndFuelNeverIgniteCrucibleAndAirLossOnlyPausesWork(GameTestHelper h) {
         BlockPos pos = new BlockPos(3, 1, 3);
         h.setBlock(pos, ModBlocks.CRUCIBLE_FURNACE.get());
         WorkshopBlockEntity furnace = h.getBlockEntity(pos);
@@ -97,18 +97,23 @@ public final class WorkshopIgnitionGameTests {
         var hit = new BlockHitResult(Vec3.atCenterOf(furnace.getBlockPos()), Direction.NORTH, furnace.getBlockPos(), false);
         furnace.getBlockState().useItemOn(tool, h.getLevel(), player, InteractionHand.MAIN_HAND, hit);
         tick(h, furnace, 2);
-        h.assertTrue(furnace.getProgress() == 2 && furnace.getFuel().isEmpty() && furnace.isHot(), "Explicit crucible ignition failed");
+        h.assertTrue(furnace.getProgress() == 0 && furnace.getFuel().isEmpty() && furnace.isHot(), "Explicit crucible ignition failed");
+        h.assertTrue(furnace.getProgress() == 0, "Cold fire bypassed required temperature");
+        furnace.stoke(240);
+        tick(h, furnace, 120);
+        int progress = furnace.getProgress();
+        h.assertTrue(progress > 0, "Boosted fire did not heat enough to cast");
         var saved = furnace.saveWithoutMetadata(h.getLevel().registryAccess());
         saved.putInt("StokeTicks", 1);
         furnace.loadWithComponents(saved, h.getLevel().registryAccess());
         tick(h, furnace, 1);
-        furnace.stoke(200);
-        tick(h, furnace, 2);
-        h.assertTrue(furnace.getProgress() == 2 && !furnace.isHot(), "Air alone relit extinguished crucible");
+        h.assertTrue(furnace.getProgress() == progress && furnace.isHot() && furnace.getTemperature() <= 800,
+                "Falling ceiling did not clamp temperature and pause processing");
+        furnace.stoke(240);
+        tick(h, furnace, 40);
+        h.assertTrue(furnace.getProgress() > progress && furnace.isHot(), "Fresh boost did not resume work");
         furnace.getBlockState().useItemOn(tool, h.getLevel(), player, InteractionHand.MAIN_HAND, hit);
-        tick(h, furnace, 1);
-        h.assertTrue(furnace.getProgress() == 3 && furnace.getFuel().isEmpty() && tool.getDamageValue() == 2,
-                "Relighting lost paid batch or charged duplicate fuel");
+        h.assertTrue(tool.getDamageValue() == 1, "Live fire consumed duplicate ignition durability");
         h.succeed();
     }
 

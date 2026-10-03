@@ -12,7 +12,7 @@
     {
       "type": "patchouli:text",
       "title": "Workshop Roles",
-      "text": "Workshop slots are input, catalyst, fuel, and output. Same-recipe top-ups preserve heated progress; fuel top-ups do not restart a paid batch. Begun forging batches lock extra material insertion and cannot be split to duplicate work."
+      "text": "Workshop slots are input, catalyst, fuel, and output. The Kiln heating slot accepts one item, including automated insertion; fuel remains stackable. Fire burns independently of recipe state. Begun forging batches lock extra material insertion and cannot be split to duplicate work."
     },
     {
       "type": "patchouli:text",

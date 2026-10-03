@@ -22,7 +22,7 @@
     {
       "type": "patchouli:text",
       "title": "Burnout",
-      "text": "A live kiln fire catches queued fuel. After complete burnout it needs new ignition. Air loss extinguishes crucible processing; re-lighting resumes the paid batch without consuming another fuel. A new crucible batch must be lit again."
+      "text": "Both stations consume one fuel on ignition, using its native furnace burn time. A live fire automatically consumes queued fuel when the timer expires. Fire survives recipe completion and Bellows boost expiry, even while idle. Only complete burnout requires new ignition."
     },
     {
       "type": "patchouli:crafting",

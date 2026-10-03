@@ -12,7 +12,7 @@
     {
       "type": "patchouli:text",
       "title": "Copper Sequence",
-      "text": "Heat an Annealed Copper Billet in a lit Kiln. Transfer it here and perform Flatten, Draw, Bend, Flatten for a Copper Ingot. The workpiece must retain at least 25% heat to be Workable."
+      "text": "Heat an Annealed Copper Billet in a lit Kiln. Transfer it here and perform Flatten, Draw, Bend, Flatten for a Copper Ingot. The workpiece must remain at or above 500°C to be Workable."
     },
     {
       "type": "patchouli:text",

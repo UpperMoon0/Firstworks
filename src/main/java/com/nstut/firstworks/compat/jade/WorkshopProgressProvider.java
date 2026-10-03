@@ -52,7 +52,10 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
         data.putFloat("Heat", ItemHeat.fraction(visible, workshop.getLevel()));
         data.putBoolean("Heatable", ItemHeat.capacity(visible, workshop.getLevel()) > 0
                 || visible.has(com.nstut.firstworks.registry.ModDataComponents.HEAT.get()));
+        data.putString("HeatState", ItemHeat.state(visible, workshop.getLevel()));
         data.putInt("BurnTicks", workshop.getBurnTicks());
+        data.putDouble("Temperature", workshop.getTemperature());
+        data.putDouble("MaxTemperature", workshop.getMaxTemperature());
         data.putBoolean("NeedsIgnition", workshop.needsIgnition());
         putStack(data, INPUT, INPUT_COUNT, workshop.getInput());
         putStack(data, CATALYST, CATALYST_COUNT, workshop.getCatalyst());
@@ -63,6 +66,7 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
         data.putBoolean(RUNNING, workshop.isRunning());
         workshop.activeRecipe().ifPresent(holder -> {
             data.putString(RESULT, holder.value().result().getDescriptionId());
+            data.putInt("RequiredTemperature", holder.value().requiredTemperature());
             data.putInt(WORK, holder.value().requiredWork());
             holder.value().forge().ifPresent(forge -> {
                 ListTag actions = new ListTag();
@@ -76,12 +80,18 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
         CompoundTag data = accessor.getServerData();
         String station = data.getString(STATION);
+        var unit = com.nstut.firstworks.FirstworksClientConfig.HEAT_UNIT.get();
+        if (WorkshopRecipe.KILN.equals(station) || WorkshopRecipe.CRUCIBLE_FURNACE.equals(station))
+            tooltip.add(Component.translatable("jade.firstworks.workshop.temperature",
+                    unit.format(data.getDouble("Temperature")), unit.format(data.getDouble("MaxTemperature"))).withStyle(ChatFormatting.GOLD));
+        if (data.getInt("BurnTicks") > 0) tooltip.add(Component.translatable("jade.firstworks.workshop.burn_time",
+                (data.getInt("BurnTicks") + 19) / 20).withStyle(ChatFormatting.GOLD));
         if (data.getBoolean("NeedsIgnition") && !WorkshopRecipe.KILN.equals(station)) tooltip.add(Component.translatable("hint.firstworks.workshop.ignite")
                 .withStyle(ChatFormatting.YELLOW));
         if (data.getBoolean("Heatable")) {
             float heat = data.getFloat("Heat");
-            tooltip.add(Component.translatable("heat.firstworks." + ItemHeat.state(heat))
-                    .withStyle(heat >= 0.25F ? ChatFormatting.GOLD : heat > 0 ? ChatFormatting.RED : ChatFormatting.GRAY));
+            tooltip.add(Component.translatable("heat.firstworks." + data.getString("HeatState"))
+                    .withStyle("workable".equals(data.getString("HeatState")) ? ChatFormatting.GOLD : heat > 0 ? ChatFormatting.RED : ChatFormatting.GRAY));
         }
         if (data.contains(OUTPUT)) {
             tooltip.add(Component.translatable("jade.firstworks.workshop.ready", data.getInt(OUTPUT_COUNT),
@@ -151,21 +161,14 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
             int fuel = data.getInt(FUEL_COUNT);
             if (fuel > 0) {
                 tooltip.add(Component.translatable("jade.firstworks.workshop.fuel_reserve", fuel));
-            } else if (!data.getBoolean(RUNNING) && progress == 0) {
+            } else if (data.getInt("BurnTicks") == 0 && !data.getBoolean(RUNNING) && progress == 0) {
                 tooltip.add(Component.translatable("jade.firstworks.workshop.needs_fuel")
                         .withStyle(ChatFormatting.YELLOW));
             }
 
-            if (WorkshopRecipe.CRUCIBLE_FURNACE.equals(station)) {
-                int airTicks = data.getInt(STOKE);
-                if (airTicks <= 0) {
-                    tooltip.add(Component.translatable("jade.firstworks.workshop.needs_air")
-                            .withStyle(ChatFormatting.YELLOW));
-                } else {
-                    tooltip.add(Component.translatable("jade.firstworks.workshop.air_reserve",
-                            (airTicks + 19) / 20));
-                }
-            }
+            if (data.getDouble("Temperature") < data.getInt("RequiredTemperature"))
+                tooltip.add(Component.translatable("jade.firstworks.workshop.required_temperature",
+                        unit.format(data.getInt("RequiredTemperature"))).withStyle(ChatFormatting.YELLOW));
         } else {
             appendManualHint(tooltip, station);
         }

@@ -9,13 +9,13 @@ import net.minecraft.world.level.Level;
 public final class HeatTooltip {
     public static Component line(ItemStack stack, Level level, TemperatureUnit unit) {
         float fraction = ItemHeat.fraction(stack, level);
-        String temperature = unit.format(HeatTemperature.celsius(fraction, HeatTemperature.maximum(stack)));
-        var status = Component.translatable("heat.firstworks.status." + ItemHeat.state(fraction));
+        String temperature = unit.format(ItemHeat.celsius(stack, level));
+        var status = Component.translatable("heat.firstworks.status." + ItemHeat.state(stack, level));
         var line = Component.translatable("heat.firstworks.tooltip", temperature, status);
         var heat = stack.get(ModDataComponents.HEAT.get());
-        if (fraction >= 0.25F && heat != null) line.append(Component.translatable("heat.firstworks.window",
-                HeatTemperature.workableSeconds(ItemHeat.remaining(stack, level), heat.capacity())));
-        return line.withStyle(fraction >= 0.25F ? ChatFormatting.GOLD
+        if (ItemHeat.workable(stack, level) && heat != null) line.append(Component.translatable("heat.firstworks.window",
+                ThermalModel.workableSeconds(ItemHeat.celsius(stack, level), ItemHeat.minimumWorkable(stack, level), ItemHeat.coolingRate(stack))));
+        return line.withStyle(ItemHeat.workable(stack, level) ? ChatFormatting.GOLD
                 : fraction > 0 ? ChatFormatting.RED : ChatFormatting.GRAY);
     }
     private HeatTooltip() {}

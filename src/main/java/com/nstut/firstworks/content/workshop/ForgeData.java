@@ -8,7 +8,10 @@ import java.util.List;
 import java.util.Optional;
 
 /** Recipe-owned operations; item models never determine the interaction geometry. */
-public record ForgeData(List<String> actions, int heatTicks, Optional<Visual> visual) {
+public record ForgeData(List<String> actions, int heatTicks, Optional<Visual> visual, int minimumTemperature) {
+    public ForgeData(List<String> actions, int heatTicks, Optional<Visual> visual) {
+        this(actions, heatTicks, visual, heatTicks == 0 ? 0 : 500);
+    }
     public static final Codec<String> ACTION = Codec.STRING.validate(value ->
             List.of("flatten", "draw", "bend").contains(value) ? DataResult.success(value)
                     : DataResult.error(() -> "Forge action must be flatten, draw, or bend"));
@@ -17,7 +20,8 @@ public record ForgeData(List<String> actions, int heatTicks, Optional<Visual> vi
                     ? DataResult.success(list) : DataResult.error(() -> "Forge needs 1 to 64 actions"))
                     .fieldOf("actions").forGetter(ForgeData::actions),
             Codec.intRange(0, 72000).optionalFieldOf("heat_ticks", 1200).forGetter(ForgeData::heatTicks),
-            Visual.CODEC.optionalFieldOf("visual").forGetter(ForgeData::visual)
+            Visual.CODEC.optionalFieldOf("visual").forGetter(ForgeData::visual),
+            Codec.intRange(0, 5000).optionalFieldOf("minimum_temperature", 500).forGetter(ForgeData::minimumTemperature)
     ).apply(instance, ForgeData::new));
 
     public ForgeData {
@@ -25,6 +29,7 @@ public record ForgeData(List<String> actions, int heatTicks, Optional<Visual> vi
         if (actions.isEmpty() || actions.size() > 64 || actions.stream().anyMatch(a -> !List.of("flatten", "draw", "bend").contains(a)))
             throw new IllegalArgumentException("Forge needs 1 to 64 valid actions");
         if (heatTicks < 0 || heatTicks > 72000) throw new IllegalArgumentException("Invalid forge heat window");
+        if (minimumTemperature < 0 || minimumTemperature > 5000) throw new IllegalArgumentException("Invalid forge temperature");
     }
 
     public record Visual(String type, String initialProfile, float length, float width, float height,

@@ -28,7 +28,7 @@ public final class KilnHeatingCategory implements IRecipeCategory<ItemStack> {
         builder.addSlot(RecipeIngredientRole.INPUT, 35, 5).setStandardSlotBackground().addItemStack(item);
         builder.addSlot(RecipeIngredientRole.CATALYST, 3, 5).setStandardSlotBackground().addItemLike(ModItems.KILN.get());
         builder.addSlot(RecipeIngredientRole.CATALYST, 63, 5).setStandardSlotBackground()
-                .addItemLike(Items.CHARCOAL).addItemLike(Items.COAL);
+                .addItemStacks(WorkshopRecipeCategory.furnaceFuels());
         builder.addSlot(RecipeIngredientRole.CATALYST, 91, 5).setStandardSlotBackground()
                 .addItemLike(ModItems.FIRE_STARTER.get()).addItemLike(Items.FLINT_AND_STEEL).addItemLike(Items.FIRE_CHARGE);
     }

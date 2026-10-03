@@ -34,7 +34,7 @@ public final class WorkshopInteractionHints {
             text = kiln.getInput().isEmpty() ? Component.translatable("hint.firstworks.kiln.load")
                     : Component.translatable("hint.firstworks.kiln.heat",
                             Component.translatable("heat.firstworks." + com.nstut.firstworks.content.workshop.ItemHeat.state(
-                                    com.nstut.firstworks.content.workshop.ItemHeat.fraction(kiln.getInput(), mc.level))));
+                                    kiln.getInput(), mc.level)));
         } else if (entity instanceof WorkshopBlockEntity anvil && anvil.station().equals(WorkshopRecipe.STONE_ANVIL)) {
             boolean hammer = mc.player.getMainHandItem().is(ModTags.HAMMERS) || mc.player.getOffhandItem().is(ModTags.HAMMERS);
             text = !hammer && mc.player.isShiftKeyDown() ? Component.translatable("hint.firstworks.retrieve")

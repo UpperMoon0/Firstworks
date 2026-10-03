@@ -81,7 +81,14 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
     private static void addFuelSlot(IRecipeLayoutBuilder builder, int x) {
         builder.addSlot(RecipeIngredientRole.CATALYST, x, 31)
                 .setStandardSlotBackground()
-                .addItemStacks(Arrays.stream(Ingredient.of(ModTags.CRUCIBLE_FURNACE_FUELS).getItems()).toList());
+                .addItemStacks(furnaceFuels());
+    }
+
+    static java.util.List<ItemStack> furnaceFuels() {
+        return net.minecraft.core.registries.BuiltInRegistries.ITEM.stream()
+                .map(ItemStack::new)
+                .filter(stack -> stack.getBurnTime(net.minecraft.world.item.crafting.RecipeType.SMELTING) > 0)
+                .toList();
     }
 
     @Override
@@ -99,7 +106,9 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
                 for (int i = 0; i < Math.min(3, lines.size()); i++) {
                     graphics.drawString(font, lines.get(i), 3, 55 + i * 10, 0xFF606060, false);
                 }
-                if (lines.size() > 3) graphics.drawString(font, "...", 3, 85, 0xFF606060, false);
+                if (forge.heatTicks() > 0) graphics.drawString(font, Component.translatable("jei.firstworks.workshop.temperature",
+                        com.nstut.firstworks.FirstworksClientConfig.HEAT_UNIT.get().format(forge.minimumTemperature())),
+                        3, 85, 0xFF606060, false);
             });
             return;
         }
@@ -121,7 +130,8 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
             detailsY += 12;
         }
         if (WorkshopRecipe.CRUCIBLE_FURNACE.equals(recipe.station())) {
-            graphics.drawString(font, Component.translatable("jei.firstworks.workshop.air"),
+            graphics.drawString(font, Component.translatable("jei.firstworks.workshop.temperature",
+                            com.nstut.firstworks.FirstworksClientConfig.HEAT_UNIT.get().format(recipe.requiredTemperature())),
                     3, detailsY, 0xFF606060, false);
             detailsY += 12;
         }

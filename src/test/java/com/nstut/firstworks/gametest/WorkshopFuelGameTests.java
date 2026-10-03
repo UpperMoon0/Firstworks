@@ -63,9 +63,7 @@ public final class WorkshopFuelGameTests {
     }
 
     private static void tickHeated(ServerLevel level, BlockPos pos, WorkshopBlockEntity workshop, int ticks) {
-        for (int i = 0; i < ticks; i++) {
-            WorkshopBlockEntity.serverTick(level, pos, level.getBlockState(pos), workshop);
-        }
+        ThermalTestSupport.tickHot(level, pos, workshop, ticks);
     }
 
     private static void check(GameTestHelper helper, boolean condition, String message) {

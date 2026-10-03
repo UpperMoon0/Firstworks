@@ -7,7 +7,7 @@
     {
       "type": "patchouli:text",
       "title": "Cast",
-      "text": "Use three Raw Copper, a reusable fired Casting Mold, one fuel charge, explicit ignition, and Bellows air. The Crucible Furnace produces one Cast Copper Billet after 240 active ticks."
+      "text": "Use three Raw Copper, a reusable fired Casting Mold, native furnace fuel, and explicit ignition. Blow Bellows to raise the ceiling from 800°C to 1150°C. At 1085°C or hotter, the Crucible Furnace casts one Copper Billet after 240 active ticks."
     },
     {
       "type": "patchouli:text",
@@ -22,15 +22,16 @@
     {
       "type": "patchouli:text",
       "title": "Use Copper",
-      "text": "One Copper Ingot makes eight Copper Fasteners for the Quern. Copper and strong bindings make a Copper Knife. Primitive copper progression normally removes vanilla copper smelting/blasting bypasses; a server may disable that replacement."
+      "text": "Heat one Copper Ingot to at least 500°C in a Kiln, then forge Flatten, Draw, Bend on the Stone Anvil to make eight Copper Fasteners for the Quern. Copper and strong bindings make a Copper Knife. Primitive copper progression normally removes vanilla copper smelting/blasting bypasses."
     },
     {
       "type": "patchouli:smelting",
       "recipe": "firstworks:smelt_anneal_copper"
     },
     {
-      "type": "patchouli:crafting",
-      "recipe": "firstworks:copper_fasteners"
+      "type": "patchouli:text",
+      "title": "Forge Fasteners",
+      "text": "Input: 1 Copper Ingot. Output: 8 Copper Fasteners. Heat the ingot until Workable, then use a Stone Hammer for Flatten > Draw > Bend on the Stone Anvil. This is a forging recipe, not a crafting-table recipe. Unfinished work can be reheated without losing completed actions."
     },
     {
       "type": "patchouli:crafting",

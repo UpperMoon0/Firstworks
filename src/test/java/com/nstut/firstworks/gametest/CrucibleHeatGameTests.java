@@ -16,7 +16,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class CrucibleHeatGameTests {
     @GameTest(template = "empty", timeoutTicks = 20)
-    public static void heatTracksFuelAndAirRatherThanRetainedProgress(GameTestHelper h) {
+    public static void fireSurvivesAirLossWhileMoltenContentsNeedActiveProcessing(GameTestHelper h) {
         BlockPos pos = new BlockPos(3, 1, 3);
         h.setBlock(pos, ModBlocks.CRUCIBLE_FURNACE.get());
         WorkshopBlockEntity furnace = h.getBlockEntity(pos);
@@ -29,25 +29,27 @@ public final class CrucibleHeatGameTests {
         h.assertTrue(furnace.ignite(), "Charge could not be ignited");
         furnace.stoke(10);
         tick(h, pos, furnace, 1);
+        furnace.stoke(240);
+        tick(h, pos, furnace, 120);
         h.assertTrue(furnace.isHot() && furnace.getFuel().isEmpty(), "Paid processing did not appear hot");
-        tick(h, pos, furnace, 100);
+        tick(h, pos, furnace, 240);
         int savedProgress = furnace.getProgress();
-        h.assertTrue(savedProgress > 0 && !furnace.isHot(), "Retained progress kept crucible glowing after air loss");
+        h.assertTrue(savedProgress > 0 && furnace.isHot() && !furnace.hasHotCrucibleContents(), "Air loss extinguished fire or retained molten appearance");
         var saved = furnace.saveWithoutMetadata(h.getLevel().registryAccess());
         furnace.loadWithComponents(saved, h.getLevel().registryAccess());
-        h.assertTrue(!furnace.isHot() && furnace.getProgress() == savedProgress, "Reload restored stuck glow or lost progress");
+        h.assertTrue(furnace.isHot() && !furnace.hasHotCrucibleContents() && furnace.getProgress() == savedProgress, "Reload lost fire/progress or restored molten contents without air");
         furnace.stoke(400);
-        h.assertTrue(furnace.ignite(), "Paid batch could not be relit after air loss");
-        tick(h, pos, furnace, 1);
-        h.assertTrue(furnace.isHot() && furnace.getProgress() == savedProgress + 1 && furnace.getFuel().isEmpty(), "Resume required duplicate fuel or lost heat/progress");
-        tick(h, pos, furnace, 300);
-        h.assertTrue(!furnace.isHot() && furnace.getOutput().is(ModItems.CAST_COPPER_BILLET.get()), "Completed output stayed hot");
+        h.assertTrue(!furnace.ignite(), "Live fire accepted redundant ignition");
+        tick(h, pos, furnace, 40);
+        h.assertTrue(furnace.isHot() && furnace.getProgress() > savedProgress && furnace.getFuel().isEmpty(), "Resume required duplicate fuel or lost heat/progress");
+        ThermalTestSupport.tickHot(h.getLevel(), furnace.getBlockPos(), furnace, 300);
+        h.assertTrue(furnace.isHot() && !furnace.hasHotCrucibleContents() && furnace.getOutput().is(ModItems.CAST_COPPER_BILLET.get()), "Completion extinguished fire or left molten crucible contents");
         h.assertTrue(furnace.getCatalyst().is(ModItems.CASTING_MOLD.get()), "Heat fix consumed reusable mold");
         furnace.getItemHandler(null).extractItem(3, 64, false);
-        h.assertTrue(!furnace.isHot(), "Output extraction revived heat");
+        h.assertTrue(furnace.isHot() && !furnace.hasHotCrucibleContents(), "Output extraction lost fire or revived molten contents");
         furnace.getItemHandler(null).insertItem(0, new ItemStack(Items.RAW_COPPER, 3), false);
         tick(h, pos, furnace, 1);
-        h.assertTrue(!furnace.isHot() && furnace.getProgress() == 0, "Next unfueled batch appeared hot");
+        h.assertTrue(furnace.isHot() && furnace.getProgress() == 1, "Next batch failed to use remaining fuel burn time");
         h.succeed();
     }
     private static void tick(GameTestHelper h, BlockPos pos, WorkshopBlockEntity furnace, int ticks) {

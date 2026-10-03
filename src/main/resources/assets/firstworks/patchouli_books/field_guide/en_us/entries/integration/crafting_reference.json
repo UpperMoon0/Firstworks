@@ -82,10 +82,6 @@
     },
     {
       "type": "patchouli:crafting",
-      "recipe": "firstworks:copper_fasteners"
-    },
-    {
-      "type": "patchouli:crafting",
       "recipe": "firstworks:copper_knife"
     },
     {

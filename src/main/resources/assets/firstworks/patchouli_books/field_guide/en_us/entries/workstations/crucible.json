@@ -7,17 +7,17 @@
     {
       "type": "patchouli:text",
       "title": "Load the Charge",
-      "text": "Load three Raw Copper, a fired Casting Mold, and Coal or Charcoal. Ignite explicitly with a supported tool. The mold is reusable. Bellows air is required; fuel and air never ignite a cold charge by themselves."
+      "text": "Load three Raw Copper, a reusable fired Casting Mold, and furnace fuel. Ignite explicitly. Fuel burns continuously using its Minecraft furnace duration, including between recipes. The unassisted ceiling is 800°C: too cool for copper casting."
     },
     {
       "type": "patchouli:text",
       "title": "Cast with Air",
-      "text": "Place adjacent Bellows with their outlet toward the furnace. Press them to bank finite air. Copper takes 240 active processing ticks and consumes one fuel when beginning. Reserve-fuel top-ups do not restart an active batch."
+      "text": "Bellows raise the ceiling to 1150°C, but heat rises gradually. Copper casting requires 1085°C and 240 ticks at or above that temperature. Below the requirement, progress pauses without being erased. Completing a recipe does not extinguish the fire."
     },
     {
       "type": "patchouli:text",
       "title": "Air Loss",
-      "text": "Air expiry extinguishes and pauses the batch. Restore airflow and ignite again to continue without paying fuel twice. Ready output stops the hot appearance. Each new batch needs ignition; retained progress or air alone is not a fire."
+      "text": "A blow holds the boosted ceiling for eight seconds, then it falls over four seconds toward 800°C. Current temperature drops with that ceiling. Blow again to maintain casting heat; boosts refresh rather than stack. Jade shows current/max temperature and the recipe requirement."
     },
     {
       "type": "patchouli:text",
