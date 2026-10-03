@@ -67,6 +67,9 @@ public class LoomBlockEntity extends BlockEntity {
     public boolean isShuttleRight() { return shuttleRight; }
     public float getShuttlePosition() { return shuttlePosition; }
     public boolean isPacking() { return packingTicks > 0; }
+    public float getFabricFraction() {
+        return Mth.clamp((float) progress / getRequiredStrokes(), 0, 1);
+    }
     public float getPackingProgress(float partial) {
         return packingTicks <= 0 || level == null ? 0 : Mth.clamp((6 - packingTicks + partial) / 6.0F, 0, 1);
     }
@@ -75,7 +78,7 @@ public class LoomBlockEntity extends BlockEntity {
         var matching = getMatchingRecipe();
         if (output.isEmpty() && matching.isPresent() && input.getCount() < matching.get().value().inputCount())
             return net.minecraft.network.chat.Component.translatable("jade.firstworks.loom.loading", input.getCount(), matching.get().value().inputCount());
-        String key = !output.isEmpty() ? "hint.firstworks.loom.collect"
+        String key = input.isEmpty() && !output.isEmpty() ? "hint.firstworks.loom.collect"
                 : processCancelled ? "jade.firstworks.loom.cancelled"
                 : getActiveRecipe().isEmpty() ? "jade.firstworks.loom.empty"
                 : isPacking() ? "hint.firstworks.loom.packing" : "hint.firstworks.loom.controls";
@@ -96,7 +99,9 @@ public class LoomBlockEntity extends BlockEntity {
         if (aim == null) { release(player); return false; }
         long now = level.getGameTime();
         if (lastInputTick == now) return false;
-        if (operator != null && now - lastInputTick > 5) operator = null;
+        // A delayed sample from the current grip must not require re-targeting the shuttle.
+        // Another player may still claim a stale grip by aiming at its actual position.
+        if (operator != null && !operator.equals(player.getUUID()) && now - lastInputTick > 5) operator = null;
         if (operator != null && !operator.equals(player.getUUID())) return false;
         if (operator == null && !LoomBlock.hitsShuttle(player, this)) return false;
         var active = getActiveRecipe();

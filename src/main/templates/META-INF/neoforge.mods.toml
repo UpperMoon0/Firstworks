@@ -53,3 +53,6 @@ type="optional"
 versionRange="[1.21.1-93,)"
 ordering="AFTER"
 side="BOTH"
+
+[[mixins]]
+config="firstworks.mixins.json"

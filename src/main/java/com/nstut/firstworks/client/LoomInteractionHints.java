@@ -21,7 +21,9 @@ public final class LoomInteractionHints {
                 || !(mc.level.getBlockEntity(hit.getBlockPos()) instanceof LoomBlockEntity loom)) return;
         var hint = mc.player.isShiftKeyDown()
                 ? net.minecraft.network.chat.Component.translatable("hint.firstworks.loom.retrieve")
-                : loom.interactionHint();
+                : !loom.getOutput().isEmpty() && LoomBlock.isOutputPoint(LoomBlock.local(loom.getBlockState(), hit.getBlockPos(), hit.getLocation()))
+                    ? net.minecraft.network.chat.Component.translatable("hint.firstworks.loom.collect")
+                    : loom.interactionHint();
         var graphics = event.getGuiGraphics();
         graphics.drawCenteredString(mc.font, hint, graphics.guiWidth() / 2, graphics.guiHeight() / 2 + 18, 0xFFE8DFCF);
     }

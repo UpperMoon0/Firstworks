@@ -17,6 +17,40 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(Firstworks.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class KilnGameTests {
+    @GameTest(template = "empty", timeoutTicks = 40)
+    public static void coldWorkpiecesMergeThroughHopperWithoutLosingForgeState(GameTestHelper h) {
+        BlockPos hopperPos = new BlockPos(3, 2, 3), chestPos = hopperPos.east();
+        h.setBlock(hopperPos, net.minecraft.world.level.block.Blocks.HOPPER.defaultBlockState()
+                .setValue(net.minecraft.world.level.block.HopperBlock.FACING, net.minecraft.core.Direction.EAST));
+        h.setBlock(chestPos, net.minecraft.world.level.block.Blocks.CHEST);
+        net.minecraft.world.level.block.entity.HopperBlockEntity hopper = h.getBlockEntity(hopperPos);
+        net.minecraft.world.level.block.entity.ChestBlockEntity chest = h.getBlockEntity(chestPos);
+        long now = h.getLevel().getGameTime();
+        ItemStack stored = new ItemStack(Items.COPPER_INGOT, 63);
+        stored.set(ModDataComponents.HEAT.get(), new ItemHeat(1, 1200, now - 10));
+        ItemStack incoming = new ItemStack(Items.COPPER_INGOT);
+        incoming.set(ModDataComponents.HEAT.get(), new ItemHeat(2, 1200, now - 20));
+        chest.setItem(0, stored);
+        for (int i = 1; i < chest.getContainerSize(); i++) chest.setItem(i, new ItemStack(Items.STICK, 64));
+        hopper.setItem(0, incoming);
+        ItemStack hot = new ItemStack(Items.COPPER_INGOT);
+        ItemHeat.set(hot, h.getLevel(), 1200, 1200);
+        h.assertTrue(!ItemStack.isSameItemSameComponents(hot, new ItemStack(Items.COPPER_INGOT)), "Hot and cold workpieces merged");
+        h.assertTrue(hot.has(ModDataComponents.HEAT.get()), "Comparison erased live heat");
+        ItemStack partial = new ItemStack(Items.PRISMARINE_SHARD, 2);
+        var forge = new ForgeProgress("firstworks:gametest_heated_batch", "draw,bend", 1, 2);
+        partial.set(ModDataComponents.HEAT.get(), new ItemHeat(1, 1200, now - 5));
+        partial.set(ModDataComponents.FORGE_PROGRESS.get(), forge);
+        h.assertTrue(!ItemStack.isSameItemSameComponents(partial, new ItemStack(Items.PRISMARINE_SHARD, 2)), "Normalization erased forging identity");
+        h.assertTrue(partial.get(ModDataComponents.FORGE_PROGRESS.get()).equals(forge)
+                && !partial.has(ModDataComponents.HEAT.get()), "Cold normalization lost forge progress or retained heat");
+        h.runAtTickTime(12, () -> {
+            h.assertTrue(hopper.isEmpty() && chest.getItem(0).getCount() == 64, "Cold timestamped stacks could not merge into a full chest");
+            h.assertTrue(!chest.getItem(0).has(ModDataComponents.HEAT.get()), "Merged cold stack retained stale heat");
+            h.succeed();
+        });
+    }
+
     @GameTest(template = "empty", timeoutTicks = 160)
     public static void heatTransferResumeAndLightFade(GameTestHelper h) {
         BlockPos kp = new BlockPos(3, 1, 3), ap = new BlockPos(5, 1, 3);

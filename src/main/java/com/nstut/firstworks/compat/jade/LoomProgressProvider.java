@@ -53,7 +53,7 @@ public enum LoomProgressProvider implements IBlockComponentProvider, IServerData
         if (data.contains(OUTPUT)) {
             tooltip.add(Component.translatable("jade.firstworks.loom.output",
                     Component.translatable(data.getString(OUTPUT)).withStyle(ChatFormatting.GOLD)));
-            return;
+            if (data.getInt(INPUT_COUNT) == 0) return;
         }
         if (data.getBoolean(CANCELLED)) {
             tooltip.add(Component.translatable("jade.firstworks.loom.cancelled"));

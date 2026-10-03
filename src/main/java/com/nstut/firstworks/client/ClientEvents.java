@@ -56,6 +56,10 @@ public final class ClientEvents {
 
     @SubscribeEvent
     public static void clientSetup(FMLClientSetupEvent event) {
+        com.nstut.firstworks.content.workshop.ItemHeat.setClientLevelSupplier(() -> {
+            var minecraft = net.minecraft.client.Minecraft.getInstance();
+            return minecraft.isSameThread() ? minecraft.level : null;
+        });
         event.enqueueWork(() ->
             ItemProperties.register(ModItems.HAND_SPINDLE.get(), Firstworks.id("spinning"),
                     (stack, level, entity, seed) -> {

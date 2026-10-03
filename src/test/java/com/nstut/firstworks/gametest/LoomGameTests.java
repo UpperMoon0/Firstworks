@@ -19,8 +19,12 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class LoomGameTests {
     public static void aim(Player player, LoomBlockEntity loom, double x) {
+        aimAt(player, loom, x, 9.0 / 16, 5.35 / 16);
+    }
+
+    private static void aimAt(Player player, LoomBlockEntity loom, double x, double y, double z) {
         BlockPos pos = loom.getBlockPos();
-        Vec3 target = world(pos, loom.getBlockState().getValue(LoomBlock.FACING), x, 9.0 / 16, 5.35 / 16);
+        Vec3 target = world(pos, loom.getBlockState().getValue(LoomBlock.FACING), x, y, z);
         Vec3 eye = world(pos, loom.getBlockState().getValue(LoomBlock.FACING), 0.5, 0.8, -1.5);
         player.setPos(eye.x, eye.y - player.getEyeHeight(), eye.z);
         Vec3 delta = target.subtract(player.getEyePosition());
@@ -141,6 +145,78 @@ public final class LoomGameTests {
         });
         h.runAtTickTime(16, () -> {
             h.assertTrue(loom.getInput().isEmpty() && loom.getOutput().is(Items.BOOK), "Overlapping recipe consumed/produced the wrong batch");
+            h.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 100)
+    public static void uncollectedOutputLeavesNextFabricVisibleAndCollectsSeparately(GameTestHelper h) {
+        BlockPos pos = new BlockPos(3, 2, 3);
+        h.setBlock(pos, ModBlocks.LOOM.get());
+        LoomBlockEntity loom = h.getBlockEntity(pos);
+        Player player = h.makeMockPlayer(GameType.SURVIVAL);
+        loom.insert(new ItemStack(Items.STRING, 8), false);
+        for (int t = 1; t <= 70; t++) h.runAtTickTime(t, () -> {
+            aim(player, loom, 0.3);
+            loom.guide(player, true);
+        });
+        h.runAtTickTime(72, () -> {
+            h.assertTrue(loom.getOutput().getCount() == 1 && loom.getInput().getCount() == 4
+                    && loom.getProgress() == 1 && loom.getFabricFraction() == 0.25F,
+                    "Uncollected output hid the next batch's one-row fabric");
+            h.assertTrue(loom.interactionHint().getString().contains("shuttle"), "Ready output hid active weaving hint");
+            loom.release(player);
+            // The working sheet is not a pickup surface for the previous batch.
+            aimAt(player, loom, 0.6, 8.0 / 16, 7.35 / 16);
+            var hit = (net.minecraft.world.phys.BlockHitResult) player.pick(player.blockInteractionRange(), 1, false);
+            loom.getBlockState().useWithoutItem(h.getLevel(), player, hit);
+            h.assertTrue(loom.getOutput().getCount() == 1, "Working fabric collected unrelated finished cloth");
+            // The visible cloth roll has its own target in every facing.
+            for (Direction facing : Direction.Plane.HORIZONTAL) {
+                h.setBlock(pos, loom.getBlockState().setValue(LoomBlock.FACING, facing));
+                aimAt(player, loom, 0.5, 3.0 / 16, 3.25 / 16);
+                hit = (net.minecraft.world.phys.BlockHitResult) player.pick(player.blockInteractionRange(), 1, false);
+                h.assertTrue(hit.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK
+                        && hit.getBlockPos().equals(loom.getBlockPos())
+                        && LoomBlock.isOutputPoint(LoomBlock.local(loom.getBlockState(), loom.getBlockPos(), hit.getLocation())),
+                        "Finished cloth roll is not targetable: " + facing);
+            }
+            loom.getBlockState().useWithoutItem(h.getLevel(), player, hit);
+            h.assertTrue(loom.getOutput().isEmpty() && loom.getFabricFraction() == 0.25F,
+                    "Collecting the finished roll changed the next batch");
+            h.succeed();
+        });
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 40)
+    public static void delayedHeldSampleKeepsGripAcrossFrameGapAndReleaseAllowsTakeover(GameTestHelper h) {
+        BlockPos pos = new BlockPos(3, 2, 3);
+        h.setBlock(pos, ModBlocks.LOOM.get());
+        LoomBlockEntity loom = h.getBlockEntity(pos);
+        Player player = h.makeMockPlayer(GameType.SURVIVAL);
+        Player other = h.makeMockPlayer(GameType.SURVIVAL);
+        other.setUUID(java.util.UUID.randomUUID());
+        loom.insert(new ItemStack(Items.STRING, 4), false);
+        aim(player, loom, 0.3);
+        h.assertTrue(loom.guide(player, true), "Initial grip failed");
+        h.runAtTickTime(12, () -> {
+            aimAt(player, loom, 0.7, 10.7 / 16, 5.35 / 16);
+            h.assertTrue(!LoomBlock.hitsShuttle(player, loom), "Delayed sample test did not aim through a gap");
+            h.assertTrue(loom.guide(player, true) && loom.getShuttlePosition() == 0.25F,
+                    "Delayed held sample required a new shuttle target");
+        });
+        h.runAtTickTime(13, () -> {
+            aim(other, loom, 0.4);
+            h.assertTrue(!loom.guide(other, false), "Competing operator stole refreshed grip");
+            loom.release(player);
+        });
+        h.runAtTickTime(14, () -> {
+            aim(other, loom, 0.4);
+            h.assertTrue(loom.guide(other, false), "Release did not allow a new operator");
+        });
+        h.runAtTickTime(26, () -> {
+            aim(player, loom, 0.4);
+            h.assertTrue(loom.guide(player, false), "A stale disconnected operator locked the shuttle");
             h.succeed();
         });
     }

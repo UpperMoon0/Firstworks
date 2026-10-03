@@ -18,7 +18,7 @@ public record LoomInputPayload(BlockPos pos, boolean held, boolean assisted) imp
     public static void register(RegisterPayloadHandlersEvent event) {
         event.registrar("1").playToServer(TYPE, CODEC, (payload, context) -> {
             var player = context.player();
-            if (!player.level().hasChunkAt(payload.pos) || !player.canInteractWithBlock(payload.pos, 0)) return;
+            if (!player.level().hasChunkAt(payload.pos) || payload.held && !player.canInteractWithBlock(payload.pos, 0)) return;
             if (player.level().getBlockEntity(payload.pos) instanceof LoomBlockEntity loom) {
                 if (payload.held) loom.guide(player, payload.assisted);
                 else loom.release(player);

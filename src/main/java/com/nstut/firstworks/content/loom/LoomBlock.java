@@ -79,7 +79,7 @@ public class LoomBlock extends BaseEntityBlock {
             int turns = switch (state.getValue(FACING)) { case EAST -> 1; case SOUTH -> 2; case WEST -> 3; default -> 0; };
             VoxelShape contents = grip;
             if (!loom.getOutput().isEmpty()) contents = Shapes.or(contents,
-                    Shapes.box(3.75 / 16, 6.75 / 16, 7.3 / 16, 12.25 / 16, 11.5 / 16, 7.5 / 16));
+                    Shapes.box(3.75 / 16, 2.0 / 16, 2.5 / 16, 12.25 / 16, 4.0 / 16, 4.0 / 16));
             return Shapes.or(frame, rotate(contents, turns));
         }
         return frame;
@@ -113,9 +113,7 @@ public class LoomBlock extends BaseEntityBlock {
         if (!(level.getBlockEntity(pos) instanceof LoomBlockEntity loom)) return InteractionResult.PASS;
         if (!level.isClientSide) {
             var point = local(state, pos, hitResult.getLocation());
-            if (point.x >= 3.75 / 16 && point.x <= 12.25 / 16 && point.y >= 6.75 / 16
-                    && point.y <= 11.5 / 16 && point.z >= 7.25 / 16 && point.z <= 7.55 / 16
-                    && loom.takeOutput(player)) return InteractionResult.SUCCESS;
+            if (isOutputPoint(point) && loom.takeOutput(player)) return InteractionResult.SUCCESS;
             if (player.isShiftKeyDown()) {
                 if (loom.takeInput(player)) {
                     level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 0.5F, 1.0F);
@@ -150,6 +148,14 @@ public class LoomBlock extends BaseEntityBlock {
             case WEST -> new net.minecraft.world.phys.Vec3(0.5 - z, hit.y - pos.getY(), 0.5 + x);
             default -> new net.minecraft.world.phys.Vec3(0.5 + x, hit.y - pos.getY(), 0.5 + z);
         };
+    }
+
+    /** Finished cloth sits below the working fabric, clear of the shuttle track. */
+    public static boolean isOutputPoint(net.minecraft.world.phys.Vec3 point) {
+        double margin = 0.001;
+        return point.x >= 3.75 / 16 - margin && point.x <= 12.25 / 16 + margin
+                && point.y >= 2.0 / 16 - margin && point.y <= 4.0 / 16 + margin
+                && point.z >= 2.5 / 16 - margin && point.z <= 4.0 / 16 + margin;
     }
 
     public static boolean hitsShuttle(Player player, LoomBlockEntity loom) {

@@ -43,6 +43,27 @@ public record ItemHeat(int ticks, int capacity, long updatedAt) {
         if (!stack.isEmpty()) stack.set(ModDataComponents.HEAT.get(),
                 new ItemHeat(Math.min(ticks, capacity), capacity, level.getGameTime()));
     }
+    private static java.util.function.Supplier<Level> clientLevel = () -> null;
+
+    /** Client setup supplies its thread-safe level lookup without loading client classes on servers. */
+    public static void setClientLevelSupplier(java.util.function.Supplier<Level> supplier) { clientLevel = supplier; }
+
+    public static void clearExpired(ItemStack stack, Level level) {
+        if (level != null && !stack.isEmpty() && stack.has(ModDataComponents.HEAT.get())
+                && remaining(stack, level) == 0) stack.remove(ModDataComponents.HEAT.get());
+    }
+
+    /** Normalize only when comparing stacks, including dormant storage and third-party transfers.
+     * Hot stacks and all other components (especially forging progress) remain distinct.
+     */
+    public static void normalizeForComparison(ItemStack first, ItemStack second) {
+        var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        Level level = server != null && server.isSameThread() ? server.overworld() : clientLevel.get();
+        if (level == null || !ModDataComponents.HEAT.isBound()) return;
+        clearExpired(first, level);
+        clearExpired(second, level);
+    }
+
     public static void copy(ItemStack source, ItemStack target, Level level) {
         ItemHeat heat = source.get(ModDataComponents.HEAT.get());
         if (heat != null && remaining(source, level) > 0)

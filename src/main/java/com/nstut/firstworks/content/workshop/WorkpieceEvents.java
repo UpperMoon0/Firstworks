@@ -29,8 +29,7 @@ public final class WorkpieceEvents {
         if (player.level().isClientSide || player.tickCount % 20 != 0) return;
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
             var stack = player.getInventory().getItem(i);
-            if (stack.has(ModDataComponents.HEAT.get()) && ItemHeat.remaining(stack, player.level()) == 0)
-                stack.remove(ModDataComponents.HEAT.get());
+            ItemHeat.clearExpired(stack, player.level());
         }
     }
     private WorkpieceEvents() {}

@@ -44,15 +44,19 @@ public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBl
         }));
         poseStack.translate(-0.5, 0, -0.5);
 
-        ItemStack visibleOutput = loom.getOutput();
-        if (visibleOutput.isEmpty()) {
-            visibleOutput = loom.getMatchingRecipe().map(holder -> holder.value().result()).orElse(ItemStack.EMPTY);
+        ItemStack fabric = loom.getMatchingRecipe().map(holder -> holder.value().result()).orElse(ItemStack.EMPTY);
+        if (!fabric.isEmpty()) {
+            renderWarpThreads(loom, fabric, poseStack, buffers, packedLight, packedOverlay);
+            renderWovenThreads(loom, fabric, poseStack, buffers, packedLight, packedOverlay);
         }
-        if (!visibleOutput.isEmpty()) {
-            renderWarpThreads(loom, visibleOutput, poseStack, buffers, packedLight, packedOverlay);
-            renderWovenThreads(loom, visibleOutput, poseStack, buffers, packedLight, packedOverlay);
+        if (!loom.getOutput().isEmpty()) {
+            var cloth = loom.getOutput();
+            var sprite = itemRenderer.getModel(cloth, loom.getLevel(), null, 0).getParticleIcon();
+            renderBox(buffers.getBuffer(Sheets.cutoutBlockSheet()), poseStack.last().pose(),
+                    3.75F / 16, 2.0F / 16, 2.5F / 16, 12.25F / 16, 4.0F / 16, 4.0F / 16,
+                    sprite, outputTint(cloth), packedLight, packedOverlay);
         }
-        renderShuttle(loom, visibleOutput, partialTick, poseStack, buffers, packedLight, packedOverlay);
+        renderShuttle(loom, fabric, partialTick, poseStack, buffers, packedLight, packedOverlay);
         poseStack.popPose();
     }
 
@@ -68,9 +72,7 @@ public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBl
         int totalStrands = 12;
         int requiredInput = loom.getMatchingRecipe()
                 .map(holder -> Math.max(1, holder.value().inputCount())).orElse(1);
-        float loadedFraction = loom.getOutput().isEmpty()
-                ? Mth.clamp((float) loom.getInput().getCount() / requiredInput, 0.0F, 1.0F)
-                : 1.0F;
+        float loadedFraction = Mth.clamp((float) loom.getInput().getCount() / requiredInput, 0.0F, 1.0F);
         int visibleStrands = Mth.ceil(totalStrands * loadedFraction);
         float centerV = (sprite.getV0() + sprite.getV1()) * 0.5F;
         float dv = (sprite.getV1() - sprite.getV0()) / 64.0F;
@@ -89,8 +91,7 @@ public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBl
 
     private void renderWovenThreads(LoomBlockEntity loom, ItemStack output, PoseStack poseStack,
             MultiBufferSource buffers, int packedLight, int packedOverlay) {
-        int required = loom.getRequiredStrokes();
-        float fraction = loom.getOutput().isEmpty() ? (float) loom.getProgress() / required : 1.0F;
+        float fraction = loom.getFabricFraction();
         if (fraction <= 0.0F) return;
 
         TextureAtlasSprite sprite = itemRenderer.getModel(output, loom.getLevel(), null, 0).getParticleIcon();
