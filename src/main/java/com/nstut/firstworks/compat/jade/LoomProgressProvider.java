@@ -71,7 +71,8 @@ public enum LoomProgressProvider implements IBlockComponentProvider, IServerData
         }
         int progress = data.getInt(PROGRESS);
         int strokes = Math.max(1, data.getInt(STROKES));
-        tooltip.add(Component.translatable(data.getBoolean("ShuttleRight") ? "hint.firstworks.loom.throw_left" : "hint.firstworks.loom.throw_right"));
+        // Local +X appears on the player's left when facing the loom's working side.
+        tooltip.add(Component.translatable(data.getBoolean("ShuttleRight") ? "hint.firstworks.loom.throw_right" : "hint.firstworks.loom.throw_left"));
         tooltip.add(Component.translatable("hint.firstworks.loom.controls"));
         tooltip.add(Component.translatable("jade.firstworks.loom.weaving",
                 Component.translatable(data.getString(RESULT)).withStyle(ChatFormatting.GOLD)));
