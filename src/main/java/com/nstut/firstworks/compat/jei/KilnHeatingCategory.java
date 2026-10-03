@@ -32,7 +32,7 @@ public final class KilnHeatingCategory implements IRecipeCategory<ItemStack> {
         WorkshopRecipeCategory.addIgniterSlot(builder, 91, 45);
     }
     @Override public void draw(ItemStack item, IRecipeSlotsView slots, GuiGraphics graphics, double x, double y) {
-        graphics.blitSprite(net.minecraft.resources.ResourceLocation.withDefaultNamespace("container/furnace/lit_progress"), 36, 26, 14, 14);
+        WorkshopRecipeCategory.drawFuelFlame(graphics);
         var unit = com.nstut.firstworks.FirstworksClientConfig.HEAT_UNIT.get();
         var font = Minecraft.getInstance().font;
         WorkshopRecipeCategory.drawSlotLabel(graphics, "fuel", 43, 65);

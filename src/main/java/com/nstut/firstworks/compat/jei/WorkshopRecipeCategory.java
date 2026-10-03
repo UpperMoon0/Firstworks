@@ -97,7 +97,17 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
     static void drawSlotLabel(GuiGraphics graphics, String role, int centerX, int y) {
         var font = Minecraft.getInstance().font;
         var label = Component.translatable("jei.firstworks.workshop.label." + role);
+        graphics.pose().pushPose();
+        graphics.pose().translate(0, 0, 200);
         graphics.drawString(font, label, centerX - font.width(label) / 2, y, 0xFF606060, false);
+        graphics.pose().popPose();
+    }
+
+    static void drawFuelFlame(GuiGraphics graphics) {
+        graphics.pose().pushPose();
+        graphics.pose().translate(0, 0, 200);
+        graphics.blitSprite(net.minecraft.resources.ResourceLocation.withDefaultNamespace("container/furnace/lit_progress"), 36, 26, 14, 14);
+        graphics.pose().popPose();
     }
 
     private static void markReusable(mezz.jei.api.gui.builder.IRecipeSlotBuilder slot) {
@@ -126,8 +136,7 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
     public void draw(WorkshopRecipe recipe, IRecipeSlotsView slots, GuiGraphics graphics, double mouseX, double mouseY) {
         boolean crucible = WorkshopRecipe.CRUCIBLE_FURNACE.equals(recipe.station());
         arrow.draw(graphics, crucible ? 105 : 91, 5);
-        if (crucible) graphics.blitSprite(net.minecraft.resources.ResourceLocation.withDefaultNamespace("container/furnace/lit_progress"),
-                36, 26, 14, 14);
+        if (crucible) drawFuelFlame(graphics);
         var font = Minecraft.getInstance().font;
         if (crucible) {
             drawSlotLabel(graphics, "fuel", 43, 65);
