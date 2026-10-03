@@ -3,7 +3,7 @@
   "landing_text": "Your complete guide to gathering, tools, textiles, tanning, construction, storage, charcoal, and copper. Learn station controls, then browse the crafting and processing recipe references.",
   "version": "2",
   "model": "firstworks:field_guide",
-  "creative_tab": "minecraft:tools_and_utilities",
+  "creative_tab": "firstworks:firstworks",
   "show_progress": false,
   "use_resource_pack": true,
   "pause_game": false,
