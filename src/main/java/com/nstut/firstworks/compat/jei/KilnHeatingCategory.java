@@ -23,14 +23,16 @@ public final class KilnHeatingCategory implements IRecipeCategory<ItemStack> {
     @Override public Component getTitle() { return Component.translatable("block.firstworks.kiln"); }
     @Override public IDrawable getIcon() { return icon; }
     @Override public int getWidth() { return 170; }
-    @Override public int getHeight() { return 52; }
+    @Override public int getHeight() { return 96; }
     @Override public void setRecipe(IRecipeLayoutBuilder builder, ItemStack item, IFocusGroup focus) {
         builder.addSlot(RecipeIngredientRole.INPUT, 35, 5).setStandardSlotBackground().addItemStack(item);
         builder.addSlot(RecipeIngredientRole.CATALYST, 3, 5).setStandardSlotBackground().addItemLike(ModItems.KILN.get());
         builder.addSlot(RecipeIngredientRole.CATALYST, 63, 5).setStandardSlotBackground()
                 .addItemLike(Items.CHARCOAL).addItemLike(Items.COAL);
+        builder.addSlot(RecipeIngredientRole.CATALYST, 91, 5).setStandardSlotBackground()
+                .addItemLike(ModItems.FIRE_STARTER.get()).addItemLike(Items.FLINT_AND_STEEL).addItemLike(Items.FIRE_CHARGE);
     }
     @Override public void draw(ItemStack item, IRecipeSlotsView slots, GuiGraphics graphics, double x, double y) {
-        graphics.drawString(Minecraft.getInstance().font, Component.translatable("jei.firstworks.kiln.heating"), 3, 32, 0xFF606060, false);
+        graphics.drawWordWrap(Minecraft.getInstance().font, Component.translatable("jei.firstworks.kiln.heating"), 3, 32, getWidth() - 6, 0xFF606060);
     }
 }
