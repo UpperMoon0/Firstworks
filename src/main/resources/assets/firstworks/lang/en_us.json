@@ -208,6 +208,7 @@
   "hint.firstworks.loom.throw_right": "Guide the shuttle right →",
   "hint.firstworks.loom.state": "Shed: %s · Next pass: %s",
   "hint.firstworks.loom.pattern": "Automatic weave pattern: %s",
+  "hint.firstworks.workshop.ignite": "Right-click with a fire starter to ignite fuel",
   "hint.firstworks.collect": "Empty-hand use: collect output",
   "hint.firstworks.retrieve": "Sneak + empty-hand use: retrieve input",
   "hint.firstworks.unsupported": "No recipe for this input",

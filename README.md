@@ -133,3 +133,7 @@ Inspired by [TerraFirmaCraft](https://www.curseforge.com/minecraft/mc-mods/terra
 - **Crucible Furnace:** glow and particles follow actual fuel-backed processing with airflow, independently of retained progress.
 
 See [packmaker documentation](docs/PACKMAKERS.md#0015-workstation-interactions) for optional recipe metadata and compatibility behavior.
+
+Kilns and Crucible Furnaces require player ignition: load fuel, then right-click with Flint and Steel, a Fire Starter, or a Fire Charge. Modded items implementing NeoForge `FIRESTARTER_LIGHT` work automatically; other items can be added to `#firstworks:workstation_igniters`. Successful ignition costs one durability on damageable items or consumes one nondamageable item, except in creative mode. Failed or redundant ignition costs nothing. Both hands are supported. Automation can load fuel but never ignites it.
+
+A lit kiln catches queued fuel while burning; after burnout it must be lit again. Each crucible batch needs ignition and Bellows airflow. When its air expires, progress and paid fuel are retained, but supplying air alone cannot relight it: use an igniter again. Already-burning saved kilns and paid legacy crucible batches retain their state on load.

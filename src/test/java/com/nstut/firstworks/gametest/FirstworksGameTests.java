@@ -121,6 +121,7 @@ public final class FirstworksGameTests {
 
         helper.useBlock(bellowsPos, player);
         check(helper, furnace.getStokeTicks() > 0, "Bellows did not stoke the adjacent Crucible Furnace");
+        check(helper, furnace.ignite(), "Crucible could not be lit");
         tickHeated(level, helper.absolutePos(furnacePos), furnace, 120);
         helper.useBlock(bellowsPos, player);
         tickHeated(level, helper.absolutePos(furnacePos), furnace, 120);

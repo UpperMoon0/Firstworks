@@ -73,6 +73,7 @@ Firstworks exposes data-driven tags for extensible pack integration. Below are t
 | `#firstworks:hammers` | `firstworks:stone_hammer` | Hammer-role tools that advance Stone Anvil work. |
 | `#firstworks:refractory_materials` | `firstworks:grog`, `firstworks:refractory_clay`, `firstworks:refractory_brick` | Shared refractory-material classification for workshop extension. |
 | `#firstworks:primitive_copper` | `firstworks:cast_copper_billet`, `firstworks:annealed_copper_billet`, `minecraft:copper_ingot`, `firstworks:copper_fasteners`, `firstworks:copper_knife` | Firstworks primitive-copper chain and products that precede mature metallurgy. |
+| `#firstworks:workstation_igniters` | `firstworks:fire_starter`, `minecraft:flint_and_steel`, `minecraft:fire_charge` | Ignition fallback for items without NeoForge `FIRESTARTER_LIGHT`. Damageable items cost one durability; other items cost one item on successful ignition. |
 | `#firstworks:crucible_furnace_fuels` | `minecraft:coal`, `minecraft:charcoal` | Items accepted as Crucible Furnace reserve fuel. Add coke, peat, charcoal variants, or other pack fuels here. |
 | `#firstworks:charcoal_igniters` | `firstworks:fire_starter`, `minecraft:flint_and_steel` | Items capable of igniting charcoal mounds. |
 | `#firstworks:raw_hides` | `firstworks:raw_hide` | Raw hide items removed during animal drop normalization before adding `firstworks:raw_hide`. Packs integrating third-party animal mods should add items like `naturalist:hide` here. |
@@ -739,3 +740,7 @@ The 0.0.15 changes cover Stone Anvil, Loom, and Mortar controls through contextu
 - Recipes without `forge`, `weaving`, or `processing` remain valid and use their documented fallback behavior.
 
 Patchouli is an optional integration. When installed, `firstworks:field_guide` provides the **Firstworks Field Guide** from resources under `patchouli_books/field_guide`. The guide has a conditional Book + Plant Fibre recipe; without Patchouli the recipe is skipped and Firstworks has no runtime class dependency on Patchouli.
+
+Kilns and Crucible Furnaces require player ignition: load fuel, then right-click with Flint and Steel, a Fire Starter, or a Fire Charge. Modded items implementing NeoForge `FIRESTARTER_LIGHT` work automatically; other items can be added to `#firstworks:workstation_igniters`. Successful ignition costs one durability on damageable items or consumes one nondamageable item, except in creative mode. Failed or redundant ignition costs nothing. Both hands are supported. Automation can load fuel but never ignites it.
+
+A lit kiln catches queued fuel while burning; after burnout it must be lit again. Each crucible batch needs ignition and Bellows airflow. When its air expires, progress and paid fuel are retained, but supplying air alone cannot relight it: use an igniter again. Already-burning saved kilns and paid legacy crucible batches retain their state on load.

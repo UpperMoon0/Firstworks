@@ -103,6 +103,7 @@ public final class WorkshopSelectionGameTests {
                 .insertItem(2, new ItemStack(Items.COAL), false).isEmpty(),
                 "KubeJS cancellation test fuel was rejected");
         check(helper, cancelled.stoke(160), "KubeJS cancellation test furnace could not be stoked");
+        check(helper, cancelled.ignite(), "Explicit ignition failed");
 
         tickHeated(level, helper.absolutePos(cancelPos), cancelled, 1);
         check(helper, cancelled.getStokeTicks() == 179,
@@ -128,6 +129,7 @@ public final class WorkshopSelectionGameTests {
                 .insertItem(2, new ItemStack(Items.COAL), false).isEmpty(),
                 "KubeJS completion test fuel was rejected");
         check(helper, completed.stoke(160), "KubeJS completion test furnace could not be stoked");
+        check(helper, completed.ignite(), "Explicit ignition failed");
 
         tickHeated(level, helper.absolutePos(completePos), completed, 1);
         check(helper, completed.getOutput().is(Items.EMERALD),
@@ -272,6 +274,7 @@ public final class WorkshopSelectionGameTests {
                 .insertItem(2, new ItemStack(Items.CHARCOAL, 2), false).isEmpty(),
                 "Crucible Furnace rejected initial fuel reserve");
         check(helper, furnace.stoke(160), "Crucible Furnace could not be stoked for automation test");
+        check(helper, furnace.ignite(), "Explicit ignition failed");
 
         tickHeated(level, helper.absolutePos(furnacePos), furnace, 20);
         int progressBeforeTopUps = furnace.getProgress();

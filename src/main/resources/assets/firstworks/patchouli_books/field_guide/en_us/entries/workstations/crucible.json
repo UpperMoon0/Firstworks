@@ -7,12 +7,12 @@
     {
       "type": "patchouli:text",
       "title": "Heat and Air",
-      "text": "The Crucible Furnace appears hot only while a paid batch is actively processing with input present, no ready output, and Bellows air remaining. Stored progress or air by itself is not heat."
+      "text": "Load the charge and fuel, then right-click with Flint and Steel, a Fire Starter, or another supported igniter. Bellows supply air but never ignite fuel. The Crucible Furnace appears hot only while a paid batch is actively processing with input present, no ready output, and Bellows air remaining. Stored progress or air by itself is not heat."
     },
     {
       "type": "patchouli:text",
       "title": "Pausing",
-      "text": "Losing airflow removes the hot appearance immediately but does not erase a paid batch. Restore airflow to continue. A completed output is treated as cooled and can be collected normally."
+      "text": "Losing airflow removes the hot appearance immediately but does not erase a paid batch. Restore airflow and light it again to continue without paying fuel twice. Each new batch needs ignition. A completed output is treated as cooled and can be collected normally."
     }
   ]
 }

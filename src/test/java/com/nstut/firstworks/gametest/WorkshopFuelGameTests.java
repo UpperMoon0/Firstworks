@@ -37,6 +37,7 @@ public final class WorkshopFuelGameTests {
                 .insertItem(2, new ItemStack(Items.CHARCOAL), false).isEmpty(),
                 "Crucible Furnace rejected initial fuel");
         check(helper, furnace.stoke(160), "Crucible Furnace could not be stoked for test setup");
+        check(helper, furnace.ignite(), "Explicit ignition failed");
 
         tickHeated(level, helper.absolutePos(furnacePos), furnace, 20);
         int progressBeforeTopUp = furnace.getProgress();

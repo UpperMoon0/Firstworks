@@ -47,6 +47,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
     private int stokeTicks;
     private int forgeHeat; // Legacy block-owned heat, imported once into the workpiece.
     private int burnTicks;
+    private boolean ignited;
     private double heatRemainder;
     private boolean importItemState;
     private long lastForgeTick = Long.MIN_VALUE;
@@ -96,6 +97,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
         if (workshop.stokeTicks > 0) {
             workshop.stokeTicks--;
             stokeExpired = workshop.stokeTicks == 0;
+            if (stokeExpired) workshop.ignited = false;
         }
 
         String station = workshop.station();
@@ -111,12 +113,13 @@ public final class WorkshopBlockEntity extends BlockEntity {
             if (workshop.progress != 0 || workshop.running || workshop.processCancelled || stokeExpired) {
                 workshop.progress = 0;
                 workshop.running = false;
+                workshop.ignited = false;
                 workshop.processCancelled = false;
                 workshop.sync();
             }
             return;
         }
-        if (workshop.stokeTicks <= 0) {
+        if (!workshop.ignited || workshop.stokeTicks <= 0) {
             if (stokeExpired) {
                 workshop.sync();
             }
@@ -151,6 +154,30 @@ public final class WorkshopBlockEntity extends BlockEntity {
         }
     }
 
+    public boolean needsIgnition() {
+        return station().equals(WorkshopRecipe.KILN) ? burnTicks == 0 && !fuel.isEmpty()
+                : station().equals(WorkshopRecipe.CRUCIBLE_FURNACE) && !ignited
+                && output.isEmpty() && (!fuel.isEmpty() || running);
+    }
+
+    /** Ignite fuel explicitly; bellows and inventory insertion never start a fire. */
+    public boolean ignite() {
+        if (level == null || level.isClientSide || !needsIgnition()) return false;
+        if (station().equals(WorkshopRecipe.KILN)) {
+            int duration = fuel.getBurnTime(RecipeType.SMELTING);
+            if (duration <= 0) return false;
+            burnTicks = duration;
+            fuel.shrink(1);
+        } else {
+            ignited = true;
+            // Give the player time to operate the bellows after lighting the charge.
+            stokeTicks = Math.max(stokeTicks, 100);
+        }
+        level.playSound(null, worldPosition, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+        sync();
+        return true;
+    }
+
     public boolean stoke(int ticks) {
         if (!station().equals(WorkshopRecipe.CRUCIBLE_FURNACE)) {
             return false;
@@ -178,7 +205,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
     }
 
     public boolean isHot() {
-        return station().equals(WorkshopRecipe.KILN) ? burnTicks > 0 : heated() && running && stokeTicks > 0 && !input.isEmpty() && output.isEmpty();
+        return station().equals(WorkshopRecipe.KILN) ? burnTicks > 0 : heated() && ignited && running && stokeTicks > 0 && !input.isEmpty() && output.isEmpty();
     }
 
     public int getForgeHeat() { return ItemHeat.remaining(input, level); }
@@ -214,7 +241,8 @@ public final class WorkshopBlockEntity extends BlockEntity {
         int capacity = ItemHeat.capacity(input, level);
         int heat = ItemHeat.remaining(input, level);
         boolean changed = false;
-        if (burnTicks <= 0 && capacity > 0 && heat < capacity && !fuel.isEmpty()) {
+        // Only a still-burning fire can catch the next queued fuel. A cold kiln needs ignition.
+        if (burnTicks == 1 && !fuel.isEmpty()) {
             int duration = fuel.getBurnTime(RecipeType.SMELTING);
             if (duration > 0) {
                 burnTicks = duration;
@@ -385,6 +413,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
         forgeHeat = 0;
         progress = 0;
         running = false;
+        if (station().equals(WorkshopRecipe.CRUCIBLE_FURNACE)) ignited = false;
         processCancelled = false;
         if (level instanceof ServerLevel server) {
             OptionalIntegrations.fireWorkshopProcessingCompleted(server, this, holder.id(), recipe,
@@ -575,6 +604,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
             forgeHeat = 0;
             lastForgeAction = "";
             running = false;
+            if (station().equals(WorkshopRecipe.CRUCIBLE_FURNACE)) ignited = false;
             if (station().equals(WorkshopRecipe.STONE_ANVIL)) restoreForgeProgress();
         }
     }
@@ -617,6 +647,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
         lastForgeAction = "";
         progress = 0;
         running = false;
+        if (station().equals(WorkshopRecipe.CRUCIBLE_FURNACE)) ignited = false;
         processCancelled = false;
         sync();
         return true;
@@ -705,6 +736,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
         tag.putInt("StokeTicks", stokeTicks);
         tag.putInt("ForgeHeat", forgeHeat);
         tag.putInt("BurnTicks", burnTicks);
+        tag.putBoolean("Ignited", ignited);
         tag.putDouble("HeatRemainder", heatRemainder);
         tag.putBoolean("ItemHeatVersion", !importItemState);
         tag.putLong("LastForgeTick", lastForgeTick);
@@ -736,6 +768,8 @@ public final class WorkshopBlockEntity extends BlockEntity {
                 || (!hasModernForgeState && progress > 0);
         importItemState |= legacyForgeProgressPending;
         running = tag.getBoolean("Running");
+        // Preserve an already-paid legacy crucible batch, but never light reserve fuel on load.
+        ignited = tag.contains("Ignited") ? tag.getBoolean("Ignited") : running && stokeTicks > 0;
         processCancelled = tag.getBoolean("ProcessCancelled");
         long loadedActionSteps = tag.getLong("ActionSteps");
         if (level != null && level.isClientSide) {

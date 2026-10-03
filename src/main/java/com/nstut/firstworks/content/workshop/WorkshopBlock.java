@@ -54,6 +54,14 @@ public abstract class WorkshopBlock extends BaseEntityBlock {
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(HEAT_LIGHT, 0));
     }
 
+    @Override
+    public void appendHoverText(ItemStack stack, net.minecraft.world.item.Item.TooltipContext context,
+            java.util.List<net.minecraft.network.chat.Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
+        super.appendHoverText(stack, context, tooltip, flag);
+        if (station.equals(WorkshopRecipe.KILN) || station.equals(WorkshopRecipe.CRUCIBLE_FURNACE))
+            tooltip.add(net.minecraft.network.chat.Component.translatable("hint.firstworks.workshop.ignite"));
+    }
+
     public String station() {
         return station;
     }
@@ -120,6 +128,11 @@ public abstract class WorkshopBlock extends BaseEntityBlock {
         if (!(level.getBlockEntity(pos) instanceof WorkshopBlockEntity workshop) || stack.isEmpty()) {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
+        if ((station.equals(WorkshopRecipe.KILN) || station.equals(WorkshopRecipe.CRUCIBLE_FURNACE))
+                && WorkshopIgnition.isIgniter(stack)) {
+            if (!level.isClientSide && workshop.ignite()) WorkshopIgnition.consume(stack, player, hand);
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        }
         if (station.equals(WorkshopRecipe.STONE_ANVIL) && stack.is(ModTags.HAMMERS)) {
             if (!level.isClientSide && workshop.forge(player, StoneAnvilBlock.actionAt(state, pos, hit))) {
                 if (!player.hasInfiniteMaterials()) {
@@ -182,6 +195,8 @@ public abstract class WorkshopBlock extends BaseEntityBlock {
         if (!(level.getBlockEntity(pos) instanceof WorkshopBlockEntity workshop)) {
             return InteractionResult.PASS;
         }
+        if ((station.equals(WorkshopRecipe.KILN) || station.equals(WorkshopRecipe.CRUCIBLE_FURNACE))
+                && WorkshopIgnition.isIgniter(player.getOffhandItem())) return InteractionResult.PASS;
         // Let vanilla try the offhand rather than consuming an empty main-hand interaction.
         if (station.equals(WorkshopRecipe.STONE_ANVIL) && workshop.getOutput().isEmpty()
                 && player.getOffhandItem().is(ModTags.HAMMERS)) return InteractionResult.PASS;

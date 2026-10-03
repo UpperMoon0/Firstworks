@@ -64,6 +64,7 @@ public final class KilnGameTests {
         WorkshopBlockEntity.serverTick(h.getLevel(), kiln.getBlockPos(), kiln.getBlockState(), kiln);
         h.assertTrue(kiln.getForgeHeat() == 0, "Kiln heated without fuel");
         h.assertTrue(kiln.insertFuel(new ItemStack(Items.CHARCOAL), false), "Kiln rejected fuel");
+        h.assertTrue(kiln.ignite(), "Kiln ignition failed");
         h.runAtTickTime(105, () -> {
             h.assertTrue(ItemHeat.fraction(kiln.getInput(), h.getLevel()) > 0.95F, "Billet did not heat fully");
             h.assertTrue(kiln.getOutput().isEmpty() && kiln.getProgress() == 0, "Kiln transformed or worked the item");
@@ -128,6 +129,9 @@ public final class KilnGameTests {
         WorkshopBlockEntity kiln = h.getBlockEntity(pos);
         kiln.insert(new ItemStack(Items.COPPER_INGOT), false);
         kiln.insertFuel(new ItemStack(Items.STICK), false);
+        WorkshopBlockEntity.serverTick(h.getLevel(), kiln.getBlockPos(), kiln.getBlockState(), kiln);
+        h.assertTrue(kiln.getBurnTicks() == 0 && kiln.getFuel().getCount() == 1, "Fuel lit itself");
+        h.assertTrue(kiln.ignite(), "Kiln ignition failed");
         WorkshopBlockEntity.serverTick(h.getLevel(), kiln.getBlockPos(), kiln.getBlockState(), kiln);
         int burn = kiln.getBurnTicks();
         var nbt = kiln.saveWithoutMetadata(h.getLevel().registryAccess());

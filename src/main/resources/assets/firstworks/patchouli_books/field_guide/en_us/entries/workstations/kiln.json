@@ -11,7 +11,7 @@
     {
       "type": "patchouli:text",
       "title": "Heating Workpieces",
-      "text": "Place a heatable workpiece and solid furnace fuel in the kiln. Empty-hand use retrieves the workpiece. A single item takes about five seconds to reach full heat; larger stacks heat more slowly. Fuel keeps hot items heated until it runs out. The kiln never smelts, fires pottery, or performs anvil actions. Carry the hot item to the Stone Anvil to forge it. Heat keeps fading in inventories and storage; unfinished work stays on the item."
+      "text": "Place a heatable workpiece and solid furnace fuel in the kiln, then right-click with Flint and Steel, a Fire Starter, or another supported igniter. Loading fuel alone never lights it. A burning kiln catches queued fuel; once it burns out, light it again. Empty-hand use retrieves the workpiece. A single item takes about five seconds to reach full heat; larger stacks heat more slowly. Fuel keeps hot items heated until it runs out. The kiln never smelts, fires pottery, or performs anvil actions. Carry the hot item to the Stone Anvil to forge it. Heat keeps fading in inventories and storage; unfinished work stays on the item."
     }
   ]
 }

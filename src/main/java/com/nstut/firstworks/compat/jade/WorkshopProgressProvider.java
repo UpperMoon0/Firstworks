@@ -53,6 +53,7 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
         data.putBoolean("Heatable", ItemHeat.capacity(visible, workshop.getLevel()) > 0
                 || visible.has(com.nstut.firstworks.registry.ModDataComponents.HEAT.get()));
         data.putInt("BurnTicks", workshop.getBurnTicks());
+        data.putBoolean("NeedsIgnition", workshop.needsIgnition());
         putStack(data, INPUT, INPUT_COUNT, workshop.getInput());
         putStack(data, CATALYST, CATALYST_COUNT, workshop.getCatalyst());
         data.putInt(FUEL_COUNT, workshop.getFuel().getCount());
@@ -75,6 +76,8 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
         CompoundTag data = accessor.getServerData();
         String station = data.getString(STATION);
+        if (data.getBoolean("NeedsIgnition") && !WorkshopRecipe.KILN.equals(station)) tooltip.add(Component.translatable("hint.firstworks.workshop.ignite")
+                .withStyle(ChatFormatting.YELLOW));
         if (data.getBoolean("Heatable")) {
             float heat = data.getFloat("Heat");
             tooltip.add(Component.translatable("heat.firstworks." + ItemHeat.state(heat))
@@ -101,7 +104,8 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
 
         if (WorkshopRecipe.KILN.equals(station)) {
             tooltip.add(Component.translatable(data.getInt("BurnTicks") > 0
-                    ? "jade.firstworks.kiln.heating" : "jade.firstworks.workshop.needs_fuel").withStyle(ChatFormatting.GRAY));
+                    ? "jade.firstworks.kiln.heating" : data.getBoolean("NeedsIgnition")
+                            ? "hint.firstworks.workshop.ignite" : "jade.firstworks.workshop.needs_fuel").withStyle(ChatFormatting.GRAY));
             return;
         }
 
