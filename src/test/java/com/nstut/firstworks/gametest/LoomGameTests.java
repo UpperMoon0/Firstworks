@@ -166,24 +166,20 @@ public final class LoomGameTests {
                     "Uncollected output hid the next batch's one-row fabric");
             h.assertTrue(loom.interactionHint().getString().contains("shuttle"), "Ready output hid active weaving hint");
             loom.release(player);
-            // The working sheet is not a pickup surface for the previous batch.
-            aimAt(player, loom, 0.6, 8.0 / 16, 7.35 / 16);
-            var hit = (net.minecraft.world.phys.BlockHitResult) player.pick(player.blockInteractionRange(), 1, false);
-            loom.getBlockState().useWithoutItem(h.getLevel(), player, hit);
-            h.assertTrue(loom.getOutput().getCount() == 1, "Working fabric collected unrelated finished cloth");
-            // The visible cloth roll has its own target in every facing.
+            // Output is collected from the frame, without a separate output model or hitbox.
+            net.minecraft.world.phys.BlockHitResult hit = null;
             for (Direction facing : Direction.Plane.HORIZONTAL) {
                 h.setBlock(pos, loom.getBlockState().setValue(LoomBlock.FACING, facing));
-                aimAt(player, loom, 0.5, 3.0 / 16, 3.25 / 16);
+                aimAt(player, loom, 0.5, 14.5 / 16, 5.25 / 16);
                 hit = (net.minecraft.world.phys.BlockHitResult) player.pick(player.blockInteractionRange(), 1, false);
                 h.assertTrue(hit.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK
-                        && hit.getBlockPos().equals(loom.getBlockPos())
-                        && LoomBlock.isOutputPoint(LoomBlock.local(loom.getBlockState(), loom.getBlockPos(), hit.getLocation())),
-                        "Finished cloth roll is not targetable: " + facing);
+                        && hit.getBlockPos().equals(loom.getBlockPos()),
+                        "Loom frame is not targetable for collection: " + facing);
             }
             loom.getBlockState().useWithoutItem(h.getLevel(), player, hit);
-            h.assertTrue(loom.getOutput().isEmpty() && loom.getFabricFraction() == 0.25F,
-                    "Collecting the finished roll changed the next batch");
+            h.assertTrue(loom.getOutput().isEmpty() && loom.getFabricFraction() == 0.25F
+                    && loom.getInput().getCount() == 4,
+                    "Collecting finished cloth changed the next batch");
             h.succeed();
         });
     }

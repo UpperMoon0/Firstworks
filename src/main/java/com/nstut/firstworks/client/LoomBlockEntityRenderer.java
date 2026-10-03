@@ -49,13 +49,6 @@ public final class LoomBlockEntityRenderer implements BlockEntityRenderer<LoomBl
             renderWarpThreads(loom, fabric, poseStack, buffers, packedLight, packedOverlay);
             renderWovenThreads(loom, fabric, poseStack, buffers, packedLight, packedOverlay);
         }
-        if (!loom.getOutput().isEmpty()) {
-            var cloth = loom.getOutput();
-            var sprite = itemRenderer.getModel(cloth, loom.getLevel(), null, 0).getParticleIcon();
-            renderBox(buffers.getBuffer(Sheets.cutoutBlockSheet()), poseStack.last().pose(),
-                    3.75F / 16, 2.0F / 16, 2.5F / 16, 12.25F / 16, 4.0F / 16, 4.0F / 16,
-                    sprite, outputTint(cloth), packedLight, packedOverlay);
-        }
         renderShuttle(loom, fabric, partialTick, poseStack, buffers, packedLight, packedOverlay);
         poseStack.popPose();
     }

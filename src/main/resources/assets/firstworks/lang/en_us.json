@@ -198,7 +198,7 @@
   "jade.firstworks.bellows.disconnected": "Not aimed at a Crucible Furnace",
   "jade.firstworks.bellows.air_reserve": "Furnace air reserve: %s s",
   "config.jade.plugin_firstworks.bellows_air": "Bellows Airflow",
-  "hint.firstworks.loom.collect": "Collect woven output",
+  "hint.firstworks.loom.collect": "Empty-hand right-click: collect woven output",
   "hint.firstworks.loom.retrieve": "Sneak-use: retrieve thread",
   "hint.firstworks.loom.shed": "Change shed: %s → %s",
   "hint.firstworks.loom.controls": "Hold Use on the shuttle and guide it across.",

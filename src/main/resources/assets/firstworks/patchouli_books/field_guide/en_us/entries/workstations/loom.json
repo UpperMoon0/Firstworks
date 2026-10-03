@@ -7,7 +7,7 @@
     {
       "type": "patchouli:text",
       "title": "Guide the Shuttle",
-      "text": "Use thread on the loom to load a stack in one action. With an empty hand, hold Use on the highlighted shuttle grip and guide your aim across the loom. Keep holding and reverse direction after the beater packs the row. Four crossings make basic cloth. Release Use and collect the finished cloth roll below the weaving area. Further batches remain visible above it."
+      "text": "Use thread on the loom to load a stack in one action. With an empty hand, hold Use on the highlighted shuttle grip and guide your aim across the loom. Keep holding and reverse direction after the beater packs the row. Four crossings make basic cloth. Release Use, then right-click the loom frame with an empty hand to collect finished cloth. The shuttle remains available for weaving further batches."
     },
     {
       "type": "patchouli:text",

@@ -21,7 +21,8 @@ public final class LoomInteractionHints {
                 || !(mc.level.getBlockEntity(hit.getBlockPos()) instanceof LoomBlockEntity loom)) return;
         var hint = mc.player.isShiftKeyDown()
                 ? net.minecraft.network.chat.Component.translatable("hint.firstworks.loom.retrieve")
-                : !loom.getOutput().isEmpty() && LoomBlock.isOutputPoint(LoomBlock.local(loom.getBlockState(), hit.getBlockPos(), hit.getLocation()))
+                : !loom.getOutput().isEmpty() && !(loom.getActiveRecipe().isPresent()
+                        && !loom.isProcessCancelled() && LoomBlock.hitsShuttle(mc.player, loom))
                     ? net.minecraft.network.chat.Component.translatable("hint.firstworks.loom.collect")
                     : loom.interactionHint();
         var graphics = event.getGuiGraphics();
