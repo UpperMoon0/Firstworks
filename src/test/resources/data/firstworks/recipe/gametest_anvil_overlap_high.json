@@ -1,0 +1,8 @@
+{
+  "type": "firstworks:workshop_processing",
+  "station": "stone_anvil",
+  "ingredient": { "item": "minecraft:echo_shard" },
+  "result": { "id": "minecraft:diamond" },
+  "priority": 10,
+  "forge": { "actions": ["flatten", "flatten"], "heat_ticks": 0 }
+}

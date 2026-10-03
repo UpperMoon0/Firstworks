@@ -7,7 +7,7 @@
     {
       "type": "patchouli:text",
       "title": "Load the Charge",
-      "text": "Load three Raw Copper, a reusable fired Casting Mold, and furnace fuel. Ignite explicitly. Fuel burns continuously using its Minecraft furnace duration, including between recipes. The unassisted ceiling is 800°C: too cool for copper casting."
+      "text": "Load three Raw Copper, one reusable fired Casting Mold, and furnace fuel. The mold slot holds only one item; copper and fuel can stack. Ignite explicitly. Fuel burns continuously using its Minecraft furnace duration, including between recipes. The unassisted ceiling is 800°C: too cool for copper casting."
     },
     {
       "type": "patchouli:text",

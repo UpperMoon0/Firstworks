@@ -22,6 +22,31 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(Firstworks.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class AnvilGameTests {
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void overlappingSequencesUseSelectedRecipeAndLockAfterFirstStrike(GameTestHelper h) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        h.setBlock(pos, ModBlocks.STONE_ANVIL.get());
+        WorkshopBlockEntity anvil = h.getBlockEntity(pos);
+        Player player = h.makeMockPlayer(GameType.SURVIVAL);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.STONE_HAMMER.get()));
+        anvil.insert(new ItemStack(Items.ECHO_SHARD), false);
+        check(h, anvil.getMatchingRecipeCount() == 2, "Overlapping recipes were not reported");
+        check(h, anvil.activeRecipe().orElseThrow().id().getPath().equals("gametest_anvil_overlap_high"),
+                "Wrong automatically selected recipe");
+        check(h, !anvil.forge(player, "draw"), "Alternative recipe's sequence bypassed the selected sequence");
+        check(h, anvil.forge(player, "flatten"), "Selected sequence could not start");
+        check(h, anvil.getMatchingRecipeCount() == 1, "Started work did not lock its selected recipe");
+        var saved = anvil.saveWithoutMetadata(h.getLevel().registryAccess());
+        anvil.loadWithComponents(saved, h.getLevel().registryAccess());
+        check(h, anvil.getMatchingRecipeCount() == 1 && anvil.activeRecipe().orElseThrow().value().result().is(Items.DIAMOND),
+                "Reload changed the selected recipe");
+        h.runAtTickTime(2, () -> {
+            check(h, anvil.forge(player, "flatten") && anvil.getOutput().is(Items.DIAMOND),
+                    "Selected sequence produced the alternative result");
+            h.succeed();
+        });
+    }
+
     @GameTest(template = "empty", timeoutTicks = 40)
     public static void coolingOrderReloadAndCustomVisualFallback(GameTestHelper h) {
         BlockPos pos = new BlockPos(3, 1, 3);

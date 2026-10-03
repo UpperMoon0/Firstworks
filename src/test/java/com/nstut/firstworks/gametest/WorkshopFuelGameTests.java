@@ -21,6 +21,39 @@ public final class WorkshopFuelGameTests {
     private WorkshopFuelGameTests() {}
 
     @GameTest(template = EMPTY, timeoutTicks = 20)
+    public static void crucibleMoldSlotIsSingleAndLegacySurplusIsReturned(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(4, 1, 4);
+        helper.setBlock(pos, ModBlocks.CRUCIBLE_FURNACE.get());
+        WorkshopBlockEntity furnace = helper.getBlockEntity(pos);
+        var handler = furnace.getItemHandler(null);
+        check(helper, handler.getSlotLimit(1) == 1 && handler.getSlotLimit(2) == 64, "Wrong mold/fuel limits");
+        var molds = new ItemStack(ModItems.CASTING_MOLD.get(), 3);
+        check(helper, handler.insertItem(1, molds, true).getCount() == 2 && furnace.getCatalyst().isEmpty(),
+                "Simulation did not preserve the single-mold limit");
+        check(helper, handler.insertItem(1, molds, false).getCount() == 2 && furnace.getCatalyst().getCount() == 1,
+                "Automation inserted more than one mold");
+        check(helper, !furnace.insert(molds, false) && molds.getCount() == 3, "Player inserted a second mold");
+        check(helper, handler.insertItem(0, new ItemStack(Items.RAW_COPPER, 8), false).isEmpty()
+                        && handler.insertItem(2, new ItemStack(Items.COAL, 15), false).isEmpty(),
+                "Mold limit also restricted input or fuel");
+        var saved = furnace.saveWithoutMetadata(helper.getLevel().registryAccess());
+        saved.put("Catalyst", molds.save(helper.getLevel().registryAccess()));
+        furnace.loadWithComponents(saved, helper.getLevel().registryAccess());
+        for (int i = 0; i < 2; i++) WorkshopBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(pos), furnace.getBlockState(), furnace);
+        check(helper, furnace.getCatalyst().getCount() == 1, "Legacy stack was not reduced to one mold");
+        int returned = helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
+                        new net.minecraft.world.phys.AABB(helper.absolutePos(pos)).inflate(2)).stream()
+                .filter(entity -> entity.getItem().is(ModItems.CASTING_MOLD.get())).mapToInt(entity -> entity.getItem().getCount()).sum();
+        check(helper, returned == 2, "Legacy surplus was lost or duplicated: " + returned);
+        var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        check(helper, furnace.takeStored(player), "Mold could not be retrieved");
+        var held = new ItemStack(ModItems.CASTING_MOLD.get(), 3);
+        check(helper, furnace.insert(held, false) && held.getCount() == 2 && furnace.getCatalyst().getCount() == 1,
+                "Player insertion did not consume exactly one mold");
+        helper.succeed();
+    }
+
+    @GameTest(template = EMPTY, timeoutTicks = 20)
     public static void fuelTopUpPreservesRunningProgress(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos furnacePos = new BlockPos(4, 1, 4);

@@ -1,0 +1,8 @@
+{
+  "type": "firstworks:workshop_processing",
+  "station": "stone_anvil",
+  "ingredient": { "item": "minecraft:echo_shard" },
+  "result": { "id": "minecraft:lapis_lazuli" },
+  "priority": 0,
+  "forge": { "actions": ["draw", "bend"], "heat_ticks": 0 }
+}

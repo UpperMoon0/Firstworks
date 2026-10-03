@@ -299,8 +299,8 @@ public final class WorkshopSelectionGameTests {
                 "Same-recipe input top-up consumed extra fuel");
 
         check(helper, furnace.getItemHandler(null)
-                .insertItem(1, new ItemStack(ModItems.CASTING_MOLD.get()), false).isEmpty(),
-                "Crucible Furnace rejected same-recipe catalyst top-up while running");
+                .insertItem(1, new ItemStack(ModItems.CASTING_MOLD.get()), false).getCount() == 1,
+                "Crucible Furnace accepted a second mold while running");
         check(helper, furnace.getProgress() == progressBeforeTopUps,
                 "Same-recipe catalyst top-up reset active Crucible Furnace progress");
         check(helper, furnace.isRunning(),

@@ -89,6 +89,13 @@ public final class WorkshopBlockEntity extends BlockEntity {
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, WorkshopBlockEntity workshop) {
+        // Return surplus molds from older saves instead of deleting paid items.
+        if (!level.isClientSide && workshop.station().equals(WorkshopRecipe.CRUCIBLE_FURNACE)
+                && workshop.catalyst.getCount() > 1) {
+            ItemStack surplus = workshop.catalyst.split(workshop.catalyst.getCount() - 1);
+            net.minecraft.world.Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, surplus);
+            workshop.sync();
+        }
         workshop.migrateLegacyForgeProgress();
         workshop.importLegacyItemState();
         if (workshop.station().equals(WorkshopRecipe.KILN)) {
@@ -463,8 +470,16 @@ public final class WorkshopBlockEntity extends BlockEntity {
     }
 
     public Optional<RecipeHolder<WorkshopRecipe>> activeRecipe() {
+        return matchingRecipes().findFirst();
+    }
+
+    public int getMatchingRecipeCount() {
+        return (int) matchingRecipes().count();
+    }
+
+    private Stream<RecipeHolder<WorkshopRecipe>> matchingRecipes() {
         if (level == null || input.isEmpty()) {
-            return Optional.empty();
+            return Stream.empty();
         }
         return stationRecipes()
                 .filter(holder -> holder.value().ingredient().test(input)
@@ -479,8 +494,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
                         .thenComparing(Comparator.comparingInt(
                                 (RecipeHolder<WorkshopRecipe> holder) -> holder.value().inputCount()).reversed())
                         .thenComparingInt(holder -> holder.value().hasCatalyst() ? 0 : 1)
-                        .thenComparing(holder -> holder.id().toString()))
-                .findFirst();
+                        .thenComparing(holder -> holder.id().toString()));
     }
 
     private Optional<ResourceLocation> activeRecipeId() {
@@ -535,7 +549,12 @@ public final class WorkshopBlockEntity extends BlockEntity {
     }
 
     private boolean canInsertCatalyst(ItemStack stack) {
-        return !(station().equals(WorkshopRecipe.STONE_ANVIL) && progress > 0) && validCatalyst(stack) && canStack(catalyst, stack);
+        return !(station().equals(WorkshopRecipe.STONE_ANVIL) && progress > 0) && validCatalyst(stack)
+                && canStack(catalyst, stack) && catalyst.getCount() < catalystLimit(stack);
+    }
+
+    private int catalystLimit(ItemStack stack) {
+        return station().equals(WorkshopRecipe.CRUCIBLE_FURNACE) ? 1 : stack.getMaxStackSize();
     }
 
     public boolean canInsertFuel(ItemStack stack) {
@@ -884,7 +903,8 @@ public final class WorkshopBlockEntity extends BlockEntity {
             if (!current.isEmpty() && !ItemStack.isSameItemSameComponents(current, stack)) {
                 return stack;
             }
-            int limit = slot == INPUT_SLOT ? inputLimit(stack) : stack.getMaxStackSize();
+            int limit = slot == INPUT_SLOT ? inputLimit(stack)
+                    : slot == CATALYST_SLOT ? catalystLimit(stack) : stack.getMaxStackSize();
             int accepted = Math.min(limit - current.getCount(), stack.getCount());
             if (accepted <= 0) {
                 return stack;
@@ -943,7 +963,8 @@ public final class WorkshopBlockEntity extends BlockEntity {
 
         @Override
         public int getSlotLimit(int slot) {
-            return slot == INPUT_SLOT && station().equals(WorkshopRecipe.KILN) ? 1 : 64;
+            return slot == INPUT_SLOT && station().equals(WorkshopRecipe.KILN)
+                    || slot == CATALYST_SLOT && station().equals(WorkshopRecipe.CRUCIBLE_FURNACE) ? 1 : 64;
         }
 
         @Override

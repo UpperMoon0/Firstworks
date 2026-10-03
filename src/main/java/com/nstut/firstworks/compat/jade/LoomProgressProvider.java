@@ -51,8 +51,7 @@ public enum LoomProgressProvider implements IBlockComponentProvider, IServerData
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
         CompoundTag data = accessor.getServerData();
         if (data.contains(OUTPUT)) {
-            tooltip.add(Component.translatable("jade.firstworks.loom.output",
-                    Component.translatable(data.getString(OUTPUT)).withStyle(ChatFormatting.GOLD)));
+            tooltip.add(Component.translatable("hint.firstworks.collect"));
             if (data.getInt(INPUT_COUNT) == 0) return;
         }
         if (data.getBoolean(CANCELLED)) {

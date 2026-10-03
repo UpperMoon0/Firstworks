@@ -64,6 +64,8 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
         data.putInt(PROGRESS, workshop.getProgress());
         data.putInt(STOKE, workshop.getStokeTicks());
         data.putBoolean(RUNNING, workshop.isRunning());
+        if (WorkshopRecipe.STONE_ANVIL.equals(workshop.station()))
+            data.putInt("RecipeChoices", workshop.getMatchingRecipeCount());
         workshop.activeRecipe().ifPresent(holder -> {
             data.putString(RESULT, holder.value().result().getDescriptionId());
             data.putInt("RequiredTemperature", holder.value().requiredTemperature());
@@ -100,8 +102,7 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
                     .withStyle("workable".equals(data.getString("HeatState")) ? ChatFormatting.GOLD : heat > 0 ? ChatFormatting.RED : ChatFormatting.GRAY));
         }
         if (data.contains(OUTPUT)) {
-            tooltip.add(Component.translatable("jade.firstworks.workshop.ready", data.getInt(OUTPUT_COUNT),
-                    Component.translatable(data.getString(OUTPUT)).withStyle(ChatFormatting.GOLD)));
+            tooltip.add(Component.translatable("hint.firstworks.collect"));
             return;
         }
 
@@ -109,13 +110,6 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
             tooltip.add(Component.translatable("jade.firstworks.workshop.empty"));
             appendManualHint(tooltip, station);
             return;
-        }
-
-        tooltip.add(Component.translatable("jade.firstworks.workshop.input", data.getInt(INPUT_COUNT),
-                Component.translatable(data.getString(INPUT)).withStyle(ChatFormatting.GOLD)));
-        if (data.contains(CATALYST)) {
-            tooltip.add(Component.translatable("jade.firstworks.workshop.catalyst", data.getInt(CATALYST_COUNT),
-                    Component.translatable(data.getString(CATALYST)).withStyle(ChatFormatting.GOLD)));
         }
 
         if (WorkshopRecipe.KILN.equals(station)) {
@@ -132,7 +126,12 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
             return;
         }
 
-        tooltip.add(Component.translatable("jade.firstworks.workshop.making",
+        if (WorkshopRecipe.STONE_ANVIL.equals(station)) {
+            var result = Component.translatable(data.getString(RESULT)).withStyle(ChatFormatting.GOLD);
+            tooltip.add(data.getInt("RecipeChoices") > 1
+                    ? Component.translatable("jade.firstworks.anvil.auto_selected", result, data.getInt("RecipeChoices"))
+                    : Component.translatable("jade.firstworks.anvil.recipe", result));
+        } else tooltip.add(Component.translatable("jade.firstworks.workshop.making",
                 Component.translatable(data.getString(RESULT)).withStyle(ChatFormatting.GOLD)));
         int progress = data.getInt(PROGRESS);
         if (WorkshopRecipe.STONE_ANVIL.equals(station) && data.contains(ACTIONS)) {
@@ -165,9 +164,7 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
 
         if (WorkshopRecipe.CRUCIBLE_FURNACE.equals(station)) {
             int fuel = data.getInt(FUEL_COUNT);
-            if (fuel > 0) {
-                tooltip.add(Component.translatable("jade.firstworks.workshop.fuel_reserve", fuel));
-            } else if (data.getInt("BurnTicks") == 0 && !data.getBoolean(RUNNING) && progress == 0) {
+            if (fuel == 0 && data.getInt("BurnTicks") == 0 && !data.getBoolean(RUNNING) && progress == 0) {
                 tooltip.add(Component.translatable("jade.firstworks.workshop.needs_fuel")
                         .withStyle(ChatFormatting.YELLOW));
             }
