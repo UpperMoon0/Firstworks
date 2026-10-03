@@ -31,7 +31,11 @@ public final class KilnHeatingCategory implements IRecipeCategory<ItemStack> {
                 .addRichTooltipCallback((slot, lines) -> lines.add(Component.translatable("jei.firstworks.workshop.fuel")));
         WorkshopRecipeCategory.addIgniterSlot(builder, 91, 45);
     }
-    @Override public void draw(ItemStack item, IRecipeSlotsView slots, GuiGraphics graphics, double x, double y) {
+    @Override public void createRecipeExtras(mezz.jei.api.gui.widgets.IRecipeExtrasBuilder builder,
+            ItemStack item, IRecipeSlotsView slots, IFocusGroup focuses) {
+        WorkshopRecipeCategory.addProcessDisplay(builder, graphics -> drawProcess(item, graphics));
+    }
+    private void drawProcess(ItemStack item, GuiGraphics graphics) {
         WorkshopRecipeCategory.drawFuelFlame(graphics);
         var unit = com.nstut.firstworks.FirstworksClientConfig.HEAT_UNIT.get();
         var font = Minecraft.getInstance().font;

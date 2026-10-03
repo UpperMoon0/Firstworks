@@ -97,17 +97,37 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
     static void drawSlotLabel(GuiGraphics graphics, String role, int centerX, int y) {
         var font = Minecraft.getInstance().font;
         var label = Component.translatable("jei.firstworks.workshop.label." + role);
-        graphics.pose().pushPose();
-        graphics.pose().translate(0, 0, 200);
         graphics.drawString(font, label, centerX - font.width(label) / 2, y, 0xFF606060, false);
-        graphics.pose().popPose();
     }
 
     static void drawFuelFlame(GuiGraphics graphics) {
-        graphics.pose().pushPose();
-        graphics.pose().translate(0, 0, 200);
         graphics.blitSprite(net.minecraft.resources.ResourceLocation.withDefaultNamespace("container/furnace/lit_progress"), 36, 26, 14, 14);
-        graphics.pose().popPose();
+    }
+
+    static void addProcessDisplay(mezz.jei.api.gui.widgets.IRecipeExtrasBuilder builder,
+            java.util.function.Consumer<GuiGraphics> display) {
+        // JEI draws extras after item slots. Flush at the boundaries so slot item rendering
+        // cannot reorder the process labels and sprites against the recipe background.
+        builder.addDrawable(new IDrawable() {
+            @Override public int getWidth() { return 170; }
+            @Override public int getHeight() { return 110; }
+            @Override public void draw(GuiGraphics graphics, int x, int y) {
+                graphics.flush();
+                graphics.pose().pushPose();
+                graphics.pose().translate(x, y, 0);
+                display.accept(graphics);
+                graphics.flush();
+                graphics.pose().popPose();
+            }
+        }, 0, 0);
+    }
+
+    @Override
+    public void createRecipeExtras(mezz.jei.api.gui.widgets.IRecipeExtrasBuilder builder,
+            WorkshopRecipe recipe, IRecipeSlotsView slots, IFocusGroup focuses) {
+        if (WorkshopRecipe.CRUCIBLE_FURNACE.equals(recipe.station())) {
+            addProcessDisplay(builder, graphics -> drawProcess(recipe, graphics));
+        }
     }
 
     private static void markReusable(mezz.jei.api.gui.builder.IRecipeSlotBuilder slot) {
@@ -134,6 +154,10 @@ public final class WorkshopRecipeCategory implements IRecipeCategory<WorkshopRec
 
     @Override
     public void draw(WorkshopRecipe recipe, IRecipeSlotsView slots, GuiGraphics graphics, double mouseX, double mouseY) {
+        if (!WorkshopRecipe.CRUCIBLE_FURNACE.equals(recipe.station())) drawProcess(recipe, graphics);
+    }
+
+    private void drawProcess(WorkshopRecipe recipe, GuiGraphics graphics) {
         boolean crucible = WorkshopRecipe.CRUCIBLE_FURNACE.equals(recipe.station());
         arrow.draw(graphics, crucible ? 105 : 91, 5);
         if (crucible) drawFuelFlame(graphics);
