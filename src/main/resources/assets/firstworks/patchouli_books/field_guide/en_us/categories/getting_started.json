@@ -1,6 +1,6 @@
 {
   "name": "Getting Started",
-  "description": "The shortest route from gathered materials to reliable primitive production.",
-  "icon": "firstworks:stone_hammer",
+  "description": "Gathering, tools, and the route into a primitive workshop.",
+  "icon": "firstworks:plant_fibre",
   "sortnum": 0
 }

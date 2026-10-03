@@ -1,0 +1,22 @@
+{
+  "name": "Bellows",
+  "category": "firstworks:workstations",
+  "icon": "firstworks:bellows",
+  "sortnum": 15,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Placement",
+      "text": "Place beside a Crucible Furnace with the outlet facing it. Bellows use planks, Heavy Leather, and strong bindings, so their recipe does not require copper to bootstrap copper casting."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Pump and Check",
+      "text": "Empty-hand press banks a finite air reserve. Watch bag motion and furnace feedback. Pumping does not ignite fuel. No air usually means the outlet faces away, the wrong station is adjacent, or the furnace moved. Kilns do not require Bellows. Each press adds 160 ticks (8 seconds); the reserve caps at 480 ticks (24 seconds)."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:bellows"
+    }
+  ]
+}

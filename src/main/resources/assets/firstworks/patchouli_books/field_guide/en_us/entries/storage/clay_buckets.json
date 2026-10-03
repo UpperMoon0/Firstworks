@@ -1,0 +1,31 @@
+{
+  "name": "Clay Buckets and Fluids",
+  "category": "firstworks:storage",
+  "icon": "firstworks:clay_bucket",
+  "sortnum": 27,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Fire a Vessel",
+      "text": "Craft an Unfired Clay Bucket from three Clay Balls, then fire it in a furnace or on a campfire. The unfired item cannot carry fluid."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Water and Tannin",
+      "text": "A fired Clay Bucket carries water or Tannin Solution from source fluid blocks and barrel transfers. It cannot collect lava. Barrel withdrawal requires a full 1000 mB. Empty vessels can be refilled."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Crafting Remainders",
+      "text": "Water Clay Buckets supply dough and plaster recipes and return empty Clay Buckets. Metal Tannin Solution Buckets also transfer barrel fluid. Sealed barrels prevent these transfers until opened."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:unfired_clay_bucket"
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "firstworks:fire_clay_bucket_from_smelting"
+    }
+  ]
+}

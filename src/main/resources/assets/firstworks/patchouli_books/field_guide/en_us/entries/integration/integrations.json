@@ -1,0 +1,28 @@
+{
+  "name": "Jade, JEI, and KubeJS",
+  "category": "firstworks:integration",
+  "icon": "minecraft:book",
+  "sortnum": 32,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "In-World Guidance",
+      "text": "Patchouli is required, and this Field Guide is craftable from Book + Plant Fibre. Optional Jade supplies station requirements, progress, heat, and air feedback. The base mod also provides interaction hints."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Recipe Browsing",
+      "text": "Optional JEI supplies barrel, spinning, weaving, molding, grinding, workshop, kiln-heating, and charcoal information. Its current recipes are useful when a pack overrides bundled defaults."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "KubeJS",
+      "text": "Optional KubeJS supports custom wood registration, custom recipes, and cancellable start/completion hooks. A pack can deny starting. Tick-driven crucible cancellation is latched to avoid per-tick events until relevant state changes or restoking."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Troubleshooting",
+      "text": "Check input count, catalyst, output, working part, heat, ignition, and airflow before assuming a bug. Packs may disable or replace a route. Removed Loom weave/changeShed script calls do not bypass the authoritative held shuttle interaction."
+    }
+  ]
+}

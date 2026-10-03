@@ -1,0 +1,28 @@
+{
+  "name": "Item Heat and Temperature",
+  "category": "firstworks:metallurgy",
+  "icon": "firstworks:annealed_copper_billet",
+  "sortnum": 25,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Read the Line",
+      "text": "A heatable item shows one line, such as Heat: 794°C - Workable ~28s. The timer is its remaining forging window while cooling, not time until cold. Warm/cold items omit the timer. Glow and light fade with heat."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Item-Owned State",
+      "text": "Heat survives inventories, drops, storage, and transfers. Cooling uses world time, including unloaded storage, but does not progress while the world is closed. Expired heat can be cleared to merge equivalent cold stacks without losing forging progress."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Threshold and Scale",
+      "text": "Forging requires 25% remaining heat. The default 1200-tick capacity lasts 60 seconds to cold and about 45 seconds to the forging threshold. Cold uses a 20°C baseline; different items can have different configured maximum Celsius temperatures."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Units and Settings",
+      "text": "Client heatTemperatureUnit selects CELSIUS, FAHRENHEIT, or KELVIN with automatic conversion. It changes only display. Server defaultMaxHeatCelsius and itemMaxHeatCelsius define maxima. Forge recipe heat_ticks defines cooling duration, separately from maximum temperature."
+    }
+  ]
+}

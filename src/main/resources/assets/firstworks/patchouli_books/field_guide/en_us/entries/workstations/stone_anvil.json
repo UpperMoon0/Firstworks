@@ -1,23 +1,36 @@
 {
   "name": "Stone Anvil",
   "category": "firstworks:workstations",
-  "icon": "firstworks:stone_hammer",
-  "sortnum": 0,
+  "icon": "firstworks:stone_anvil",
+  "sortnum": 13,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "Forging",
-      "text": "Load a valid workpiece and hold a hammer. Forge recipes define an ordered sequence of Flatten, Draw, and Bend actions. The broad center flattens, outer working edges draw, and the horn bends. A wrong action does not advance or damage the hammer."
+      "title": "Ordered Actions",
+      "text": "Load a workpiece and use a supported hammer. The broad centre Flattens, outer working edges Draw, and the horn Bends. Follow the recipe order. Wrong actions do not advance work or damage the hammer. Either hand can hold the hammer."
     },
     {
       "type": "patchouli:text",
-      "title": "Heat",
-      "text": "Heat the workpiece in a fueled Kiln, then retrieve it and place it on the Stone Anvil. Heat and completed actions stay on the item when it moves. Sneak-use with an empty hand to retrieve unfinished work for reheating. A warm workpiece is too cold to forge; heat it until Workable. The glow and surrounding light fade as it cools."
+      "title": "Copper Sequence",
+      "text": "Heat an Annealed Copper Billet in a lit Kiln. Transfer it here and perform Flatten, Draw, Bend, Flatten for a Copper Ingot. The workpiece must retain at least 25% heat to be Workable."
     },
     {
       "type": "patchouli:text",
-      "title": "Legacy Recipes",
-      "text": "Recipes without forge metadata keep the old hammer-smashing behavior and their configured work count. Started forge work locks further input/catalyst insertion until the work is completed or retrieved."
+      "title": "Reheat and Resume",
+      "text": "Sneak-empty-hand use retrieves unfinished work. Item heat and completed actions survive transfer, storage, drops, and saves. Reheat and reinsert the whole batch to resume. Begun batches lock extra material insertion and cannot be split to duplicate completed actions."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Other Recipes",
+      "text": "Recipes without forge actions use simple hammer-smashing work. Packs may define cold working, ordered operations, staged models, or deformable visuals. Empty-hand use collects output. Item glow and surrounding light fade with cooling."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:stone_anvil"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:stone_hammer"
     }
   ]
 }

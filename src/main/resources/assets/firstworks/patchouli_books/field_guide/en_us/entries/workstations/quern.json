@@ -1,0 +1,27 @@
+{
+  "name": "Quern",
+  "category": "firstworks:workstations",
+  "icon": "firstworks:quern",
+  "sortnum": 9,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Load and Crank",
+      "text": "Use ingredients on the quern, then empty-hand right-click to turn the crank. Default work per crank is five. Empty-hand use collects ready output first. Sneak-empty-hand use retrieves unfinished input."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Bulk Milling",
+      "text": "Four Wheat make four Flour for 60 work: twelve default cranks. Four Raw Ochre make eight Ground Ochre for 60 work. One Brick makes two Grog for 40 work. Copper Fasteners gate the quern; the mortar is available earlier."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Automation",
+      "text": "Item handlers load and extract but do not crank. Collect waiting output before processing another batch. Packs can define counts, work values, outputs, and recipe priority. A running animation is feedback for manual work, not powered milling."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:quern"
+    }
+  ]
+}

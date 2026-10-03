@@ -1,0 +1,39 @@
+{
+  "name": "Flour, Dough, and Bread",
+  "category": "firstworks:storage",
+  "icon": "firstworks:flour",
+  "sortnum": 29,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Mill Wheat",
+      "text": "Four Wheat in a Quern produce four Flour after 60 work. Flour shares the common wheat-flour tag, allowing compatible pack flours in dough recipes."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Knead",
+      "text": "Three Flour with a Water Bucket or Water Clay Bucket make three Dough and return the vessel. One Flour with a plain Water Bottle makes one Dough. Common flour/dough tags provide compatibility."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Bake",
+      "text": "Bake Dough in a furnace for 200 ticks, smoker for 100, or campfire for 600; each gives Bread. The grain progression switch controls replacing the vanilla wheat-to-bread shortcut. Other mods’ baking routes remain pack-managed."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:dough_from_water_bucket"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:dough_from_clay_water"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:dough_from_water_bottle"
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "firstworks:bread_from_smelting_dough"
+    }
+  ]
+}

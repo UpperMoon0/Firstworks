@@ -2,16 +2,26 @@
   "name": "Kiln",
   "category": "firstworks:workstations",
   "icon": "firstworks:kiln",
-  "sortnum": 1,
+  "sortnum": 12,
   "pages": [
     {
-      "type": "patchouli:crafting",
-      "recipe": "firstworks:kiln"
+      "type": "patchouli:text",
+      "title": "Load and Light",
+      "text": "Use a heatable workpiece and solid furnace fuel, then ignite with Flint and Steel, Fire Starter, Fire Charge, or a supported igniter. Fuel loading alone never lights it. Burning fuel can catch queued fuel; after complete burnout it must be lit again."
     },
     {
       "type": "patchouli:text",
-      "title": "Heating Workpieces",
-      "text": "Place a heatable workpiece and solid furnace fuel in the kiln, then right-click with Flint and Steel, a Fire Starter, or another supported igniter. Loading fuel alone never lights it. A burning kiln catches queued fuel; once it burns out, light it again. Empty-hand use retrieves the workpiece. A single item takes about five seconds to reach full heat; larger stacks heat more slowly. Fuel keeps hot items heated until it runs out. The kiln never smelts, fires pottery, or performs anvil actions. Carry the hot item to the Stone Anvil to forge it. Heat keeps fading in inventories and storage; unfinished work stays on the item."
+      "title": "Carry the Heat",
+      "text": "One item takes about five seconds from cold to full heat; larger stacks heat more slowly. Burning fuel maintains heat. Empty-hand use retrieves the workpiece for the anvil. Heat belongs to the item, not just the station."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Not a Furnace",
+      "text": "The kiln never smelts, fires pottery, or advances forge actions. It accepts forge ingredients and tagged heatable items. Glow and light show hot work. Reheating an unfinished forging batch preserves its completed actions."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:kiln"
     }
   ]
 }

@@ -97,7 +97,7 @@ For full JSON schemas, supported ranges, public tags, progression toggles, and K
 - **Jade**: Live in-world status for Barrels, Looms, Brick Molds, Mortar & Pestle, Querns, Charcoal Mounds/Piles, Pottery Wheels, Stone Anvils, Crucible Furnaces, and Bellows airflow.
 - **JEI**: Dedicated categories for Barrel Processing, Hand Spinning, Loom Weaving, Brick Molding, Mortar Grinding, Quern Grinding, Workshop Processing, and dynamic Charcoal Mound information. Workshop views include station catalysts, reusable/consumed catalyst state, Bellows requirements, and tagged Crucible fuels.
 - **KubeJS**: Custom wood registration, custom recipes, and process start/completion lifecycle hooks, with cancellable start events including `workshopProcessingStarting` and completion events including `workshopProcessingCompleted`.
-- **Patchouli (optional)**: Adds the craftable **Firstworks Field Guide** with in-game instructions for the reworked workstations. Firstworks remains fully loadable without Patchouli.
+- **Patchouli (required)**: Install Patchouli 1.21.1-93 or newer on client and server. Craft the **Firstworks Field Guide** from Book + Plant Fibre for detailed feature instructions, controls, progression, recovery, settings, and bundled recipes.
 - **Automation**: Stable item/fluid handlers are exposed for pack machinery while manual-only mechanics remain explicitly manual.
 
 ---

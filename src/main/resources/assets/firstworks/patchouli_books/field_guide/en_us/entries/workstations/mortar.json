@@ -1,23 +1,31 @@
 {
-  "name": "Mortar & Pestle",
+  "name": "Mortar and Pestle",
   "category": "firstworks:workstations",
   "icon": "firstworks:mortar_and_pestle",
-  "sortnum": 20,
+  "sortnum": 8,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "Crush, Then Grind",
-      "text": "Recipes may contain discrete crush stages and held grind stages. Aim at the bowl center and use with an empty hand to crush. For grinding, hold use while aiming at the inner bowl or rim."
+      "title": "Crush Then Grind",
+      "text": "Load a matching material. Empty-hand strikes at the bowl centre perform crushing; held Use on the inner bowl or rim performs grinding. Recipe stages must be followed in order. Clicks cannot substitute for a held grind stage."
     },
     {
       "type": "patchouli:text",
-      "title": "Manual Progress",
-      "text": "Grinding advances only while valid held input reaches the server. Releasing use, moving away, changing held items, or looking away pauses the process. Nothing finishes from a background timer."
+      "title": "Pause and Recover",
+      "text": "Releasing pauses grinding. Resume at the same stage later. Empty-hand use collects ready output; sneak-empty-hand use retrieves unfinished input. The visible pestle and fill follow the operation; there is no autonomous finish timer."
     },
     {
       "type": "patchouli:text",
-      "title": "Old Worlds",
-      "text": "A mortar that was already grinding in an older world is migrated into equivalent paused manual progress. Its input is preserved and the old process-start event is not replayed; resume it by hand."
+      "title": "Bundled Recipes",
+      "text": "Charcoal needs one crush and 40 grind ticks for two Charcoal Powder. Bone needs two crushes and 32 ticks for three Bone Meal. Raw Ochre needs two crushes and 48 ticks for two Ground Ochre. Brick needs three crushes and 40 ticks for one Grog."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:mortar_and_pestle"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:mortar_and_pestle_cobblestone"
     }
   ]
 }

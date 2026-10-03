@@ -2,17 +2,31 @@
   "name": "Crucible Furnace",
   "category": "firstworks:workstations",
   "icon": "firstworks:crucible_furnace",
-  "sortnum": 30,
+  "sortnum": 14,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "Heat and Air",
-      "text": "Load the charge and fuel, then right-click with Flint and Steel, a Fire Starter, or another supported igniter. Bellows supply air but never ignite fuel. The Crucible Furnace appears hot only while a paid batch is actively processing with input present, no ready output, and Bellows air remaining. Stored progress or air by itself is not heat."
+      "title": "Load the Charge",
+      "text": "Load three Raw Copper, a fired Casting Mold, and Coal or Charcoal. Ignite explicitly with a supported tool. The mold is reusable. Bellows air is required; fuel and air never ignite a cold charge by themselves."
     },
     {
       "type": "patchouli:text",
-      "title": "Pausing",
-      "text": "Losing airflow removes the hot appearance immediately but does not erase a paid batch. Restore airflow and light it again to continue without paying fuel twice. Each new batch needs ignition. A completed output is treated as cooled and can be collected normally."
+      "title": "Cast with Air",
+      "text": "Place adjacent Bellows with their outlet toward the furnace. Press them to bank finite air. Copper takes 240 active processing ticks and consumes one fuel when beginning. Reserve-fuel top-ups do not restart an active batch."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Air Loss",
+      "text": "Air expiry extinguishes and pauses the batch. Restore airflow and ignite again to continue without paying fuel twice. Ready output stops the hot appearance. Each new batch needs ignition; retained progress or air alone is not a fire."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Loading Roles",
+      "text": "Empty-hand use collects output; sneak-empty-hand use retrieves stored material. Normal insertion favours input and catalyst. Sneak-use a valid fuel to force the fuel role when a pack also uses that item as a recipe ingredient."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:crucible_furnace"
     }
   ]
 }

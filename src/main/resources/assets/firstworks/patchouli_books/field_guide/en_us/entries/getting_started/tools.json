@@ -1,0 +1,74 @@
+{
+  "name": "Knives and Primitive Tools",
+  "category": "firstworks:getting_started",
+  "icon": "firstworks:bone_knife",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Knives",
+      "text": "Flint, Bone, and Copper Knives gather fibre and ochre, shear sheep, scrape soaked hides in crafting, and tap trees. Guaranteed gathering costs one durability. Ordinary block breaking has no knife tool-durability cost; combat uses one durability per successful hit."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Tool Families",
+      "text": "Flint and bone families include knives, axes, pickaxes, shovels, hoes, and swords. Bindings hold the tool head to its handle. Copper Knives and Stone Hammers require strong bindings. Copper Knives repair with Copper Ingots. See the recipes for each tool rather than assuming vanilla layouts."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:bone_axe"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:bone_hoe"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:bone_knife"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:bone_pickaxe"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:bone_shovel"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:bone_sword"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:flint_axe"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:flint_hoe"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:flint_knife"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:flint_pickaxe"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:flint_shovel"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:flint_sword"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:copper_knife"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:stone_hammer"
+    }
+  ]
+}

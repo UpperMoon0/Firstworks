@@ -1,18 +1,32 @@
 {
   "name": "Barrels",
   "category": "firstworks:workstations",
-  "icon": "minecraft:barrel",
-  "sortnum": 40,
+  "icon": "firstworks:barrel",
+  "sortnum": 5,
   "pages": [
     {
       "type": "patchouli:text",
-      "title": "Batch Processing",
-      "text": "Barrel recipes combine an item ingredient with a required fluid amount and may require the barrel to be sealed. JEI displays the configured item count for every valid item or tag alternative."
+      "title": "Load and Seal",
+      "text": "Use materials and water containers on an open barrel. A bucket adds 1000 mB; a plain Water Bottle adds 250 mB. Empty-hand use collects output first, otherwise toggles the lid. Sneak-empty-hand use retrieves input first. Sealing blocks loading and transfer."
     },
     {
       "type": "patchouli:text",
-      "title": "Reading JEI",
-      "text": "When an ingredient is a tag, JEI rotates through valid alternatives without changing the required quantity. Fluid tags similarly show compatible fluids at the amount required by the recipe."
+      "title": "Processing",
+      "text": "Load the required input count and fluid, then seal for sealed recipes. The recipe timer needs its conditions satisfied. Input and output fluid stores remain separate but share 4000 mB total capacity, preventing produced tannin from mixing with fresh water."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Drain and Reuse",
+      "text": "Use an empty metal or clay bucket to drain a full bucket of supported fluid. Drain produced fluid to free capacity before adding more water. Open exposed barrels can collect rainwater. A rising redstone pulse toggles the lid once, rather than repeatedly toggling while powered."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Faces and Wood",
+      "text": "Top faces accept inputs, bottom faces extract outputs, and sides allow both. A sealed lid locks transfers. Oak, spruce, birch, jungle, acacia, dark oak, mangrove, cherry, bamboo, crimson, and warped barrels share these mechanics; packs can add wood families."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:barrel"
     }
   ]
 }

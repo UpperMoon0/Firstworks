@@ -1,0 +1,23 @@
+{
+  "name": "Fleece, Colour, and Beds",
+  "category": "firstworks:textiles",
+  "icon": "firstworks:raw_fleece",
+  "sortnum": 17,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Wash Fleece",
+      "text": "Seal one Raw Fleece with 250 mB water for 600 ticks, or 30 seconds, to make one Clean Wool with the same colour. Sheep drops and shearing retain the original colour rather than producing uncoloured materials."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Dyes and Wool",
+      "text": "Craft one to eight items of the same kind (Raw Fleece or Clean Wool) with one dye to recolour them. Four matching-colour Clean Wool in a 2×2 square make the corresponding vanilla Wool block. Mixed colours do not satisfy this recipe."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Textile Bed",
+      "text": "In a 3×3 grid, put three Cloth across the top, three matching-colour Clean Wool in the middle, and three planks along the bottom. The resulting bed uses the wool colour. The server textile progression switch controls replacing vanilla bedding and wool routes."
+    }
+  ]
+}

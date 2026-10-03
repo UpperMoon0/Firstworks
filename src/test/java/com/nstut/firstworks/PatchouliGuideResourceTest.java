@@ -39,17 +39,10 @@ class PatchouliGuideResourceTest {
     }
 
     @Test
-    void guideRecipeIsPatchouliConditionalAndTargetsTheBook() throws Exception {
+    void guideRecipeIsAlwaysAvailableAndTargetsTheBook() throws Exception {
         JsonObject recipe = JsonParser.parseString(
                 Files.readString(ROOT.resolve("data/firstworks/recipe/field_guide.json"))).getAsJsonObject();
-
-        var conditions = recipe.getAsJsonArray("neoforge:conditions");
-        assertNotNull(conditions);
-        assertTrue(conditions.asList().stream().anyMatch(element -> {
-            JsonObject condition = element.getAsJsonObject();
-            return "neoforge:mod_loaded".equals(condition.get("type").getAsString())
-                    && "patchouli".equals(condition.get("modid").getAsString());
-        }));
+        assertFalse(recipe.has("neoforge:conditions"));
 
         JsonObject result = recipe.getAsJsonObject("result");
         assertEquals("patchouli:guide_book", result.get("id").getAsString());
@@ -70,4 +63,72 @@ class PatchouliGuideResourceTest {
                 ROOT.resolve(ASSET_ROOT + "entries/workstations/stone_anvil.json"))).getAsJsonObject();
         assertEquals("firstworks:workstations", anvil.get("category").getAsString());
     }
+    @Test
+    void allGuideEntriesHaveValidCategoriesAndRecipeReferences() throws Exception {
+        Path content = ROOT.resolve(ASSET_ROOT);
+        try (var files = Files.walk(content.resolve("entries"))) {
+            var entries = files.filter(p -> p.toString().endsWith(".json")).toList();
+            assertEquals(35, entries.size());
+            for (Path file : entries) {
+                var entry = JsonParser.parseString(Files.readString(file)).getAsJsonObject();
+                String category = entry.get("category").getAsString().substring("firstworks:".length());
+                assertTrue(Files.exists(content.resolve("categories/" + category + ".json")), file.toString());
+                assertFalse(entry.getAsJsonArray("pages").isEmpty(), file.toString());
+                for (var element : entry.getAsJsonArray("pages")) {
+                    var page = element.getAsJsonObject();
+                    String type = page.get("type").getAsString();
+                    assertTrue(List.of("patchouli:text", "patchouli:crafting", "patchouli:smelting").contains(type));
+                    if (page.has("recipe")) {
+                        String id = page.get("recipe").getAsString().substring("firstworks:".length());
+                        assertTrue(Files.exists(ROOT.resolve("data/firstworks/recipe/" + id + ".json")), id);
+                    } else assertFalse(page.get("text").getAsString().isBlank());
+                }
+            }
+        }
+        try (var files = Files.list(content.resolve("categories"))) { assertEquals(8, files.count()); }
+    }
+
+    @Test
+    void bookTextureAndRequiredDependencyArePackagedCorrectly() throws Exception {
+        JsonObject book = JsonParser.parseString(Files.readString(ROOT.resolve(BOOK))).getAsJsonObject();
+        assertEquals("firstworks:field_guide", book.get("model").getAsString());
+        JsonObject model = JsonParser.parseString(Files.readString(
+                ROOT.resolve("assets/firstworks/models/item/field_guide.json"))).getAsJsonObject();
+        assertEquals("firstworks:item/field_guide", model.getAsJsonObject("textures").get("layer0").getAsString());
+        var image = javax.imageio.ImageIO.read(ROOT.resolve("assets/firstworks/textures/item/field_guide.png").toFile());
+        assertEquals(64, image.getWidth()); assertEquals(64, image.getHeight());
+        assertTrue(image.getColorModel().hasAlpha());
+        assertEquals(0, image.getRGB(0, 0) >>> 24);
+        assertTrue(Files.readString(Path.of("src/main/templates/META-INF/neoforge.mods.toml")).replace("\r", "")
+                .contains("modId=\"patchouli\"\ntype=\"required\""));
+        assertTrue(Files.readString(Path.of(".github/workflows/release.yml"))
+                .contains("\"slug\":\"patchouli\",\"projectID\":306770,\"type\":\"requiredDependency\""));
+    }
+
+    @Test
+    void everyBundledRecipeIsCoveredByTheReference() throws Exception {
+        var crafting = JsonParser.parseString(Files.readString(ROOT.resolve(ASSET_ROOT +
+                "entries/integration/crafting_reference.json"))).getAsJsonObject().getAsJsonArray("pages");
+        var processing = JsonParser.parseString(Files.readString(ROOT.resolve(ASSET_ROOT +
+                "entries/integration/processing_reference.json"))).getAsJsonObject().getAsJsonArray("pages");
+        var recipeIds = new java.util.HashSet<String>();
+        crafting.forEach(p -> recipeIds.add(p.getAsJsonObject().get("recipe").getAsString()));
+        var titles = new java.util.HashSet<String>();
+        processing.forEach(p -> titles.add(p.getAsJsonObject().get("title").getAsString().toLowerCase(java.util.Locale.ROOT)));
+        try (var files = Files.list(ROOT.resolve("data/firstworks/recipe"))) {
+            for (Path file : files.filter(p -> p.toString().endsWith(".json")).toList()) {
+                var recipe = JsonParser.parseString(Files.readString(file)).getAsJsonObject();
+                String type = recipe.get("type").getAsString();
+                String id = file.getFileName().toString().replace(".json", "");
+                if (type.startsWith("minecraft:crafting_") || type.equals("minecraft:smelting"))
+                    assertTrue(recipeIds.contains("firstworks:" + id), id);
+                else {
+                    String title = id.replace('_', ' ');
+                    if (title.length() > 40) title = title.substring(0, 40);
+                    assertTrue(titles.contains(title), id);
+                }
+            }
+        }
+    }
+
 }

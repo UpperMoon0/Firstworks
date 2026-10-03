@@ -1,8 +1,8 @@
 {
   "name": "Firstworks Field Guide",
-  "landing_text": "Primitive work rewards deliberate hands. This guide explains the tools, stations, controls, and processing rules used by Firstworks.",
-  "version": "1",
-  "model": "patchouli:book_red",
+  "landing_text": "Your complete guide to gathering, tools, textiles, tanning, construction, storage, charcoal, and copper. Learn station controls, then browse the crafting and processing recipe references.",
+  "version": "2",
+  "model": "firstworks:field_guide",
   "creative_tab": "minecraft:tools_and_utilities",
   "show_progress": false,
   "use_resource_pack": true,

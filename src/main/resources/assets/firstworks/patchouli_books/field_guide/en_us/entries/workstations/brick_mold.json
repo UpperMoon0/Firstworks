@@ -1,0 +1,30 @@
+{
+  "name": "Wooden Brick Mold",
+  "category": "firstworks:workstations",
+  "icon": "firstworks:brick_mold",
+  "sortnum": 10,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Press a Brick",
+      "text": "Use one Clay Ball on the empty mold. Empty-hand right-click twice to press, then again to collect one Unfired Clay Brick. One Refractory Clay follows the same two-press process for an Unfired Refractory Brick."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Fire and Recover",
+      "text": "Fire ordinary bricks in a furnace or on a campfire; refractory bricks use a furnace. The mold never fires material. Sneak-empty-hand use retrieves unfinished input. Packs can change counts and presses; visible fill follows pressing progress."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:brick_mold"
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "firstworks:fire_clay_brick_from_smelting"
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "firstworks:smelt_refractory_brick"
+    }
+  ]
+}

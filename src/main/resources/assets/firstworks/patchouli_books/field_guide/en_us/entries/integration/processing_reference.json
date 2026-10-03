@@ -1,0 +1,163 @@
+{
+  "name": "Processing Recipe Reference",
+  "category": "firstworks:integration",
+  "icon": "firstworks:barrel",
+  "sortnum": 91,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Anvil Work Copper",
+      "text": "Input: Annealed Copper Billet. Work: 8. Output: 1 Copper Ingot. Forge order: flatten > draw > bend > flatten."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Bread From Campfire Dough",
+      "text": "Input: Doughs/Wheat. Cooking time (ticks): 600. Output: 1 Bread."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Bread From Smoking Dough",
+      "text": "Input: Doughs/Wheat. Cooking time (ticks): 100. Output: 1 Bread."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Brew Tannin Solution",
+      "text": "Input: Tree Bark. Input count: 4. Fluid: Water. Fluid (mB): 1000. Produced fluid: Tannin Solution. Produced fluid (mB): 1000. Duration (ticks): 6000. Keep barrel sealed."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Fire Clay Brick",
+      "text": "Input: Unfired Clay Brick. Cooking time (ticks): 400. Output: 1 Brick."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Fire Clay Bucket",
+      "text": "Input: Unfired Clay Bucket. Cooking time (ticks): 600. Output: 1 Clay Bucket."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Fleece Dyeing",
+      "text": "This special crafting recipe preserves item colour or tool state. See the fleece, bedding, or tanning entry for its exact layout and requirements."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Furnace Cast Copper",
+      "text": "Input: Raw Copper. Input count: 3. Work: 240. Catalyst: Casting Mold; reusable. Output: 1 Cast Copper Billet."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Grind Bone",
+      "text": "Input: Bone. Duration (ticks): 32. Output: 3 Bone Meal. Stages: crush 2 strikes, grind 32 ticks."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Grind Charcoal",
+      "text": "Input: Charcoal. Duration (ticks): 40. Output: 2 Charcoal Powder. Stages: crush 1 strikes, grind 40 ticks."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Grind Grog",
+      "text": "Input: Brick. Input count: 1. Duration (ticks): 40. Output: 1 Grog. Stages: crush 3 strikes, grind 40 ticks."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Grind Ochre",
+      "text": "Input: Raw Ochre. Duration (ticks): 48. Output: 2 Ground Ochre. Stages: crush 2 strikes, grind 48 ticks."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Heavy Leather",
+      "text": "Input: Leather. Input count: 2. Fluid: Tannin Solution. Fluid (mB): 500. Duration (ticks): 12000. Output: 1 Heavy Leather. Keep barrel sealed."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Mix Mortar",
+      "text": "Input: Sand. Input count: 2. Fluid: Water. Fluid (mB): 250. Duration (ticks): 1200. Output: 4 Wet Mortar. Keep barrel sealed."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Mold Unfired Clay Brick",
+      "text": "Input: Clay Ball. Input count: 1. Presses: 2. Output: 1 Unfired Clay Brick."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Mold Unfired Refractory Brick",
+      "text": "Input: Refractory Clay. Input count: 1. Presses: 2. Output: 1 Unfired Refractory Brick."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Quern Grog",
+      "text": "Input: Brick. Input count: 1. Work: 40. Output: 2 Grog."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Quern Ochre",
+      "text": "Input: Raw Ochre. Input count: 4. Work: 60. Output: 8 Ground Ochre."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Quern Wheat Flour",
+      "text": "Input: Wheat. Input count: 4. Work: 60. Output: 4 Flour."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Ret Plant Fibre",
+      "text": "Input: Plant Fibre. Input count: 4. Fluid: Water. Fluid (mB): 250. Duration (ticks): 1200. Output: 4 Retted Fibre. Keep barrel sealed."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Scraped Hide",
+      "text": "This special crafting recipe preserves item colour or tool state. See the fleece, bedding, or tanning entry for its exact layout and requirements."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Soak Raw Hide",
+      "text": "Input: Raw Hides. Fluid: Water. Fluid (mB): 250. Duration (ticks): 2400. Output: 1 Soaked Hide. Keep barrel sealed."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Spin Twine",
+      "text": "Input: Retted Fibre. Input count: 2. Duration (ticks): 32. Output: 2 Twine."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Tan Scraped Hide",
+      "text": "Input: Scraped Hide. Fluid: Tannin Solution. Fluid (mB): 250. Duration (ticks): 12000. Output: 1 Tannin-Soaked Hide. Keep barrel sealed."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Textile Bed",
+      "text": "This special crafting recipe preserves item colour or tool state. See the fleece, bedding, or tanning entry for its exact layout and requirements."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Wash Raw Fleece",
+      "text": "Input: Raw Fleece. Fluid: Water. Fluid (mB): 250. Duration (ticks): 600. Output: 1 Clean Wool. Keep barrel sealed."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Weave Cloth From String",
+      "text": "Input: Strings. Input count: 4. Passes: 4. Output: 1 Cloth."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Wheel Casting Mold",
+      "text": "Input: Refractory Clay. Input count: 2. Work: 8. Output: 1 Unfired Casting Mold."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Wheel Crucible",
+      "text": "Input: Refractory Clay. Input count: 3. Work: 8. Output: 1 Unfired Crucible."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Wheel Tuyere",
+      "text": "Input: Refractory Clay. Input count: 1. Work: 6. Output: 1 Unfired Tuyère."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Wool Block",
+      "text": "This special crafting recipe preserves item colour or tool state. See the fleece, bedding, or tanning entry for its exact layout and requirements."
+    }
+  ]
+}

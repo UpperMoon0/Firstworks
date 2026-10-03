@@ -1,0 +1,23 @@
+{
+  "name": "Fibre, Bark, and Ochre",
+  "category": "firstworks:materials",
+  "icon": "firstworks:plant_fibre",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Fibre",
+      "text": "Break tagged grass or other fibre sources. A primitive knife guarantees one fibre, or two from double-yield sources. Without a knife the default chance is 30%. Creative breaking does not produce these survival drops. Packs can change the source tags and chance."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Bark",
+      "text": "Strip a supported log with an axe to receive 1–3 Tree Bark. Bark remembers its wood type and shows the corresponding name and appearance. Stripping gives bark; renewable tapping creates a growing Resin Scar instead."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Ochre",
+      "text": "Break an ochre source, including tagged clay and terracotta. A knife guarantees Raw Ochre; other tools have a default 20% chance. Silk Touch suppresses the extra drop. Grind it in a mortar or quern to produce Ground Ochre."
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "name": "The Copper Chain",
+  "category": "firstworks:metallurgy",
+  "icon": "firstworks:cast_copper_billet",
+  "sortnum": 24,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Cast",
+      "text": "Use three Raw Copper, a reusable fired Casting Mold, one fuel charge, explicit ignition, and Bellows air. The Crucible Furnace produces one Cast Copper Billet after 240 active ticks."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Anneal",
+      "text": "Smelt the Cast Copper Billet in a normal furnace for 140 ticks to produce an Annealed Copper Billet. This transforms the item. A Kiln cannot anneal or smelt it."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Forge",
+      "text": "Heat the annealed billet in a lit Kiln, transfer it to the Stone Anvil, and perform Flatten, Draw, Bend, Flatten while Workable. The result is a Copper Ingot. Cooling retains unfinished actions; reheat to resume."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Use Copper",
+      "text": "One Copper Ingot makes eight Copper Fasteners for the Quern. Copper and strong bindings make a Copper Knife. Primitive copper progression normally removes vanilla copper smelting/blasting bypasses; a server may disable that replacement."
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "firstworks:smelt_anneal_copper"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:copper_fasteners"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:copper_knife"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:quern"
+    }
+  ]
+}

@@ -739,7 +739,7 @@ The 0.0.15 changes cover Stone Anvil, Loom, and Mortar controls through contextu
 - A legacy Mortar with `Grinding=true` and `FinishGameTime` is converted into equivalent paused staged progress. Input is preserved, the old process-start lifecycle is treated as already fired, and the player resumes manually.
 - Recipes without `forge`, `weaving`, or `processing` remain valid and use their documented fallback behavior.
 
-Patchouli is an optional integration. When installed, `firstworks:field_guide` provides the **Firstworks Field Guide** from resources under `patchouli_books/field_guide`. The guide has a conditional Book + Plant Fibre recipe; without Patchouli the recipe is skipped and Firstworks has no runtime class dependency on Patchouli.
+Patchouli 1.21.1-93 or newer is required on client and server. Craft `firstworks:field_guide` unconditionally from Book + Plant Fibre. Eight categories cover all features, controls, progression, recovery, settings, and bundled recipes. Crafting/smelting pages resolve live recipes; processing-reference text describes bundled defaults. The custom model uses a transparent 64×64 book texture. Resource-pack content remains replaceable. CurseForge release metadata also declares Patchouli as required.
 
 Kilns and Crucible Furnaces require player ignition: load fuel, then right-click with Flint and Steel, a Fire Starter, or a Fire Charge. Modded items implementing NeoForge `FIRESTARTER_LIGHT` work automatically; other items can be added to `#firstworks:workstation_igniters`. Successful ignition costs one durability on damageable items or consumes one nondamageable item, except in creative mode. Failed or redundant ignition costs nothing. Both hands are supported. Automation can load fuel but never ignites it.
 

@@ -163,7 +163,7 @@ jobs:
           done < <(jq -r '.[]' <<< "$game_version_names")
 
           changelog="$(<"$CHANGELOG_PATH")"
-          relations='{"projects":[{"slug":"kubejs","projectID":238086,"type":"optionalDependency"},{"slug":"jade","projectID":324717,"type":"optionalDependency"},{"slug":"jei","projectID":238222,"type":"optionalDependency"}]}'
+          relations='{"projects":[{"slug":"patchouli","projectID":306770,"type":"requiredDependency"},{"slug":"kubejs","projectID":238086,"type":"optionalDependency"},{"slug":"jade","projectID":324717,"type":"optionalDependency"},{"slug":"jei","projectID":238222,"type":"optionalDependency"}]}'
           metadata="$(jq -cn \
             --arg changelog "$changelog" \
             --arg displayName "Firstworks ${MOD_VERSION} - ${LOADER_NAME} ${MINECRAFT_VERSION}" \

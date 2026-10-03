@@ -1,0 +1,28 @@
+{
+  "name": "Automation Boundaries",
+  "category": "firstworks:integration",
+  "icon": "minecraft:hopper",
+  "sortnum": 30,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Manual Work",
+      "text": "Item transfer is available on manual workstations, but loading cannot generate loom passes, mortar grinding, quern cranking, mold presses, or pottery-wheel work. Ignition remains explicit rather than a side effect of fuel loading."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Workshop Roles",
+      "text": "Workshop slots are input, catalyst, fuel, and output. Same-recipe top-ups preserve heated progress; fuel top-ups do not restart a paid batch. Begun forging batches lock extra material insertion and cannot be split to duplicate work."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Barrel Faces",
+      "text": "Top accepts input, bottom extracts output, sides support both. Sealing locks item/fluid transfer. Input/output fluid remain separate while sharing capacity. Rising redstone edges toggle the lid."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Recovery",
+      "text": "Collect waiting output and check ingredient count, catalyst, correct action, heat, ignition, and air. Sneak controls retrieve unfinished material. Packs can automate transfer without replacing the manual processing contract."
+    }
+  ]
+}
