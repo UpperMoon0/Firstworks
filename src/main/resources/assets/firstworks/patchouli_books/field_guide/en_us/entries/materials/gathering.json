@@ -17,7 +17,7 @@
     {
       "type": "patchouli:text",
       "title": "Ochre",
-      "text": "Break an ochre source, including tagged clay and terracotta. A knife guarantees Raw Ochre; other tools have a default 20% chance. Silk Touch suppresses the extra drop. Grind it in a mortar or quern to produce Ground Ochre."
+      "text": "Break tagged clay, coarse dirt, red sand or terracotta with a primitive knife for one Raw Ochre instead of ordinary loot, consuming the block and one knife durability. Other tools give no ochre. Silk Touch follows ordinary harvesting. Grind raw ochre in a mortar or quern, then craft Ground Ochre into vanilla Red Dye. No world generation is added."
     }
   ]
 }

@@ -141,3 +141,11 @@ Both stations burn fuel continuously using native Minecraft furnace durations, i
 Heatable item tooltips use one line: `Heat: 798°C - Workable ~28s`. Time is the remaining forging window while cooling, rather than time until cold. Warm and cold items omit the forging timer; no extra reheating instruction is shown. Temperature is stored in Celsius with a 20°C ambient baseline. Forge recipes set minimum_temperature; copper defaults to 500°C. heat_ticks controls cooling duration. Item maxima do not rescale already-hot items. Server config `defaultMaxHeatCelsius` supplies the default maximum (1000°C); `itemMaxHeatCelsius` accepts entries such as `minecraft:copper_ingot=1100` or `othermod:metal=1450`. Copper billets and ingots default to 1100°C, iron ingots to 1250°C, and gold ingots to 1000°C. These settings apply only to items that are heatable through a forge recipe or the heatable-item tag.
 
 Client config `heatTemperatureUnit` in `firstworks-client.toml` accepts `CELSIUS` (default), `FAHRENHEIT`, or `KELVIN`. Conversion happens automatically, including the cold baseline; it never changes item heat or forge readiness.
+
+## Ochre and container compatibility (0.0.16)
+
+- Primitive knives harvest one Raw Ochre from clay, coarse dirt, red sand or terracotta **instead of ordinary block loot**, consuming the block and one knife durability. Other tools give no random ochre; Silk Touch keeps normal harvesting. No world generation is added.
+- Grind raw ochre into pigment with the Mortar (one raw → two ground, two crushes and 48 grind ticks) or Quern (four raw → eight ground, 60 work / 12 default cranks). Craft each Ground Ochre into one vanilla Red Dye for normal coloring.
+- Open barrels accept NeoForge fluid containers, including BucketLib Wooden and Ceramic Buckets and compatible modded fluids. Containers retain their own restrictions and returned items. Manual use fills input and drains output first from any face; sealed lids and automation face rules remain. Firstworks clay buckets remain water/tannin-only; Water Bottles add 250 mB.
+
+See the [Packmaker Guide](docs/PACKMAKERS.md) for source tags, recipe overrides and container integration details.

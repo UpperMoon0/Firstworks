@@ -7,7 +7,7 @@
     {
       "type": "patchouli:text",
       "title": "Load and Seal",
-      "text": "Use materials and water containers on an open barrel. A bucket adds 1000 mB; a plain Water Bottle adds 250 mB. Empty-hand use collects output first, otherwise toggles the lid. Sneak-empty-hand use retrieves input first. Sealing blocks loading and transfer."
+      "text": "Use materials and compatible fluid containers on an open barrel; BucketLib Wooden and Ceramic Buckets are supported. A bucket adds 1000 mB; a plain Water Bottle adds 250 mB. Empty-hand use collects output first, otherwise toggles the lid. Sneak-empty-hand use retrieves input first. Sealing blocks loading and transfer."
     },
     {
       "type": "patchouli:text",
@@ -17,7 +17,7 @@
     {
       "type": "patchouli:text",
       "title": "Drain and Reuse",
-      "text": "Use an empty metal or clay bucket to drain a full bucket of supported fluid. Drain produced fluid to free capacity before adding more water. Open exposed barrels can collect rainwater. A rising redstone pulse toggles the lid once, rather than repeatedly toggling while powered."
+      "text": "Use an empty compatible container to drain output fluid first, then input when output is empty. Containers keep their own fluid restrictions; Firstworks clay buckets hold only water/tannin. Manual container use works from any face. Drain produced fluid to free capacity before adding more water. Open exposed barrels can collect rainwater. A rising redstone pulse toggles the lid once, rather than repeatedly toggling while powered."
     },
     {
       "type": "patchouli:text",

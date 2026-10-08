@@ -68,7 +68,7 @@ class PatchouliGuideResourceTest {
         Path content = ROOT.resolve(ASSET_ROOT);
         try (var files = Files.walk(content.resolve("entries"))) {
             var entries = files.filter(p -> p.toString().endsWith(".json")).toList();
-            assertEquals(35, entries.size());
+            assertEquals(36, entries.size());
             for (Path file : entries) {
                 var entry = JsonParser.parseString(Files.readString(file)).getAsJsonObject();
                 String category = entry.get("category").getAsString().substring("firstworks:".length());

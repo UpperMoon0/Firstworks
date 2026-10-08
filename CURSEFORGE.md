@@ -94,3 +94,11 @@ For the full recipe schemas, public tags, configuration options, automation cont
 Firstworks is inspired by [TerraFirmaCraft](https://www.curseforge.com/minecraft/mc-mods/terrafirmacraft) and its hands-on approach to believable survival progression.
 
 Available for **Minecraft 1.21.1 on NeoForge**.
+
+## Ochre and container compatibility (0.0.16)
+
+- Primitive knives harvest one Raw Ochre from clay, coarse dirt, red sand or terracotta **instead of ordinary block loot**, consuming the block and one knife durability. Other tools give no random ochre; Silk Touch keeps normal harvesting. No world generation is added.
+- Grind raw ochre into pigment with the Mortar (one raw → two ground, two crushes and 48 grind ticks) or Quern (four raw → eight ground, 60 work / 12 default cranks). Craft each Ground Ochre into one vanilla Red Dye for normal coloring.
+- Open barrels accept NeoForge fluid containers, including BucketLib Wooden and Ceramic Buckets and compatible modded fluids. Containers retain their own restrictions and returned items. Manual use fills input and drains output first from any face; sealed lids and automation face rules remain. Firstworks clay buckets remain water/tannin-only; Water Bottles add 250 mB.
+
+See the [Packmaker Guide](docs/PACKMAKERS.md) for source tags, recipe overrides and container integration details.

@@ -1,0 +1,22 @@
+{
+  "name": "Ochre Pigment",
+  "category": "firstworks:workstations",
+  "icon": "firstworks:raw_ochre",
+  "sortnum": 9,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Knife Harvest",
+      "text": "Break clay, coarse dirt, red sand or terracotta with a primitive knife for one Raw Ochre instead of ordinary block loot. The block is consumed and the knife loses one durability. Other tools never give random ochre. Silk Touch preserves ordinary harvesting. No new deposits or world generation are needed."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Grind and Color",
+      "text": "Mortar: one Raw Ochre gives two Ground Ochre after two crushes and 48 grind ticks. Quern: four raw give eight ground in 60 work (12 default cranks). Craft ground into vanilla Red Dye, then use that dye for normal coloring. Ground Ochre itself cannot directly dye sheep or leather."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:red_dye_from_ochre"
+    }
+  ]
+}

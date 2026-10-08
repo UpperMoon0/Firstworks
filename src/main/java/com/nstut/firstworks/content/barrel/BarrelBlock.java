@@ -153,33 +153,11 @@ public class BarrelBlock extends BaseEntityBlock {
         }
 
         PotionContents potion = stack.get(DataComponents.POTION_CONTENTS);
-        if (stack.is(Items.WATER_BUCKET)) {
-            if (!level.isClientSide && barrel.addInputWater(1000)) {
-                if (!player.getAbilities().instabuild) {
-                    stack.shrink(1);
-                    player.getInventory().placeItemBackInInventory(new ItemStack(Items.BUCKET));
-                }
-                level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
-            }
-            return ItemInteractionResult.sidedSuccess(level.isClientSide);
-        }
-
         if (stack.is(ModItems.WATER_CLAY_BUCKET.get())) {
             if (!level.isClientSide && barrel.addInputWater(1000)) {
                 if (!player.getAbilities().instabuild) {
                     stack.shrink(1);
                     player.getInventory().placeItemBackInInventory(new ItemStack(ModItems.CLAY_BUCKET.get()));
-                }
-                level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
-            }
-            return ItemInteractionResult.sidedSuccess(level.isClientSide);
-        }
-
-        if (stack.is(ModItems.TANNIN_SOLUTION_BUCKET.get())) {
-            if (!level.isClientSide && barrel.addInputFluid(new FluidStack(ModFluids.TANNIN_SOLUTION.get(), 1_000))) {
-                if (!player.getAbilities().instabuild) {
-                    stack.shrink(1);
-                    player.getInventory().placeItemBackInInventory(new ItemStack(Items.BUCKET));
                 }
                 level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
             }
@@ -193,18 +171,6 @@ public class BarrelBlock extends BaseEntityBlock {
                     player.getInventory().placeItemBackInInventory(new ItemStack(ModItems.CLAY_BUCKET.get()));
                 }
                 level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
-            }
-            return ItemInteractionResult.sidedSuccess(level.isClientSide);
-        }
-
-        if (stack.is(Items.BUCKET)) {
-            if (!level.isClientSide) {
-                ItemStack filledBucket = barrel.drainBucket();
-                if (!filledBucket.isEmpty()) {
-                    if (!player.getAbilities().instabuild) stack.shrink(1);
-                    player.getInventory().placeItemBackInInventory(filledBucket);
-                    level.playSound(null, pos, SoundEvents.BUCKET_FILL, SoundSource.BLOCKS, 1.0F, 1.0F);
-                }
             }
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
@@ -229,6 +195,18 @@ public class BarrelBlock extends BaseEntityBlock {
                 }
                 level.playSound(null, pos, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
             }
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        }
+
+        // Clay buckets above retain their deliberate water/tannin-only behavior.
+        // Manual access uses both stores from every face; automation keeps its sided handlers.
+        if (!(stack.getItem() instanceof net.minecraft.world.item.MobBucketItem)
+                && net.neoforged.neoforge.fluids.FluidUtil.getFluidHandler(stack).isPresent()) {
+            if (!level.isClientSide) {
+                net.neoforged.neoforge.fluids.FluidUtil.interactWithFluidHandler(
+                        player, hand, barrel.getAutomationFluidHandler());
+            }
+            // Consume rejected transfers too, so a bucket cannot place fluid into/around the barrel.
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
 

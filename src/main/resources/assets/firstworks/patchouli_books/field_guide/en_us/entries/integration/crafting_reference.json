@@ -6,6 +6,10 @@
   "pages": [
     {
       "type": "patchouli:crafting",
+      "recipe": "firstworks:red_dye_from_ochre"
+    },
+    {
+      "type": "patchouli:crafting",
       "recipe": "firstworks:acacia_barrel"
     },
     {
