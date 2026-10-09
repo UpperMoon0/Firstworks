@@ -12,6 +12,10 @@ Its early-survival chains cover fibre and cloth, leatherworking, resin and tool 
 - Every vanilla wood family plus pack-extensible custom wood support
 - Datapack and KubeJS recipe support
 
+- Open barrels accept NeoForge fluid containers, including BucketLib Wooden and Ceramic Buckets and compatible modded fluids. Containers retain their own restrictions and returned items. Manual use fills input and drains output first from any face; sealed lids and automation face rules remain. Firstworks clay buckets remain water/tannin-only; Water Bottles add 250 mB. Jade lists each stored fluid and amount; rejected transfers show a recovery hint. Creative extraction returns a filled container.
+
+A supported offhand container transfers without triggering an empty-mainhand lid/output action. If a fluid-capable item also matches a datapack barrel recipe ingredient, **sneak-use** to insert it; normal use still transfers fluid.
+
 Barrels anchor tanning, fibre retting, mortar mixing, tannin brewing, and other early wet-processing recipes.
 
 ## Fibre, weaving, hides, and stronger tools
@@ -20,7 +24,9 @@ Gather Plant Fibre, twist Crude Cordage, ret better fibres, and spin Twine with 
 
 Animals provide Raw Hide instead of ready-made leather. Soak, scrape, tan, and dry hides through a visible multi-step workflow. Heavy Leather extends that chain into tougher workshop components such as Bellows.
 
-Primitive Flint and Bone Knives support fibre gathering and hide work. Resin and improved bindings extend the tool progression beyond disposable early cordage.
+Primitive Flint, Bone and Copper Knives support fibre gathering and hide work.
+
+- Primitive knives harvest one Raw Ochre from default sources: clay, coarse dirt, red sand or terracotta **instead of ordinary block loot**, consuming the block and one knife durability. Other tools give no random ochre; Silk Touch keeps normal harvesting. No world generation is added. Packs can change `#firstworks:ochre_sources`. Resin and improved bindings extend the tool progression beyond disposable early cordage.
 
 ## Renewable resin tapping
 
@@ -32,7 +38,7 @@ Public resin-tree and tapping-tool tags let modpacks add third-party trees or to
 
 The Wooden Brick Mold shapes early masonry pieces by hand. The Pottery Wheel provides a broader data-driven workshop for shaping refractory components directly in-world.
 
-Firstworks 0.0.14 adds:
+The pottery chain includes:
 
 - Grog and Refractory Clay
 - Unfired and fired Refractory Bricks
@@ -64,6 +70,8 @@ The Mortar & Pestle handles small precision grinding jobs. The hand-operated Que
 
 Mill wheat into Flour (`#c:flours/wheat`), knead Wheat Dough (`#c:doughs/wheat`), and use it for early food progression. Quern recipes support explicit overlap priority for pack-defined ingredients.
 
+- Grind raw ochre into pigment with the Mortar (one raw → two ground, two crushes and 48 grind ticks) or Quern (four raw → eight ground, 60 work / 12 default cranks). By default, craft each Ground Ochre into one vanilla Red Dye for normal coloring. Packs may override these recipes.
+
 The construction chain also includes Lime and Plaster, including reversible Plaster Blocks for early finished building surfaces.
 
 ## Earthen charcoal mounds
@@ -87,7 +95,7 @@ Optional integrations make the systems readable without replacing their in-world
 - **JEI** adds categories for Barrel Processing, Hand Spinning, Loom Weaving, Brick Molding, Mortar Grinding, Quern Grinding, Workshop Processing, and Charcoal Mound information. Workshop views include station catalysts, Bellows requirements, and pack-added Crucible fuels.
 - **KubeJS** supports custom recipes, wood registration, and start/completion lifecycle events, including cancellable workshop starts.
 
-For the full recipe schemas, public tags, configuration options, automation contract, and KubeJS examples, see `docs/PACKMAKERS.md` in the project repository.
+For the full recipe schemas, public tags, configuration options, automation contract, and KubeJS examples, see the [Packmaker Guide](https://github.com/UpperMoon0/Firstworks/blob/main/docs/PACKMAKERS.md).
 
 ## Credits
 

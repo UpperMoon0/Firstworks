@@ -335,30 +335,38 @@ public final class GameplayEvents {
         }
     }
 
+    @SubscribeEvent
+    public static void allowOchreHarvest(net.neoforged.neoforge.event.entity.player.PlayerEvent.HarvestCheck event) {
+        if (event.getEntity().level() instanceof ServerLevel level
+                && !event.getEntity().isCreative()
+                && event.getTargetBlock().is(ModTags.OCHRE_SOURCES)
+                && event.getEntity().getMainHandItem().is(ModTags.PRIMITIVE_KNIVES)
+                && !hasSilkTouch(level, event.getEntity().getMainHandItem())) {
+            // Custom sources may normally require a different tool for drops.
+            event.setCanHarvest(true);
+        }
+    }
+
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void gatherRawOchre(BlockEvent.BreakEvent event) {
-        if (event.isCanceled() || !(event.getLevel() instanceof ServerLevel level)
-                || event.getPlayer() == null || event.getPlayer().isCreative()) {
+    public static void gatherRawOchre(net.neoforged.neoforge.event.level.BlockDropsEvent event) {
+        if (event.isCanceled()
+                || !event.getLevel().getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_DOBLOCKDROPS)
+                || !(event.getBreaker() instanceof net.minecraft.world.entity.player.Player player)
+                || player.isCreative()
+                || !event.getState().is(ModTags.OCHRE_SOURCES)
+                || !event.getTool().is(ModTags.PRIMITIVE_KNIVES)
+                || hasSilkTouch(event.getLevel(), event.getTool())) {
             return;
         }
 
-        BlockState state = event.getState();
-        if (!state.is(ModTags.OCHRE_SOURCES)) {
-            return;
-        }
-
-        ItemStack tool = event.getPlayer().getMainHandItem();
-        if (hasSilkTouch(level, tool)) {
-            return;
-        }
-
-        boolean guaranteed = tool.is(ModTags.PRIMITIVE_KNIVES);
-        if (guaranteed || level.getRandom().nextDouble() < FirstworksConfig.RAW_OCHRE_GATHER_CHANCE.get()) {
-            Block.popResource(level, event.getPos(), new ItemStack(ModItems.RAW_OCHRE.get()));
-            if (guaranteed) {
-                tool.hurtAndBreak(1, event.getPlayer(), EquipmentSlot.MAINHAND);
-            }
-        }
+        // Edit completed-break loot; never spawn a bonus during a cancellable BreakEvent.
+        event.getDrops().clear();
+        event.getDrops().add(new ItemEntity(event.getLevel(),
+                event.getPos().getX() + 0.5, event.getPos().getY() + 0.5, event.getPos().getZ() + 0.5,
+                new ItemStack(ModItems.RAW_OCHRE.get())));
+        event.setDroppedExperience(0);
+        // Vanilla passes a pre-mining COPY as the loot tool. Damage the actual held knife.
+        player.getMainHandItem().hurtAndBreak(1, player, EquipmentSlot.MAINHAND);
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)

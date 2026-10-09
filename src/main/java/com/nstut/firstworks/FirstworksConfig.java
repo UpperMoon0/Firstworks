@@ -100,12 +100,6 @@ public final class FirstworksConfig {
                     "Range: 0.0 ~ 1.0")
             .defineInRange("plantFibreHandChance", 0.30D, 0.0D, 1.0D);
 
-    public static final ModConfigSpec.DoubleValue RAW_OCHRE_GATHER_CHANCE = BUILDER
-            .comment("Chance (0.0 to 1.0) to gather Raw Ochre from ochre sources without a primitive knife.",
-                    "Default: 0.20",
-                    "Range: 0.0 ~ 1.0")
-            .defineInRange("rawOchreGatherChance", 0.20D, 0.0D, 1.0D);
-
     public static final ModConfigSpec.IntValue QUERN_MANUAL_WORK_PER_CRANK = BUILDER
             .comment("Work progress added per manual empty-hand crank of the Quern.",
                     "Default: 5",
