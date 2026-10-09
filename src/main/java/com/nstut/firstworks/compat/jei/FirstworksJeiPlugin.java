@@ -75,6 +75,8 @@ public final class FirstworksJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
+        registration.addIngredientInfo(ModItems.RAW_OCHRE.get(),
+                Component.translatable("jei.firstworks.raw_ochre.obtain"));
         registration.addIngredientInfo(ModItems.TREE_BARK.get(),
                 Component.translatable("jei.firstworks.tree_bark.obtain"));
         registration.addIngredientInfo(ModItems.PLANT_FIBRE.get(),

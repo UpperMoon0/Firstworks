@@ -7,9 +7,9 @@
   "block.firstworks.mortar_and_pestle": "Mortar & Pestle",
   "item.firstworks.copper_fasteners": "Copper Fasteners",
   "item.firstworks.charcoal_powder": "Charcoal Powder",
-  "tooltip.firstworks.raw_ochre": "Knife-harvest clay, coarse dirt, red sand or terracotta; replaces block loot. Grind for pigment.",
-    "tooltip.firstworks.ground_ochre": "Craft into Red Dye for vanilla coloring.",
-    "item.firstworks.raw_ochre": "Raw Ochre",
+  "tooltip.firstworks.raw_ochre": "Knife-harvest #firstworks:ochre_sources instead of block loot. Defaults: clay, coarse dirt, red sand, terracotta.",
+  "tooltip.firstworks.ground_ochre": "Default recipe: craft into Red Dye. Check JEI for pack recipes.",
+  "item.firstworks.raw_ochre": "Raw Ochre",
   "item.firstworks.ground_ochre": "Ground Ochre",
   "block.firstworks.spruce_barrel": "Spruce Barrel",
   "block.firstworks.birch_barrel": "Birch Barrel",
@@ -271,5 +271,12 @@
   "jei.firstworks.workshop.label.fuel": "Fuel",
   "jei.firstworks.workshop.label.bellows": "Bellows",
   "jei.firstworks.workshop.label.igniter": "Igniter",
-  "jei.firstworks.workshop.igniter": "Use on the furnace to ignite loaded fuel. Consumes the igniter or its durability."
+  "jei.firstworks.workshop.igniter": "Use on the furnace to ignite loaded fuel. Consumes the igniter or its durability.",
+  "jei.firstworks.raw_ochre.obtain": "Break a block in #firstworks:ochre_sources with a knife in #firstworks:primitive_knives for one Raw Ochre instead of ordinary loot. Default sources: clay, coarse dirt, red sand and terracotta; packs may change them. Costs one knife durability. Silk Touch uses normal harvesting. Grind Raw Ochre in the Mortar or Quern, then craft Ground Ochre into Red Dye by default. Check recipes and uses for current pack recipes.",
+  "jade.firstworks.barrel.drain_hint": "Containers drain output first, then input.",
+  "message.firstworks.barrel.sealed": "Barrel sealed. Open the lid with an empty hand.",
+  "message.firstworks.barrel.incompatible": "Different input fluid. Empty the input store first.",
+  "message.firstworks.barrel.capacity": "Not enough space for this container. Drain fluid first.",
+  "message.firstworks.barrel.empty": "Barrel empty. Add fluid first.",
+  "message.firstworks.barrel.refused": "Container cannot transfer this fluid or amount. Try a compatible container."
 }

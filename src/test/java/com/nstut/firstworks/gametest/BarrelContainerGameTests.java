@@ -105,8 +105,8 @@ public final class BarrelContainerGameTests {
         p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BUCKET));
         use(h, b, p, InteractionHand.MAIN_HAND);
         h.assertTrue(b.getTotalFluidAmount() == 0 && p.getMainHandItem().is(Items.BUCKET)
-                && !p.getInventory().contains(new ItemStack(Items.LAVA_BUCKET)),
-                "Creative refill created extra items");
+                && p.getInventory().contains(new ItemStack(Items.LAVA_BUCKET)),
+                "Creative refill lost fluid without returning a container");
         h.succeed();
     }
 
@@ -134,6 +134,36 @@ public final class BarrelContainerGameTests {
         h.succeed();
     }
 
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void mixedStoresExposeNamesAmountsAndCreativeOutputReturn(GameTestHelper h) {
+        var b = barrel(h);
+        b.addInputWater(3000);
+        b.getOutputTank().fill(new FluidStack(ModFluids.TANNIN_SOLUTION.get(), 1000), FluidAction.EXECUTE);
+        var data = new net.minecraft.nbt.CompoundTag();
+        com.nstut.firstworks.compat.jade.BarrelProgressProvider.appendFluidData(data, b);
+        h.assertTrue(data.getInt("FirstworksInputAmount") == 3000
+                && data.getInt("FirstworksOutputAmount") == 1000
+                && data.getString("FirstworksInputName").equals(Fluids.WATER.getFluidType().getDescriptionId())
+                && data.getString("FirstworksOutputName").equals(ModFluids.TANNIN_SOLUTION.get().getFluidType().getDescriptionId()),
+                "Jade data hides mixed input/output stores");
+        h.assertTrue(BarrelBlock.failedTransferReason(b, new ItemStack(Items.WATER_BUCKET)).equals("capacity"),
+                "Full barrel feedback is misleading");
+        h.assertTrue(BarrelBlock.failedTransferReason(b, new ItemStack(Items.LAVA_BUCKET)).equals("incompatible"),
+                "Conflicting input feedback is misleading");
+        var p = h.makeMockPlayer(GameType.CREATIVE);
+        p.getAbilities().instabuild = true;
+        p.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(Items.BUCKET, 2));
+        use(h, b, p, InteractionHand.OFF_HAND);
+        h.assertTrue(b.getInputTank().getFluidAmount() == 3000 && b.getOutputTank().isEmpty()
+                && p.getOffhandItem().getCount() == 2
+                && p.getInventory().contains(new ItemStack(ModItems.TANNIN_SOLUTION_BUCKET.get())),
+                "Creative offhand extraction failed to return output container");
+        com.nstut.firstworks.compat.jade.BarrelProgressProvider.appendFluidData(data, b);
+        h.assertTrue(data.getInt("FirstworksOutputAmount") == 0 && !data.contains("FirstworksOutputName"),
+                "Jade retains stale output data");
+        h.succeed();
+    }
+
     @GameTestGenerator
     public static List<TestFunction> optionalBucketLibFixture() {
         if (!ModList.get().isLoaded("bucketlib")) return List.of();
@@ -157,6 +187,17 @@ public final class BarrelContainerGameTests {
             h.assertTrue(b.getTotalFluidAmount() == 1000 && p.getMainHandItem().is(item)
                     && FluidUtil.getFluidContained(p.getMainHandItem()).isEmpty(), "BucketLib pour failed for " + id);
             b.getInputTank().drain(4000, FluidAction.EXECUTE);
+            p.getAbilities().instabuild = true;
+            p.getInventory().clearContent();
+            p.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(item));
+            b.addInputFluid(new FluidStack(ModFluids.TANNIN_SOLUTION.get(), 1000));
+            use(h, b, p, InteractionHand.OFF_HAND);
+            h.assertTrue(b.getTotalFluidAmount() == 0
+                    && FluidUtil.getFluidContained(p.getOffhandItem()).isEmpty()
+                    && p.getInventory().items.stream().anyMatch(returned -> returned.is(item)
+                        && FluidUtil.getFluidContained(returned).map(f -> f.is(ModFluids.TANNIN_SOLUTION.get())).orElse(false)),
+                    "Creative BucketLib extraction lost fluid without a returned container: " + id);
+            p.getAbilities().instabuild = false;
         }
         b.addInputFluid(new FluidStack(Fluids.LAVA, 1000));
         p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(BuiltInRegistries.ITEM.get(

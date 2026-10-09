@@ -17,7 +17,7 @@
     {
       "type": "patchouli:text",
       "title": "Drain and Reuse",
-      "text": "Use an empty compatible container to drain output fluid first, then input when output is empty. Containers keep their own fluid restrictions; Firstworks clay buckets hold only water/tannin. Manual container use works from any face. Drain produced fluid to free capacity before adding more water. Open exposed barrels can collect rainwater. A rising redstone pulse toggles the lid once, rather than repeatedly toggling while powered."
+      "text": "Use an empty compatible container to drain output fluid first, then input when output is empty. Containers keep their own fluid restrictions; Firstworks clay buckets hold only water/tannin. Manual container use works from any face. Drain produced fluid to free capacity before adding more water. Open exposed barrels can collect rainwater. A rising redstone pulse toggles the lid once, rather than repeatedly toggling while powered. Jade lists input and output fluid names and mB separately. A small output store may prevent filling a large container even when the barrel looks full. Failed transfers show a recovery hint. Creative extraction retains the held container and returns a filled copy."
     },
     {
       "type": "patchouli:text",

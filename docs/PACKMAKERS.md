@@ -21,6 +21,8 @@ This document is the authoritative technical reference for modpack developers an
 11. [Migration Notes (0.0.11 → 0.0.12)](#11-migration-notes-0011--0012)
 12. [Migration Notes (0.0.12 → 0.0.13)](#12-migration-notes-0012--0013)
 13. [Migration Notes (0.0.13 → 0.0.14)](#13-migration-notes-0013--0014)
+14. [Workstation interactions](#0015-workstation-interactions)
+15. [Ochre harvesting and container compatibility](#ochre-harvesting-and-container-compatibility)
 
 ---
 
@@ -761,12 +763,32 @@ Server settings: `crucibleBaseTemperature=800`, `crucibleBoostTemperature=1150`,
 
 `kilnHeatingTicks` sets ambient-to-maximum heating time (default 600 ticks, 30 seconds). New default forge cooling capacity is 3600 ticks; existing hot item components preserve their saved cooling rate until reheated. Existing server configs retain explicit values: use crucibleHeatingRate=1, stationCoolingRate=0.25, bellowsHoldTicks=600, and bellowsDecayTicks=300 for the slower balance.
 
-### Ochre harvesting and container compatibility in 0.0.16
+### Ochre harvesting and container compatibility
 
-`rawOchreGatherChance` is removed; any old value no longer controls harvesting. Sources remain configurable through `data/<namespace>/tags/block/ochre_sources.json` and knives through `#firstworks:primitive_knives`. Use `replace: true` to replace the default source set. Knife harvesting substitutes one Raw Ochre for **all ordinary block loot and experience**, and permits drops for tagged blocks that normally require another tool. Tagging a block entity with inventory may discard its ordinary inventory loot: choose source tags deliberately. Standard Firstworks knives cost one harvest durability; custom knives retain their own normal mining behavior in addition to this cost. Silk Touch follows the custom tool's normal harvesting rules without ochre.
+`rawOchreGatherChance` is removed; any old value no longer controls harvesting. Sources remain configurable through `data/firstworks/tags/block/ochre_sources.json` and knives through `data/firstworks/tags/item/primitive_knives.json`. These paths must use the Firstworks namespace even in your own datapack. A different namespace creates an unrelated tag. Use `replace: true` to replace the default set. Knife harvesting substitutes one Raw Ochre for **all ordinary block loot and experience**, and permits drops for tagged blocks that normally require another tool. Tagging a block entity with inventory may discard its ordinary inventory loot: choose source tags deliberately. Standard Firstworks knives cost one harvest durability; custom knives retain their own normal mining behavior in addition to this cost. Silk Touch follows the custom tool's normal harvesting rules without ochre.
 
 Override `firstworks:grind_ochre`, `firstworks:quern_ochre`, or `firstworks:red_dye_from_ochre` using ordinary datapack recipes / KubeJS recipe overrides. Defaults: one raw → two ground (two crushes, 48 grind ticks); four raw → eight ground (60 Quern work); one ground → one vanilla Red Dye. Ground Ochre has no dye tag/direct DyeItem interaction claim.
 
 Register a NeoForge `Capabilities.FluidHandler.ITEM` provider for custom containers. Manual barrel use delegates to `FluidUtil.interactWithFluidHandler`; no BucketLib hard dependency or item-ID allowlist is needed. Your provider controls fluid eligibility, amount, components, container replacement and durability. Fluid simulation must agree with execution. Manual transfers use the combined output-first handler, while automation faces retain their rules. Firstworks clay buckets and 250 mB water bottles keep their existing dedicated interactions.
 
 Verification: `./gradlew build runGameTestServer` tests the mod without BucketLib. `./gradlew -PbucketCompat build runGameTestServer` additionally loads pinned BucketLib 1.21-4.1.7.2, Wooden Bucket 1.21-4.1.4.0 and Ceramic Bucket 1.21-6.1.1.0 as development-only native fixtures. Test resources add stone to the source tag to prove datapack customization; they are not packaged in the production jar.
+
+To replace the source set, put this in `data/firstworks/tags/block/ochre_sources.json`:
+
+```json
+{"replace": true, "values": ["minecraft:clay"]}
+```
+
+To keep defaults and add another source, use the same path with additive entries:
+
+```json
+{"replace": false, "values": ["minecraft:stone"]}
+```
+
+For a custom knife, put this in `data/firstworks/tags/item/primitive_knives.json`:
+
+```json
+{"replace": false, "values": ["yourmod:custom_knife"]}
+```
+
+Jade reports input/output fluid names and individual amounts alongside shared capacity. Containers drain output first, then input; an incompatible or too-small output amount can prevent filling even when total volume is high. Failed manual transfers consume the click to prevent accidental placement, and display a throttled recovery hint. Creative generic extraction retains the held stack and returns one filled container to inventory (or drops it when inventory is full); creative pouring retains its filled container.

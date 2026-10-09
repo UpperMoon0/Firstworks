@@ -17,7 +17,7 @@
     {
       "type": "patchouli:text",
       "title": "Ochre",
-      "text": "Break tagged clay, coarse dirt, red sand or terracotta with a primitive knife for one Raw Ochre instead of ordinary loot, consuming the block and one knife durability. Other tools give no ochre. Silk Touch follows ordinary harvesting. Grind raw ochre in a mortar or quern, then craft Ground Ochre into vanilla Red Dye. No world generation is added."
+      "text": "Break a block in #firstworks:ochre_sources with a primitive knife for one Raw Ochre instead of ordinary loot. Default sources are clay, coarse dirt, red sand and terracotta; packs may change the tag. The block is consumed and the knife costs one durability. Other tools give no ochre; Silk Touch follows normal harvesting. No world generation is added. Grind raw ochre with the Mortar or Quern."
     }
   ]
 }

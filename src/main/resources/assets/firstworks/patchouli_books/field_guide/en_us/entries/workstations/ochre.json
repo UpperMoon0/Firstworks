@@ -7,12 +7,12 @@
     {
       "type": "patchouli:text",
       "title": "Knife Harvest",
-      "text": "Break clay, coarse dirt, red sand or terracotta with a primitive knife for one Raw Ochre instead of ordinary block loot. The block is consumed and the knife loses one durability. Other tools never give random ochre. Silk Touch preserves ordinary harvesting. No new deposits or world generation are needed."
+      "text": "Break a block in #firstworks:ochre_sources with a primitive knife for one Raw Ochre instead of ordinary loot. Default sources are clay, coarse dirt, red sand and terracotta; packs may change the tag. The block is consumed and the knife costs one durability. Other tools give no ochre; Silk Touch follows normal harvesting. No world generation is added. Grind raw ochre with the Mortar or Quern."
     },
     {
       "type": "patchouli:text",
       "title": "Grind and Color",
-      "text": "Mortar: one Raw Ochre gives two Ground Ochre after two crushes and 48 grind ticks. Quern: four raw give eight ground in 60 work (12 default cranks). Craft ground into vanilla Red Dye, then use that dye for normal coloring. Ground Ochre itself cannot directly dye sheep or leather."
+      "text": "Mortar: one Raw Ochre gives two Ground Ochre after two crushes and 48 grind ticks. Quern: four raw give eight ground in 60 work (12 default cranks). By default, craft ground into vanilla Red Dye, then use that dye for normal coloring. Ground Ochre itself cannot directly dye sheep or leather. Packs can override recipes; check JEI for current recipes and uses."
     },
     {
       "type": "patchouli:crafting",

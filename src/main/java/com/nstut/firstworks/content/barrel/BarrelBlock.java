@@ -149,6 +149,7 @@ public class BarrelBlock extends BaseEntityBlock {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
         if (state.getValue(SEALED)) {
+            transferFeedback(player, "sealed");
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
 
@@ -160,6 +161,8 @@ public class BarrelBlock extends BaseEntityBlock {
                     player.getInventory().placeItemBackInInventory(new ItemStack(ModItems.CLAY_BUCKET.get()));
                 }
                 level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
+            } else if (!level.isClientSide) {
+                transferFeedback(player, failedInputReason(barrel, new FluidStack(net.minecraft.world.level.material.Fluids.WATER, 1000)));
             }
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
@@ -171,6 +174,8 @@ public class BarrelBlock extends BaseEntityBlock {
                     player.getInventory().placeItemBackInInventory(new ItemStack(ModItems.CLAY_BUCKET.get()));
                 }
                 level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
+            } else if (!level.isClientSide) {
+                transferFeedback(player, failedInputReason(barrel, new FluidStack(ModFluids.TANNIN_SOLUTION.get(), 1000)));
             }
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
@@ -182,6 +187,8 @@ public class BarrelBlock extends BaseEntityBlock {
                     if (!player.getAbilities().instabuild) stack.shrink(1);
                     player.getInventory().placeItemBackInInventory(filledBucket);
                     level.playSound(null, pos, SoundEvents.BUCKET_FILL, SoundSource.BLOCKS, 1.0F, 1.0F);
+                } else {
+                    transferFeedback(player, barrel.getTotalFluidAmount() == 0 ? "empty" : "refused");
                 }
             }
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
@@ -194,6 +201,8 @@ public class BarrelBlock extends BaseEntityBlock {
                     player.getInventory().placeItemBackInInventory(new ItemStack(Items.GLASS_BOTTLE));
                 }
                 level.playSound(null, pos, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
+            } else if (!level.isClientSide) {
+                transferFeedback(player, failedInputReason(barrel, new FluidStack(net.minecraft.world.level.material.Fluids.WATER, 250)));
             }
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
@@ -203,8 +212,27 @@ public class BarrelBlock extends BaseEntityBlock {
         if (!(stack.getItem() instanceof net.minecraft.world.item.MobBucketItem)
                 && net.neoforged.neoforge.fluids.FluidUtil.getFluidHandler(stack).isPresent()) {
             if (!level.isClientSide) {
-                net.neoforged.neoforge.fluids.FluidUtil.interactWithFluidHandler(
-                        player, hand, barrel.getAutomationFluidHandler());
+                var handler = barrel.getAutomationFluidHandler();
+                boolean transferred;
+                if (player.getAbilities().instabuild) {
+                    // FluidUtil's creative shortcut drains without returning a container.
+                    // Fill one copy deliberately and return it, retaining the held creative stack.
+                    var result = net.neoforged.neoforge.fluids.FluidUtil.tryFillContainer(
+                            stack, handler, Integer.MAX_VALUE, player, true);
+                    transferred = result.isSuccess();
+                    if (transferred) {
+                        player.getInventory().placeItemBackInInventory(result.getResult());
+                    } else {
+                        // Creative pouring retains its source container; never use the
+                        // fill-and-stow shortcut, including for partially filled tanks.
+                        transferred = net.neoforged.neoforge.fluids.FluidUtil.tryEmptyContainer(
+                                stack, handler, Integer.MAX_VALUE, player, true).isSuccess();
+                    }
+                } else {
+                    transferred = net.neoforged.neoforge.fluids.FluidUtil.interactWithFluidHandler(
+                            player, hand, handler);
+                }
+                if (!transferred) transferFeedback(player, failedTransferReason(barrel, stack));
             }
             // Consume rejected transfers too, so a bucket cannot place fluid into/around the barrel.
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
@@ -218,6 +246,34 @@ public class BarrelBlock extends BaseEntityBlock {
         }
 
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+
+    public static String failedTransferReason(BarrelBlockEntity barrel, ItemStack stack) {
+        var contained = net.neoforged.neoforge.fluids.FluidUtil.getFluidContained(stack);
+        if (contained.isPresent()) {
+            return failedInputReason(barrel, contained.get());
+        } else if (barrel.getTotalFluidAmount() == 0) {
+            return "empty";
+        }
+        return "refused";
+    }
+
+    private static String failedInputReason(BarrelBlockEntity barrel, FluidStack fluid) {
+        var input = barrel.getInputTank().getFluid();
+        if (!input.isEmpty() && !FluidStack.isSameFluidSameComponents(input, fluid)) return "incompatible";
+        if (BarrelBlockEntity.CAPACITY - barrel.getTotalFluidAmount() < fluid.getAmount()) return "capacity";
+        return "refused";
+    }
+
+    private static void transferFeedback(Player player, String reason) {
+        if (player.level().isClientSide) return;
+        var data = player.getPersistentData();
+        long now = player.level().getGameTime();
+        String key = "FirstworksBarrelFeedback";
+        if (data.contains(key) && now >= data.getLong(key) && now - data.getLong(key) < 20) return;
+        data.putLong(key, now);
+        player.displayClientMessage(net.minecraft.network.chat.Component.translatable(
+                "message.firstworks.barrel." + reason), true);
     }
 
     @Override
