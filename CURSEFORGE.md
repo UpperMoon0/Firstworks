@@ -14,6 +14,8 @@ Its early-survival chains cover fibre and cloth, leatherworking, resin and tool 
 
 - Open barrels accept NeoForge fluid containers, including BucketLib Wooden and Ceramic Buckets and compatible modded fluids. Containers retain their own restrictions and returned items. Manual use fills input and drains output first from any face; sealed lids and automation face rules remain. Firstworks clay buckets remain water/tannin-only; Water Bottles add 250 mB. Jade lists each stored fluid and amount; rejected transfers show a recovery hint. Creative extraction returns a filled container.
 
+A supported offhand container transfers without triggering an empty-mainhand lid/output action. If a fluid-capable item also matches a datapack barrel recipe ingredient, **sneak-use** to insert it; normal use still transfers fluid.
+
 Barrels anchor tanning, fibre retting, mortar mixing, tannin brewing, and other early wet-processing recipes.
 
 ## Fibre, weaving, hides, and stronger tools

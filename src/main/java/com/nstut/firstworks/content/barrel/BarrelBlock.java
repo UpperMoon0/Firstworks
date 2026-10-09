@@ -153,6 +153,15 @@ public class BarrelBlock extends BaseEntityBlock {
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
 
+        // A fluid-capable item may also be a datapack barrel recipe ingredient.
+        // Explicit sneak-use inserts a matching ingredient; ordinary use transfers fluid.
+        if (player.isShiftKeyDown() && barrel.canInsert(stack)) {
+            if (!level.isClientSide && barrel.insertIngredient(stack, player.getAbilities().instabuild)) {
+                level.playSound(null, pos, SoundEvents.COMPOSTER_FILL_SUCCESS, SoundSource.BLOCKS, 0.8F, 1.0F);
+            }
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        }
+
         PotionContents potion = stack.get(DataComponents.POTION_CONTENTS);
         if (stack.is(ModItems.WATER_CLAY_BUCKET.get())) {
             if (!level.isClientSide && barrel.addInputWater(1000)) {
@@ -248,6 +257,18 @@ public class BarrelBlock extends BaseEntityBlock {
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
+    private static boolean isSupportedOffhandFluidContainer(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        if (stack.is(ModItems.CLAY_BUCKET.get()) || stack.is(ModItems.WATER_CLAY_BUCKET.get())
+                || stack.is(ModItems.TANNIN_CLAY_BUCKET.get())) return true;
+        PotionContents potion = stack.get(DataComponents.POTION_CONTENTS);
+        if (stack.is(Items.POTION) && potion != null && potion.is(Potions.WATER) && !potion.hasEffects()) {
+            return true;
+        }
+        return !(stack.getItem() instanceof net.minecraft.world.item.MobBucketItem)
+                && net.neoforged.neoforge.fluids.FluidUtil.getFluidHandler(stack).isPresent();
+    }
+
     public static String failedTransferReason(BarrelBlockEntity barrel, ItemStack stack) {
         var contained = net.neoforged.neoforge.fluids.FluidUtil.getFluidContained(stack);
         if (contained.isPresent()) {
@@ -279,6 +300,11 @@ public class BarrelBlock extends BaseEntityBlock {
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (!(level.getBlockEntity(pos) instanceof BarrelBlockEntity barrel)) {
+            return InteractionResult.PASS;
+        }
+        // Vanilla attempts main-hand block fallback before the offhand item.
+        // Do not collect output or toggle the lid ahead of an offhand container.
+        if (isSupportedOffhandFluidContainer(player.getOffhandItem())) {
             return InteractionResult.PASS;
         }
         if (!level.isClientSide && player.isShiftKeyDown() && barrel.retrieveInput(player)) {

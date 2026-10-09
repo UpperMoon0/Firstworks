@@ -1,0 +1,13 @@
+{
+  "type": "firstworks:barrel_processing",
+  "ingredient": {
+    "item": "minecraft:water_bucket"
+  },
+  "fluid": "minecraft:water",
+  "fluid_amount": 250,
+  "result": {
+    "id": "minecraft:clay_ball"
+  },
+  "duration": 200,
+  "sealed": true
+}

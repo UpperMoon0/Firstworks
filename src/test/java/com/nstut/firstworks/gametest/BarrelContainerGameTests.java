@@ -15,6 +15,8 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestFunction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -43,6 +45,23 @@ public final class BarrelContainerGameTests {
                 new BlockHitResult(Vec3.atCenterOf(pos), Direction.DOWN, pos, false));
     }
 
+    // Reproduce the normal main-hand item -> block fallback -> offhand item order.
+    // Calling useItemOn(OFF_HAND) directly misses the main-hand fallback regression.
+    private static void useLikeVanilla(GameTestHelper h, BarrelBlockEntity b, Player p) {
+        var pos = b.getBlockPos();
+        var level = h.getLevel();
+        var hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.DOWN, pos, false);
+        for (var hand : InteractionHand.values()) {
+            var state = level.getBlockState(pos);
+            ItemInteractionResult itemResult = state.useItemOn(p.getItemInHand(hand), level, p, hand, hit);
+            if (itemResult.consumesAction()) return;
+            if (itemResult == ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION) {
+                InteractionResult defaultResult = level.getBlockState(pos).useWithoutItem(level, p, hit);
+                if (defaultResult.consumesAction()) return;
+            }
+        }
+    }
+
     @GameTest(template = "empty", timeoutTicks = 20)
     public static void vanillaAndModdedFluidsUseHandContainersAndOutputFirstDrain(GameTestHelper h) {
         var b = barrel(h);
@@ -68,6 +87,56 @@ public final class BarrelContainerGameTests {
                 && p.getMainHandItem().getCount() == 1
                 && p.getInventory().contains(new ItemStack(ModItems.TANNIN_SOLUTION_BUCKET.get())),
                 "Output priority or stacked-container inventory return failed");
+        h.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void offhandContainerSurvivesMainhandFallback(GameTestHelper h) {
+        var b = barrel(h);
+        var p = h.makeMockPlayer(GameType.SURVIVAL);
+        b.addInputWater(1000);
+        p.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        p.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(Items.BUCKET));
+        useLikeVanilla(h, b, p);
+        h.assertTrue(!b.getBlockState().getValue(BarrelBlock.SEALED)
+                && b.getTotalFluidAmount() == 0 && p.getOffhandItem().is(Items.WATER_BUCKET),
+                "Empty main hand toggled lid instead of reaching offhand bucket");
+
+        p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.FLINT));
+        p.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(Items.WATER_BUCKET));
+        useLikeVanilla(h, b, p);
+        h.assertTrue(!b.getBlockState().getValue(BarrelBlock.SEALED)
+                && b.getInputTank().getFluidAmount() == 1000
+                && p.getOffhandItem().is(Items.BUCKET) && p.getMainHandItem().is(Items.FLINT),
+                "Unrelated main hand intercepted offhand fluid pour");
+
+        h.getLevel().setBlock(b.getBlockPos(), b.getBlockState().setValue(BarrelBlock.SEALED, true), 3);
+        p.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        useLikeVanilla(h, b, p);
+        h.assertTrue(b.getBlockState().getValue(BarrelBlock.SEALED)
+                && b.getInputTank().getFluidAmount() == 1000 && p.getOffhandItem().is(Items.BUCKET),
+                "Sealed barrel was opened or drained before the offhand could be rejected");
+        h.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void sneakUseInsertsFluidCapableRecipeIngredient(GameTestHelper h) {
+        var b = barrel(h);
+        var p = h.makeMockPlayer(GameType.SURVIVAL);
+        p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.WATER_BUCKET));
+        h.assertTrue(b.canInsert(p.getMainHandItem()), "Test datapack fluid-container recipe is missing");
+        p.setShiftKeyDown(true);
+        use(h, b, p, InteractionHand.MAIN_HAND);
+        h.assertTrue(b.getIngredient().is(Items.WATER_BUCKET)
+                && p.getMainHandItem().isEmpty() && b.getTotalFluidAmount() == 0,
+                "Sneak-use poured a recipe ingredient instead of inserting it");
+
+        p.setShiftKeyDown(false);
+        p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.WATER_BUCKET));
+        use(h, b, p, InteractionHand.MAIN_HAND);
+        h.assertTrue(b.getIngredient().is(Items.WATER_BUCKET)
+                && b.getInputTank().getFluidAmount() == 1000 && p.getMainHandItem().is(Items.BUCKET),
+                "Normal use failed to transfer fluid when the container matched a recipe");
         h.succeed();
     }
 
@@ -198,6 +267,15 @@ public final class BarrelContainerGameTests {
                         && FluidUtil.getFluidContained(returned).map(f -> f.is(ModFluids.TANNIN_SOLUTION.get())).orElse(false)),
                     "Creative BucketLib extraction lost fluid without a returned container: " + id);
             p.getAbilities().instabuild = false;
+            p.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            p.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(item));
+            b.addInputFluid(new FluidStack(ModFluids.TANNIN_SOLUTION.get(), 1000));
+            useLikeVanilla(h, b, p);
+            h.assertTrue(!b.getBlockState().getValue(BarrelBlock.SEALED)
+                    && b.getTotalFluidAmount() == 0
+                    && FluidUtil.getFluidContained(p.getOffhandItem())
+                            .map(f -> f.is(ModFluids.TANNIN_SOLUTION.get())).orElse(false),
+                    "Mainhand fallback intercepted offhand BucketLib container: " + id);
         }
         b.addInputFluid(new FluidStack(Fluids.LAVA, 1000));
         p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(BuiltInRegistries.ITEM.get(

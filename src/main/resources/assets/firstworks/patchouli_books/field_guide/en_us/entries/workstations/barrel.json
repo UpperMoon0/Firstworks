@@ -7,7 +7,12 @@
     {
       "type": "patchouli:text",
       "title": "Load and Seal",
-      "text": "Use materials and compatible fluid containers on an open barrel; BucketLib Wooden and Ceramic Buckets are supported. A bucket adds 1000 mB; a plain Water Bottle adds 250 mB. Empty-hand use collects output first, otherwise toggles the lid. Sneak-empty-hand use retrieves input first. Sealing blocks loading and transfer."
+      "text": "Use materials and compatible fluid containers on an open barrel; BucketLib Wooden and Ceramic Buckets are supported. A bucket adds 1000 mB; a plain Water Bottle adds 250 mB. Empty-hand use without a supported offhand container collects output first, otherwise toggles the lid. Sneak-empty-hand use retrieves input first. Sealing blocks loading and transfer."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Hands and Recipe Inputs",
+      "text": "A supported offhand fluid container takes priority over empty-mainhand barrel controls, so the lid stays untouched during transfer. If a fluid-capable container is also a barrel recipe ingredient, sneak-use it on an open barrel to insert one item. Ordinary use transfers fluid instead. Clear the offhand container for normal empty-hand lid, output and input retrieval."
     },
     {
       "type": "patchouli:text",

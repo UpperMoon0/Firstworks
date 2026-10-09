@@ -20,6 +20,7 @@ Looking to configure recipes, progression gates, custom wood types, KubeJS event
 - **In-World Crafting**: Craft Barrels from matching planks and slabs across every vanilla wood family.
 - **Dual Fluid Stores**: Separate input and output fluid stores share a 4000 mB capacity, preventing recipe contamination.
 - Open barrels accept NeoForge fluid containers, including BucketLib Wooden and Ceramic Buckets and compatible modded fluids. Containers retain their own restrictions and returned items. Manual use fills input and drains output first from any face; sealed lids and automation face rules remain. Firstworks clay buckets remain water/tannin-only; Water Bottles add 250 mB. Jade lists each stored fluid and amount; rejected transfers show a recovery hint. Creative extraction returns a filled container.
+- **Container vs ingredient**: Ordinary use transfers fluid even if a container matches a datapack barrel recipe. Sneak-use a matching fluid-capable ingredient to insert it instead; an offhand container takes priority over empty-mainhand lid/output actions.
 - **Rain Collection**: Open barrels gradually collect rainwater during precipitation (configurable).
 - **Automation Ready**: Top face for input items/fluid, bottom face for output items/fluid, side faces for bi-directional transfer. Sealing the lid locks transfer.
 - **Redstone Control**: Rising redstone pulses toggle the lid open and closed.
