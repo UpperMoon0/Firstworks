@@ -5,6 +5,7 @@ import com.nstut.firstworks.content.ResinScarBlock;
 import com.nstut.firstworks.content.ResinTreeSupport;
 import com.nstut.firstworks.content.TreeBarkItem;
 import com.nstut.firstworks.content.charcoal.CharcoalMoundData;
+import com.nstut.firstworks.content.barrel.BarrelBlockEntity;
 import com.nstut.firstworks.registry.ModBlocks;
 import com.nstut.firstworks.registry.ModItems;
 import com.nstut.firstworks.registry.ModTags;
@@ -46,6 +47,20 @@ public final class GameplayEvents {
                 && event.getItemStack().is(ModTags.HAMMERS)) {
             event.setUseBlock(net.neoforged.neoforge.common.util.TriState.TRUE);
         }
+    }
+
+    // Both client prediction and server dispatch skip block use while sneaking with
+    // ordinary items. Only opt matching barrel ingredients into the existing block
+    // interaction; leave mutation, creative handling and sided results to the block.
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void allowBarrelIngredientInsertion(PlayerInteractEvent.RightClickBlock event) {
+        if (event.isCanceled() || !event.getUseBlock().isDefault()
+                || !event.getEntity().isSecondaryUseActive()
+                || !(event.getLevel().getBlockEntity(event.getPos()) instanceof BarrelBlockEntity barrel)
+                || !barrel.canInsert(event.getItemStack())) {
+            return;
+        }
+        event.setUseBlock(net.neoforged.neoforge.common.util.TriState.TRUE);
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)

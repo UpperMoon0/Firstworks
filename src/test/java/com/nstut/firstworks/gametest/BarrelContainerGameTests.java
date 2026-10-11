@@ -1,6 +1,16 @@
 package com.nstut.firstworks.gametest;
 
 import com.nstut.firstworks.Firstworks;
+import com.nstut.firstworks.GameplayEvents;
+import com.mojang.authlib.GameProfile;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ClientInformation;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.util.TriState;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import java.util.UUID;
+import java.util.function.Consumer;
 import com.nstut.firstworks.content.barrel.BarrelBlock;
 import com.nstut.firstworks.content.barrel.BarrelBlockEntity;
 import com.nstut.firstworks.registry.ModBlocks;
@@ -119,24 +129,116 @@ public final class BarrelContainerGameTests {
         h.succeed();
     }
 
+    private static ServerPlayer serverPlayer(GameTestHelper h, GameType mode) {
+        var level = h.getLevel();
+        var p = new ServerPlayer(level.getServer(), level,
+                new GameProfile(UUID.randomUUID(), "barrel-test"), ClientInformation.createDefault());
+        var connection = new net.minecraft.network.Connection(net.minecraft.network.protocol.PacketFlow.SERVERBOUND);
+        new io.netty.channel.embedded.EmbeddedChannel(connection);
+        p.connection = new net.minecraft.server.network.ServerGamePacketListenerImpl(level.getServer(), connection, p,
+                net.minecraft.server.network.CommonListenerCookie.createInitial(p.getGameProfile(), false));
+        p.gameMode.changeGameModeForPlayer(mode);
+        mode.updatePlayerAbilities(p.getAbilities());
+        return p;
+    }
+
+    private static InteractionResult dispatch(GameTestHelper h, BarrelBlockEntity b, ServerPlayer p) {
+        var pos = b.getBlockPos();
+        var hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false);
+        for (var hand : InteractionHand.values()) {
+            var result = p.gameMode.useItemOn(p, h.getLevel(), p.getItemInHand(hand), hand, hit);
+            if (result.consumesAction() || result == InteractionResult.FAIL) return result;
+        }
+        return InteractionResult.PASS;
+    }
+
+    private static void assertNoWorldFluid(GameTestHelper h, BarrelBlockEntity b) {
+        h.assertTrue(h.getLevel().getFluidState(b.getBlockPos()).isEmpty(), "Fluid placed inside barrel");
+        for (var direction : Direction.values()) {
+            h.assertTrue(h.getLevel().getFluidState(b.getBlockPos().relative(direction)).isEmpty(),
+                    "Bucket placed world fluid next to barrel: " + direction);
+        }
+    }
+
     @GameTest(template = "empty", timeoutTicks = 20)
     public static void sneakUseInsertsFluidCapableRecipeIngredient(GameTestHelper h) {
-        var b = barrel(h);
-        var p = h.makeMockPlayer(GameType.SURVIVAL);
-        p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.WATER_BUCKET));
-        h.assertTrue(b.canInsert(p.getMainHandItem()), "Test datapack fluid-container recipe is missing");
-        p.setShiftKeyDown(true);
-        use(h, b, p, InteractionHand.MAIN_HAND);
-        h.assertTrue(b.getIngredient().is(Items.WATER_BUCKET)
-                && p.getMainHandItem().isEmpty() && b.getTotalFluidAmount() == 0,
-                "Sneak-use poured a recipe ingredient instead of inserting it");
+        for (var mode : List.of(GameType.SURVIVAL, GameType.CREATIVE)) {
+            for (var hand : InteractionHand.values()) {
+                // Remove the previous block entity so each case has empty stores.
+                h.getLevel().removeBlock(h.absolutePos(new BlockPos(3, 1, 3)), false);
+                var b = barrel(h);
+                var p = serverPlayer(h, mode);
+                p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.FLINT));
+                p.setItemInHand(hand, new ItemStack(Items.WATER_BUCKET));
+                h.assertTrue(b.canInsert(p.getItemInHand(hand)), "Test fluid-container recipe is missing");
+                p.setShiftKeyDown(true);
+                h.assertTrue(p.isSecondaryUseActive(), "Fixture did not activate secondary use");
+                h.assertTrue(dispatch(h, b, p).consumesAction(), "Real dispatcher skipped sneak insertion");
+                h.assertTrue(b.getIngredient().is(Items.WATER_BUCKET) && b.getIngredient().getCount() == 1
+                        && (mode == GameType.CREATIVE ? p.getItemInHand(hand).is(Items.WATER_BUCKET)
+                                : p.getItemInHand(hand).isEmpty())
+                        && b.getInputTank().isEmpty() && b.getOutputTank().isEmpty()
+                        && !b.getBlockState().getValue(BarrelBlock.SEALED),
+                        "Sneak insertion changed hand, lid or fluid state: " + mode + "/" + hand);
+                assertNoWorldFluid(h, b);
+                if (hand == InteractionHand.OFF_HAND) {
+                    h.assertTrue(p.getMainHandItem().is(Items.FLINT), "Offhand insertion consumed main hand");
+                }
 
-        p.setShiftKeyDown(false);
+                p.setShiftKeyDown(false);
+                p.setItemInHand(hand, new ItemStack(Items.WATER_BUCKET));
+                h.assertTrue(dispatch(h, b, p).consumesAction(), "Normal pouring was not consumed");
+                h.assertTrue(b.getIngredient().is(Items.WATER_BUCKET) && b.getIngredient().getCount() == 1
+                        && b.getInputTank().getFluidAmount() == 1000 && b.getOutputTank().isEmpty()
+                        && p.getItemInHand(hand).is(mode == GameType.CREATIVE ? Items.WATER_BUCKET : Items.BUCKET)
+                        && !b.getBlockState().getValue(BarrelBlock.SEALED),
+                        "Normal use stopped pouring or changed the ingredient/lid: " + mode + "/" + hand);
+                assertNoWorldFluid(h, b);
+            }
+        }
+        h.succeed();
+    }
+
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void sneakIngredientRouteRespectsCancellationAndBlockDenial(GameTestHelper h) {
+        var b = barrel(h);
+        var p = serverPlayer(h, GameType.SURVIVAL);
+        p.setShiftKeyDown(true);
         p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.WATER_BUCKET));
-        use(h, b, p, InteractionHand.MAIN_HAND);
-        h.assertTrue(b.getIngredient().is(Items.WATER_BUCKET)
-                && b.getInputTank().getFluidAmount() == 1000 && p.getMainHandItem().is(Items.BUCKET),
-                "Normal use failed to transfer fluid when the container matched a recipe");
+        for (boolean cancel : List.of(true, false)) {
+            Consumer<PlayerInteractEvent.RightClickBlock> deny = event -> {
+                if (event.getEntity() != p || !event.getPos().equals(b.getBlockPos())) return;
+                if (cancel) {
+                    event.setCancellationResult(InteractionResult.FAIL);
+                    event.setCanceled(true);
+                } else {
+                    event.setUseBlock(TriState.FALSE);
+                }
+            };
+            NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, deny);
+            try {
+                h.assertTrue(!dispatch(h, b, p).consumesAction(), "Denied block interaction was consumed");
+                h.assertTrue(b.getIngredient().isEmpty() && b.getTotalFluidAmount() == 0
+                        && p.getMainHandItem().is(Items.WATER_BUCKET)
+                        && !b.getBlockState().getValue(BarrelBlock.SEALED),
+                        "Canceled/denied interaction mutated barrel or held ingredient");
+                assertNoWorldFluid(h, b);
+            } finally {
+                NeoForge.EVENT_BUS.unregister(deny);
+            }
+        }
+        // The hook must not force unrelated, ordinary, or sealed interactions.
+        var hit = new BlockHitResult(Vec3.atCenterOf(b.getBlockPos()), Direction.UP, b.getBlockPos(), false);
+        for (int scenario = 0; scenario < 3; scenario++) {
+            p.setShiftKeyDown(scenario != 0);
+            p.setItemInHand(InteractionHand.MAIN_HAND,
+                    new ItemStack(scenario == 1 ? Items.FLINT : Items.WATER_BUCKET));
+            if (scenario == 2) h.getLevel().setBlock(b.getBlockPos(),
+                    b.getBlockState().setValue(BarrelBlock.SEALED, true), 3);
+            var event = new PlayerInteractEvent.RightClickBlock(p, InteractionHand.MAIN_HAND, b.getBlockPos(), hit);
+            GameplayEvents.allowBarrelIngredientInsertion(event);
+            h.assertTrue(event.getUseBlock().isDefault(), "Hook forced an unrelated interaction: " + scenario);
+        }
         h.succeed();
     }
 
