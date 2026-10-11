@@ -65,8 +65,7 @@ public class TagInteropAndHarvestTest {
         int dmgIdx = method.indexOf("hurtAndBreak");
         assertTrue(dropIdx >= 0 && dmgIdx > dropIdx,
                 "ochre durability must follow the raw ochre drop, not be unconditional");
-        assertTrue(method.contains("if (guaranteed) {"),
-                "ochre durability must only apply for guaranteed (knife) harvests");
+        assertTrue(method.contains("!event.getTool().is(ModTags.PRIMITIVE_KNIVES)"));
     }
 
     @Test

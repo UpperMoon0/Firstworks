@@ -55,3 +55,12 @@ The bundled default path is raw copper → cast billet (Crucible Furnace + fired
 Kilns and Crucible Furnaces require player ignition: load fuel, then right-click with Flint and Steel, a Fire Starter, or a Fire Charge. Modded items implementing NeoForge `FIRESTARTER_LIGHT` work automatically; other items can be added to `#firstworks:workstation_igniters`. Successful ignition costs one durability on damageable items or consumes one nondamageable item, except in creative mode. Failed or redundant ignition costs nothing. Both hands are supported. Automation can load fuel but never ignites it.
 
 A lit kiln catches queued fuel while burning; after burnout it must be lit again. Each crucible batch needs ignition and Bellows airflow. When its air expires, progress and paid fuel are retained, but supplying air alone cannot relight it: use an igniter again. Already-burning saved kilns and paid legacy crucible batches retain their state on load.
+
+## Ochre and fluid containers (0.0.16)
+
+Firstworks adds no world generation for ochre. Break clay, coarse dirt, red sand or terracotta with a primitive knife to harvest **one Raw Ochre instead of ordinary block loot**, costing one knife durability. Other tools keep normal drops without random ochre. Silk Touch bypasses ochre extraction and follows normal block/tool loot rules; creative mode and canceled breaks do not harvest or incur ochre durability. Harvesting consumes the source, so you cannot repeatedly recover and re-place it for extra pigment.
+
+The Mortar gives **two Ground Ochre per Raw Ochre**, requiring two crushes and 48 held-grind ticks. The copper-gated Quern gives **eight Ground Ochre per four Raw Ochre** in 60 work (12 cranks at the default five work per crank). It has the same material yield with faster batch throughput. Craft each Ground Ochre into **one vanilla Red Dye**, then use the dye for vanilla coloring and recipes. Ground Ochre itself is not a DyeItem and is not advertised as directly dyeing sheep, leather, wool or pottery. Grinding and dye crafting are shown in JEI; pigment tooltips and the Field Guide explain the loop.
+
+
+For barrel container compatibility and datapack customization, see [PACKMAKERS.md](PACKMAKERS.md).

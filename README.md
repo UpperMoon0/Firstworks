@@ -19,6 +19,8 @@ Looking to configure recipes, progression gates, custom wood types, KubeJS event
 ### 🪵 Primitive Barrel Processing
 - **In-World Crafting**: Craft Barrels from matching planks and slabs across every vanilla wood family.
 - **Dual Fluid Stores**: Separate input and output fluid stores share a 4000 mB capacity, preventing recipe contamination.
+- Open barrels accept NeoForge fluid containers, including BucketLib Wooden and Ceramic Buckets and compatible modded fluids. Containers retain their own restrictions and returned items. Manual use fills input and drains output first from any face; sealed lids and automation face rules remain. Firstworks clay buckets remain water/tannin-only; Water Bottles add 250 mB. Jade lists each stored fluid and amount; rejected transfers show a recovery hint. Creative extraction returns a filled container.
+- **Container vs ingredient**: Ordinary use transfers fluid even if a container matches a datapack barrel recipe. Sneak-use a matching fluid-capable ingredient to insert it instead; an offhand container takes priority over empty-mainhand lid/output actions.
 - **Rain Collection**: Open barrels gradually collect rainwater during precipitation (configurable).
 - **Automation Ready**: Top face for input items/fluid, bottom face for output items/fluid, side faces for bi-directional transfer. Sealing the lid locks transfer.
 - **Redstone Control**: Rising redstone pulses toggle the lid open and closed.
@@ -34,6 +36,7 @@ Looking to configure recipes, progression gates, custom wood types, KubeJS event
 - **Pack-Friendly Trees & Tools**: Public resin-tree and tapping-tool tags allow packs to add compatible woods and tools without code.
 - **Hafting Compound**: Resin feeds stronger primitive bindings and the early tool progression.
 - **Primitive Knives**: Flint, Bone, and Copper Knives support fibre harvesting, hide processing, and early crafting.
+- Primitive knives harvest one Raw Ochre from default sources: clay, coarse dirt, red sand or terracotta **instead of ordinary block loot**, consuming the block and one knife durability. Other tools give no random ochre; Silk Touch keeps normal harvesting. No world generation is added. Packs can change `#firstworks:ochre_sources`.
 - **Cordage & Bindings**: Hand-twist Plant Fibre into Crude Cordage; progressively stronger bindings gate tool construction.
 
 ### 🧱 Clay, Refractory & Masonry Work
@@ -60,6 +63,7 @@ Looking to configure recipes, progression gates, custom wood types, KubeJS event
 
 ### 🥣 Mortar & Pestle
 - Place on any surface, add materials such as Raw Ochre, Charcoal, or Bone, pound the center to crush them, then hold use on the inner bowl/rim to grind with an animated in-world pestle.
+- Grind raw ochre into pigment with the Mortar (one raw → two ground, two crushes and 48 grind ticks) or Quern (four raw → eight ground, 60 work / 12 default cranks). By default, craft each Ground Ochre into one vanilla Red Dye for normal coloring. Packs may override these recipes.
 
 ### 🔥 Earthen Charcoal Mounds
 - **Physical Construction**: Stack connected logs and encase them with suitable earthen blocks, leaving one opening.
@@ -81,6 +85,23 @@ Looking to configure recipes, progression gates, custom wood types, KubeJS event
 - **Clay Buckets**: Fire-hardened vessels capable of carrying water and tannin solution.
 
 ---
+
+## Workstation controls and heat
+
+- **Stone Anvil:** heat a workpiece in the fueled Kiln, transfer it to the anvil, then follow the recipe's center/edge/horn actions. A cooled piece keeps its progress and can be reheated. Custom smashing recipes retain their simple hammer behavior.
+- **Mortar and Pestle:** pound the center to crush coarse material, then hold use on the inner bowl/rim to grind. Releasing pauses work; there is no autonomous finish timer.
+- **Loom:** hold Use on the shuttle and guide it across for the recipe's required crossings.
+- **Crucible Furnace:** glow and particles follow actual fuel-backed processing with airflow, independently of retained progress.
+
+See [packmaker documentation](docs/PACKMAKERS.md#0015-workstation-interactions) for optional recipe metadata and compatibility behavior.
+
+Kilns and Crucible Furnaces require player ignition: load fuel, then right-click with Flint and Steel, a Fire Starter, or a Fire Charge. Modded items implementing NeoForge `FIRESTARTER_LIGHT` work automatically; other items can be added to `#firstworks:workstation_igniters`. Successful ignition costs one durability on damageable items or consumes one nondamageable item, except in creative mode. Failed or redundant ignition costs nothing. Both hands are supported. Automation can load fuel but never ignites it.
+
+Both stations burn fuel continuously using native Minecraft furnace durations, independently of recipes. Lit fires consume queued fuel when the timer expires; cold refills require ignition. Bellows affect the Crucible Furnace temperature ceiling only: 30 seconds at 1150°C followed by 15 seconds of decay to 800°C. Current heat is clamped to the falling ceiling. Copper casting requires 1085°C; progress pauses below it. Successful blows cost one food point with a one-second cooldown; creative mode is exempt.
+
+Heatable item tooltips use one line: `Heat: 798°C - Workable ~28s`. Time is the remaining forging window while cooling, rather than time until cold. Warm and cold items omit the forging timer; no extra reheating instruction is shown. Temperature is stored in Celsius with a 20°C ambient baseline. Forge recipes set minimum_temperature; copper defaults to 500°C. heat_ticks controls cooling duration. Item maxima do not rescale already-hot items. Server config `defaultMaxHeatCelsius` supplies the default maximum (1000°C); `itemMaxHeatCelsius` accepts entries such as `minecraft:copper_ingot=1100` or `othermod:metal=1450`. Copper billets and ingots default to 1100°C, iron ingots to 1250°C, and gold ingots to 1000°C. These settings apply only to items that are heatable through a forge recipe or the heatable-item tag.
+
+Client config `heatTemperatureUnit` in `firstworks-client.toml` accepts `CELSIUS` (default), `FAHRENHEIT`, or `KELVIN`. Conversion happens automatically, including the cold baseline; it never changes item heat or forge readiness.
 
 ## Workshop API
 
@@ -123,21 +144,3 @@ CI additionally runs the NeoForge GameTest server to exercise progression and wo
 ## Credits
 
 Inspired by [TerraFirmaCraft](https://www.curseforge.com/minecraft/mc-mods/terrafirmacraft) and its tactile approach to early-game survival progression.
-
-
-### 0.0.15 manual workstation controls
-
-- **Stone Anvil:** heat a workpiece in the fueled Kiln, transfer it to the anvil, then follow the recipe's center/edge/horn actions. A cooled piece keeps its progress and can be reheated. Custom smashing recipes retain their simple hammer behavior.
-- **Mortar and Pestle:** pound the center to crush coarse material, then hold use on the inner bowl/rim to grind. Releasing pauses work; there is no autonomous finish timer.
-- **Loom:** hold Use on the shuttle and guide it across for the recipe's required crossings.
-- **Crucible Furnace:** glow and particles follow actual fuel-backed processing with airflow, independently of retained progress.
-
-See [packmaker documentation](docs/PACKMAKERS.md#0015-workstation-interactions) for optional recipe metadata and compatibility behavior.
-
-Kilns and Crucible Furnaces require player ignition: load fuel, then right-click with Flint and Steel, a Fire Starter, or a Fire Charge. Modded items implementing NeoForge `FIRESTARTER_LIGHT` work automatically; other items can be added to `#firstworks:workstation_igniters`. Successful ignition costs one durability on damageable items or consumes one nondamageable item, except in creative mode. Failed or redundant ignition costs nothing. Both hands are supported. Automation can load fuel but never ignites it.
-
-Both stations burn fuel continuously using native Minecraft furnace durations, independently of recipes. Lit fires consume queued fuel when the timer expires; cold refills require ignition. Bellows affect the Crucible Furnace temperature ceiling only: 30 seconds at 1150°C followed by 15 seconds of decay to 800°C. Current heat is clamped to the falling ceiling. Copper casting requires 1085°C; progress pauses below it. Successful blows cost one food point with a one-second cooldown; creative mode is exempt.
-
-Heatable item tooltips use one line: `Heat: 798°C - Workable ~28s`. Time is the remaining forging window while cooling, rather than time until cold. Warm and cold items omit the forging timer; no extra reheating instruction is shown. Temperature is stored in Celsius with a 20°C ambient baseline. Forge recipes set minimum_temperature; copper defaults to 500°C. heat_ticks controls cooling duration. Item maxima do not rescale already-hot items. Server config `defaultMaxHeatCelsius` supplies the default maximum (1000°C); `itemMaxHeatCelsius` accepts entries such as `minecraft:copper_ingot=1100` or `othermod:metal=1450`. Copper billets and ingots default to 1100°C, iron ingots to 1250°C, and gold ingots to 1000°C. These settings apply only to items that are heatable through a forge recipe or the heatable-item tag.
-
-Client config `heatTemperatureUnit` in `firstworks-client.toml` accepts `CELSIUS` (default), `FAHRENHEIT`, or `KELVIN`. Conversion happens automatically, including the cold baseline; it never changes item heat or forge readiness.

@@ -33,6 +33,10 @@ public final class ModBlockEntities {
 
     public static void register(IEventBus bus) { TYPES.register(bus); bus.addListener(ModBlockEntities::registerCapabilities); }
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
+        // NeoForge supplies wrappers only for the exact BucketItem class, not subclasses.
+        event.registerItem(Capabilities.FluidHandler.ITEM,
+                (stack, context) -> new net.neoforged.neoforge.fluids.capability.wrappers.FluidBucketWrapper(stack),
+                ModItems.TANNIN_SOLUTION_BUCKET.get());
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, BARREL.get(), (barrel, side) -> barrel.getFluidHandler(side));
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BARREL.get(), (barrel, side) -> barrel.getItemHandler(side));
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, LOOM.get(), (loom, side) -> loom.getItemHandler(side));

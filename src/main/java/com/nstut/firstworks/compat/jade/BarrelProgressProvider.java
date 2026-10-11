@@ -53,6 +53,7 @@ public enum BarrelProgressProvider implements IBlockComponentProvider, IServerDa
                 }
             }
         });
+        appendFluidData(data, barrel);
         data.putInt(TOTAL_FLUID, barrel.getTotalFluidAmount());
         data.putInt(CAPACITY, com.nstut.firstworks.content.barrel.BarrelBlockEntity.CAPACITY);
     }
@@ -104,7 +105,27 @@ public enum BarrelProgressProvider implements IBlockComponentProvider, IServerDa
         appendStoredFluids(tooltip, data);
     }
 
+    public static void appendFluidData(CompoundTag data, BarrelBlockEntity barrel) {
+        writeFluid(data, "Input", barrel.getInputTank().getFluid());
+        writeFluid(data, "Output", barrel.getOutputTank().getFluid());
+    }
+
+    private static void writeFluid(CompoundTag data, String store, net.neoforged.neoforge.fluids.FluidStack fluid) {
+        data.putInt("Firstworks" + store + "Amount", fluid.getAmount());
+        if (!fluid.isEmpty()) data.putString("Firstworks" + store + "Name",
+                fluid.getFluidType().getDescriptionId(fluid));
+        else data.remove("Firstworks" + store + "Name");
+    }
+
     private void appendStoredFluids(ITooltip tooltip, CompoundTag data) {
+        for (String store : java.util.List.of("Input", "Output")) {
+            Component name = data.contains("Firstworks" + store + "Name")
+                    ? Component.translatable(data.getString("Firstworks" + store + "Name"))
+                    : Component.translatable("jade.firstworks.barrel.empty");
+            tooltip.add(Component.translatable("jade.firstworks.barrel." + store.toLowerCase(java.util.Locale.ROOT) + "_fluid",
+                    name, data.getInt("Firstworks" + store + "Amount")));
+        }
+        if (!data.getBoolean(SEALED)) tooltip.add(Component.translatable("jade.firstworks.barrel.drain_hint"));
         tooltip.add(Component.translatable("jade.firstworks.barrel.fluid_capacity",
                 data.getInt(TOTAL_FLUID), data.getInt(CAPACITY)).withStyle(ChatFormatting.WHITE));
     }
