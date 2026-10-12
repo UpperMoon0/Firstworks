@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "S S",
+    " T "
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "T": {
+      "item": "firstworks:twine"
+    }
+  },
+  "result": {
+    "id": "firstworks:primitive_tongs"
+  }
+}

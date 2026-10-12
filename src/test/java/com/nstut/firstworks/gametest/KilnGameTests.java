@@ -17,7 +17,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(Firstworks.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class KilnGameTests {
-    @GameTest(template = "empty", timeoutTicks = 2500)
+    @GameTest(template = "empty", timeoutTicks = 3300)
     public static void separatelyHeatedIngredientsForgeAndReheatAsOneWorkpiece(GameTestHelper h) {
         BlockPos firstPos = new BlockPos(2, 1, 2), secondPos = new BlockPos(4, 1, 2), anvilPos = new BlockPos(6, 1, 2);
         h.setBlock(firstPos, ModBlocks.KILN.get());
@@ -50,7 +50,8 @@ public final class KilnGameTests {
                     "Batch gained heat when combined");
             h.assertTrue(anvil.forge(player, "draw"), "Kiln-heated batch could not start forging");
         });
-        h.runAtTickTime(1210, () -> {
+        // Ambient cooling is now biome-dependent; allow the slowest 0.5x air profile.
+        h.runAtTickTime(1950, () -> {
             h.assertTrue(!ItemHeat.workable(anvil.getInput(), h.getLevel()), "Batch did not cool below its forging threshold");
             h.assertTrue(!anvil.forge(player, "bend"), "Cold batch could finish forging");
             ItemStack partial = anvil.getItemHandler(null).extractItem(0, 64, false);
@@ -68,7 +69,7 @@ public final class KilnGameTests {
                     && first.getInput().isEmpty(), "Worked-batch insertion simulation mutated kiln");
             h.assertTrue(first.getItemHandler(null).insertItem(0, roundTrip, false).isEmpty(), "Automation could not return complete batch");
         });
-        h.runAtTickTime(2415, () -> {
+        h.runAtTickTime(3155, () -> {
             ItemStack reheated = first.getItemHandler(null).extractItem(0, 64, false);
             h.assertTrue(reheated.getCount() == 2 && reheated.get(ModDataComponents.FORGE_PROGRESS.get()).completed() == 1,
                     "Reheating lost materials or forging progress");
@@ -155,7 +156,7 @@ public final class KilnGameTests {
         h.runAtTickTime(605, () -> {
             h.assertTrue(ItemHeat.fraction(kiln.getInput(), h.getLevel()) > 0.95F, "Billet did not heat fully");
             h.assertTrue(kiln.getOutput().isEmpty() && kiln.getProgress() == 0, "Kiln transformed or worked the item");
-            h.assertTrue(kiln.getBlockState().getValue(WorkshopBlock.HEAT_LIGHT) == 12, "Kiln heat emitted no light");
+            h.assertTrue(kiln.getBlockState().getValue(WorkshopBlock.HEAT_LIGHT) == 12, "Kiln heat emitted no light: state=" + kiln.getBlockState().getValue(WorkshopBlock.HEAT_LIGHT) + " temperature=" + ItemHeat.celsius(kiln.getInput(),h.getLevel()));
             var hot = kiln.getItemHandler(null).extractItem(0, 64, false);
             var decoded = ItemStack.parse(h.getLevel().registryAccess(), hot.save(h.getLevel().registryAccess())).orElseThrow();
             h.assertTrue(decoded.get(ModDataComponents.HEAT.get()).equals(hot.get(ModDataComponents.HEAT.get())), "Saved item lost heat");

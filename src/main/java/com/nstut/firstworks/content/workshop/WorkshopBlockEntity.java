@@ -98,6 +98,7 @@ public final class WorkshopBlockEntity extends BlockEntity {
         }
         workshop.migrateLegacyForgeProgress();
         workshop.importLegacyItemState();
+        if (!level.isClientSide) workshop.observeCooling();
         if (workshop.station().equals(WorkshopRecipe.KILN)) {
             workshop.tickKiln();
             return;
@@ -454,6 +455,10 @@ public final class WorkshopBlockEntity extends BlockEntity {
         }
         output = recipe.result().copy();
         if (station().equals(WorkshopRecipe.STONE_ANVIL)) ItemHeat.copy(eventInput, output, level);
+        if (station().equals(WorkshopRecipe.CRUCIBLE_FURNACE) && recipe.resultHeat().equals("station")) {
+            int capacity = ItemHeat.capacity(output, level);
+            if (capacity > 0) ItemHeat.setTemperature(output, level, temperatureCelsius, capacity);
+        }
         input.remove(ModDataComponents.FORGE_PROGRESS.get());
         forgeHeat = 0;
         progress = 0;
@@ -548,6 +553,10 @@ public final class WorkshopBlockEntity extends BlockEntity {
         ItemStack stored = input.copy(), incoming = stack.copy();
         stored.remove(ModDataComponents.HEAT.get());
         incoming.remove(ModDataComponents.HEAT.get());
+        for (var candidate : List.of(stored,incoming)) {
+            var treatment = candidate.get(ModDataComponents.COOLING_TREATMENT.get());
+            if (treatment != null && treatment.recipe().isEmpty()) candidate.remove(ModDataComponents.COOLING_TREATMENT.get());
+        }
         return canStack(stored, incoming);
     }
 
@@ -558,8 +567,11 @@ public final class WorkshopBlockEntity extends BlockEntity {
             double temperature = Math.min(ItemHeat.celsius(input, level), ItemHeat.celsius(incoming, level));
             ItemHeat first = input.get(ModDataComponents.HEAT.get()), second = incoming.get(ModDataComponents.HEAT.get());
             combined.remove(ModDataComponents.HEAT.get());
-            if (first != null && second != null && temperature > ThermalModel.AMBIENT)
+            var treatment = combined.get(ModDataComponents.COOLING_TREATMENT.get());
+            if (first != null && second != null && temperature > ThermalModel.AMBIENT) {
                 ItemHeat.setTemperature(combined, level, temperature, Math.min(first.capacity(), second.capacity()));
+                if (treatment != null && !treatment.recipe().isEmpty()) combined.set(ModDataComponents.COOLING_TREATMENT.get(),treatment);
+            }
         }
         return combined;
     }
@@ -703,10 +715,24 @@ public final class WorkshopBlockEntity extends BlockEntity {
         return target;
     }
 
+    private void observeCooling() {
+        if (allStacks().stream().noneMatch(s -> s.has(ModDataComponents.HEAT.get()))) return;
+        var before = allStacks().stream().map(ItemStack::copy).toList();
+        // Burning kiln input has a net heating curve, not a cooling medium transition.
+        if (!station().equals(WorkshopRecipe.KILN) || burnTicks <= 0)
+            input = CoolingSystem.observe(input, level, worldPosition, CoolingProfiles.air());
+        catalyst = CoolingSystem.observe(catalyst, level, worldPosition, CoolingProfiles.air());
+        fuel = CoolingSystem.observe(fuel, level, worldPosition, CoolingProfiles.air());
+        output = CoolingSystem.observe(output, level, worldPosition, CoolingProfiles.air());
+        var after = allStacks();
+        for (int i = 0; i < before.size(); i++) if (!ItemStack.matches(before.get(i), after.get(i))) { sync(); break; }
+    }
+
     public boolean takeOutput(Player player) {
         if (output.isEmpty()) {
             return false;
         }
+        if (!HeatProtection.allow(player, output, net.minecraft.world.InteractionHand.MAIN_HAND)) return true;
         player.getInventory().placeItemBackInInventory(output.copy());
         output = ItemStack.EMPTY;
         processCancelled = false;
@@ -715,6 +741,8 @@ public final class WorkshopBlockEntity extends BlockEntity {
     }
 
     public boolean takeStored(Player player) {
+        ItemStack candidate = !catalyst.isEmpty() ? catalyst : !input.isEmpty() ? input : fuel;
+        if (!HeatProtection.allow(player, candidate, net.minecraft.world.InteractionHand.MAIN_HAND)) return true;
         ItemStack stack;
         if (!catalyst.isEmpty()) {
             stack = catalyst;

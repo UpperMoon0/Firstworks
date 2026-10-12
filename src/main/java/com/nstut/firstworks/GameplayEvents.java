@@ -151,6 +151,7 @@ public final class GameplayEvents {
     @SubscribeEvent
     public static void onAddReloadListeners(net.neoforged.neoforge.event.AddReloadListenerEvent event) {
         event.addListener(com.nstut.firstworks.content.animal.AnimalMaterialManager.INSTANCE);
+        event.addListener(com.nstut.firstworks.content.workshop.CoolingProfiles.INSTANCE);
     }
 
     @SubscribeEvent
@@ -247,13 +248,14 @@ public final class GameplayEvents {
 
     @SubscribeEvent
     public static void shearFleece(PlayerInteractEvent.EntityInteract event) {
+        if (event.isCanceled()) return;
         if (!FirstworksConfig.ENABLE_TEXTILE_PROGRESSION.getAsBoolean()
                 || !(event.getTarget() instanceof Sheep sheep)) {
             return;
         }
 
         ItemStack shears = event.getEntity().getItemInHand(event.getHand());
-        if (!shears.is(Items.SHEARS) || !sheep.readyForShearing()) {
+        if (!shears.is(net.neoforged.neoforge.common.Tags.Items.TOOLS_SHEAR) || !sheep.readyForShearing()) {
             return;
         }
 
@@ -273,6 +275,7 @@ public final class GameplayEvents {
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void knifeShearFleece(PlayerInteractEvent.EntityInteract event) {
+        if (event.isCanceled()) return;
         if (!FirstworksConfig.ENABLE_TEXTILE_PROGRESSION.getAsBoolean()
                 || !(event.getTarget() instanceof Sheep sheep)
                 || !sheep.readyForShearing()) {
