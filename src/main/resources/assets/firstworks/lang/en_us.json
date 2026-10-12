@@ -278,5 +278,13 @@
   "message.firstworks.barrel.incompatible": "Different input fluid. Empty the input store first.",
   "message.firstworks.barrel.capacity": "Not enough space for this container. Drain fluid first.",
   "message.firstworks.barrel.empty": "Barrel empty. Add fluid first.",
-  "message.firstworks.barrel.refused": "Container cannot transfer this fluid or amount. Try a compatible container."
+  "message.firstworks.barrel.refused": "Container cannot transfer this fluid or amount. Try a compatible container.",
+  "item.firstworks.primitive_tongs": "Primitive Tongs",
+  "hint.firstworks.heat_protection": "Too hot to handle. Hold Primitive Tongs in your other hand or wear heat protection; water cools it faster.",
+  "hint.firstworks.quench": "Hold use on a filled water cauldron to cool this workpiece.",
+  "jei.firstworks.primitive_tongs.use": "Hold these in your other hand when collecting hot workpieces. Tagged worn protection also works. Water and filled water cauldrons cool hot items ten times faster; hold use on a filled cauldron to quench. Heat protection and ambient cooling are enabled by default and configurable.",
+  "jade.firstworks.heat_protection": "Hot workpiece: hold tongs in your other hand or wear heat protection.",
+  "jei.firstworks.cooling": "Cooling Treatments",
+  "jei.firstworks.cooling.entry": "Enter at least %s",
+  "jei.firstworks.cooling.finish": "Complete at %s"
 }

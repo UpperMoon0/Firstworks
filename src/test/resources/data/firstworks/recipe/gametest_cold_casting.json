@@ -1,0 +1,13 @@
+{
+  "type": "firstworks:workshop_processing",
+  "station": "crucible_furnace",
+  "ingredient": {
+    "item": "minecraft:raw_gold"
+  },
+  "result": {
+    "id": "minecraft:copper_ingot"
+  },
+  "work": 1,
+  "required_temperature": 0,
+  "result_heat": "none"
+}

@@ -1,0 +1,6 @@
+{
+  "medium": "minecraft:water",
+  "multiplier": 10,
+  "endpoint": 20,
+  "priority": 0
+}

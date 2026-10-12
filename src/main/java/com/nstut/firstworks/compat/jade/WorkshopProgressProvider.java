@@ -53,6 +53,9 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
         data.putBoolean("Heatable", ItemHeat.capacity(visible, workshop.getLevel()) > 0
                 || visible.has(com.nstut.firstworks.registry.ModDataComponents.HEAT.get()));
         data.putString("HeatState", ItemHeat.state(visible, workshop.getLevel()));
+        data.putBoolean("NeedsProtection", com.nstut.firstworks.FirstworksConfig.REQUIRE_HEAT_PROTECTION.get()
+                && ItemHeat.celsius(visible,workshop.getLevel()) >= com.nstut.firstworks.FirstworksConfig.HOT_HANDLING_THRESHOLD.get());
+        data.putDouble("ItemTemperature",ItemHeat.celsius(visible,workshop.getLevel()));
         data.putInt("BurnTicks", workshop.getBurnTicks());
         data.putDouble("Temperature", workshop.getTemperature());
         data.putDouble("MaxTemperature", workshop.getMaxTemperature());
@@ -101,6 +104,7 @@ public enum WorkshopProgressProvider implements IBlockComponentProvider, IServer
             tooltip.add(Component.translatable("heat.firstworks." + data.getString("HeatState"))
                     .withStyle("workable".equals(data.getString("HeatState")) ? ChatFormatting.GOLD : heat > 0 ? ChatFormatting.RED : ChatFormatting.GRAY));
         }
+        if (data.getBoolean("NeedsProtection")) tooltip.add(Component.translatable("jade.firstworks.heat_protection").withStyle(ChatFormatting.YELLOW));
         if (data.contains(OUTPUT)) {
             tooltip.add(Component.translatable("hint.firstworks.collect"));
             return;

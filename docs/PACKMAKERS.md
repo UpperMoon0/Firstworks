@@ -792,3 +792,49 @@ For a custom knife, put this in `data/firstworks/tags/item/primitive_knives.json
 ```
 
 Jade reports input/output fluid names and individual amounts alongside shared capacity. Containers drain output first, then input; an incompatible or too-small output amount can prevent filling even when total volume is high. Failed manual transfers consume the click to prevent accidental placement, and display a throttled recovery hint. Creative generic extraction retains the held stack and returns one filled container to inventory (or drops it when inventory is full); creative pouring retains its filled container.
+
+## Cooling and hot handling (0.0.17)
+
+Crucible results eligible for hot forging or `#firstworks:heatable_items` receive actual station temperature, capped by the item maximum. `result_heat` defaults to `"station"`; `"none"` preserves the recipe result's original state. `required_temperature` remains a processing threshold. No new annealing or alloy conversion is bundled.
+
+`enableAmbientCooling=true` and `requireHeatProtection=true` are the server defaults. Explicit false values remain respected. `hotHandlingThresholdCelsius=200` gates manual Firstworks station collection and dropped-item pickup. Equipment in `#firstworks:heat_protection` must be in the other hand or an armor slot; inventory contents do not count. Primitive Tongs use two sticks and twine, with no durability charge. Creative players are exempt; automated transfer remains allowed. Third-party menus are outside this enforcement contract.
+
+Air reaches 20°C. The biome provider samples only active hot stacks at their holder/entity/station, at most once per second. Colder biomes accelerate air cooling, warmer biomes slow it, bounded to 0.5–2×. `CoolingSystem.setAmbientProvider` accepts a server-side adapter returning a bounded multiplier; Cold Sweat is not bundled. Dormant storage retains the last sampled profile and cools against world game time. No inventory discovery or chunk loading is performed. A dimension change checkpoints departure temperature before adopting the destination timeline.
+
+Dropped items touching water and the filled interior of water cauldrons cool 10× faster. Holding use on a filled water cauldron immerses the actual held hot stack while target/reach remain valid. Release, look away, empty/remove the cauldron, or change the held stack to stop. Neither physical cooling mode consumes water. Lava always falls back to air. Barrels do not imply immersion.
+
+### Cooling medium profiles
+
+Create `data/<namespace>/firstworks/cooling_profiles/<name>.json`. Its resource ID is the stable medium ID referenced by treatments. Profiles select descending priority, then ascending resource ID; the built-ins are `firstworks:air` and `firstworks:water`.
+
+```json
+{ "medium": "minecraft:water", "multiplier": 10, "endpoint": 20, "priority": 0 }
+```
+
+`medium` is `"air"` or a fluid tag ID. `multiplier` must be finite and within 0.01–100; the final multiplier is bounded to that range. `endpoint` is 20–5000°C and cannot raise an item's temperature. Unknown fluids use air. A treatment whose completion threshold is below its medium endpoint is ineligible.
+
+### Cooling treatment recipes
+
+Register recipes under `data/<namespace>/recipe/<name>.json`, or use KubeJS `ServerEvents.recipes(event => event.custom({...}).id('pack:quench'))` with the same JSON. Standard KubeJS removal/reload conventions apply. Media profiles are datapack resources rather than recipes.
+
+```json
+{
+  "type": "firstworks:cooling_treatment",
+  "ingredient": { "item": "minecraft:iron_ingot" },
+  "input_count": 1,
+  "medium": "firstworks:water",
+  "minimum_entry_temperature": 900,
+  "completion_temperature": 100,
+  "marker": "pack:quenched",
+  "block_reheating": false,
+  "priority": 0
+}
+```
+
+An optional `result` uses the normal ItemStack schema. The input stack must contain an integer number of recipe batches, and the complete output must fit one stack. This prevents remainder loss or overflow in inventories and item entities. The optional `preserve_forge_progress` defaults to false: material transformations reject partly forged workpieces unless a pack explicitly declares compatibility. Unrelated input components survive transformation; explicit output components override them, while heat and supported forge progress remain authoritative. `excluded_marker` rejects an already marked item. `block_reheating=true` permanently forbids Firstworks heating; ordinary physical water cooling never adds this restriction.
+
+Selection is deterministic by descending recipe priority, then ascending ID. One selected recipe ID, completion threshold, medium, and finished state remain latched through transfers, splitting, save/load, and recipe reload. A disappeared ID never selects a replacement midway through cooling. Revalidation prevents changed input/count from being consumed. Completion happens at an observed server boundary, never in tooltips or simulated automation. Reheating starts a new selection unless a persistent restriction forbids it. Chemical coolant/reagent consumption is deferred; infinite world water does not satisfy a finite-fluid recipe.
+
+Legacy tick-only and Celsius heat components remain readable. New saved profile fields default to ordinary air. Existing cold outputs are not retroactively heated. Cold normalization removes only transient thermal bookkeeping; forge progress, names, damage, markers, and restrictions survive.
+
+Tagged shears use NeoForge 1.21.1 `Tags.Items.TOOLS_SHEAR` (`#c:tools/shear`). Vanilla and tagged modded shears preserve fleece color/yield, actual hand, and one durability charge. Primitive knife handling retains its existing eight-point durability cost and takes priority for dual-tag tools. Cancelled interactions and downstream shearing cannot produce a second transaction.

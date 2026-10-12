@@ -134,6 +134,14 @@ public final class FirstworksConfig {
             .comment("Minimum time between successful blows on one furnace.").defineInRange("bellowsCooldownTicks", 20, 1, 1200);
     public static final ModConfigSpec.IntValue BELLOWS_FOOD_COST = BUILDER
             .comment("Food points charged per successful survival blow; one point is half a hunger icon.").defineInRange("bellowsFoodCost", 1, 1, 20);
+    public static final ModConfigSpec.BooleanValue ENABLE_AMBIENT_COOLING = BUILDER
+            .comment("Sample biome warmth as a bounded air cooling multiplier; terminal temperature remains 20 C.")
+            .define("enableAmbientCooling", true);
+    public static final ModConfigSpec.BooleanValue REQUIRE_HEAT_PROTECTION = BUILDER
+            .comment("Require offhand or worn heat protection when manually collecting hot station outputs or dropped items.")
+            .define("requireHeatProtection", true);
+    public static final ModConfigSpec.IntValue HOT_HANDLING_THRESHOLD = BUILDER
+            .defineInRange("hotHandlingThresholdCelsius", 200, 21, 5000);
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     private FirstworksConfig() {}

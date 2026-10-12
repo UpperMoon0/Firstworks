@@ -299,6 +299,10 @@
     {
       "type": "patchouli:crafting",
       "recipe": "firstworks:warped_loom"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:primitive_tongs"
     }
   ]
 }
