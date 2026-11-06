@@ -33,6 +33,16 @@ public final class ModDataComponents {
                     .persistent(com.nstut.firstworks.content.workshop.ForgeProgress.CODEC)
                     .networkSynchronized(net.minecraft.network.codec.ByteBufCodecs.fromCodec(com.nstut.firstworks.content.workshop.ForgeProgress.CODEC)).build());
 
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.nstut.firstworks.content.workshop.CoolingTreatmentState>> COOLING_TREATMENT =
+            COMPONENTS.register("cooling_treatment", () -> DataComponentType.<com.nstut.firstworks.content.workshop.CoolingTreatmentState>builder()
+                    .persistent(com.nstut.firstworks.content.workshop.CoolingTreatmentState.CODEC)
+                    .networkSynchronized(net.minecraft.network.codec.ByteBufCodecs.fromCodec(com.nstut.firstworks.content.workshop.CoolingTreatmentState.CODEC)).build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> THERMAL_MARKER =
+            COMPONENTS.register("thermal_marker", () -> DataComponentType.<String>builder().persistent(com.mojang.serialization.Codec.STRING)
+                    .networkSynchronized(net.minecraft.network.codec.ByteBufCodecs.STRING_UTF8).build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> BLOCK_REHEATING =
+            COMPONENTS.register("block_reheating", () -> DataComponentType.<Boolean>builder().persistent(com.mojang.serialization.Codec.BOOL)
+                    .networkSynchronized(net.minecraft.network.codec.ByteBufCodecs.BOOL).build());
     public static void register(IEventBus bus) {
         COMPONENTS.register(bus);
     }

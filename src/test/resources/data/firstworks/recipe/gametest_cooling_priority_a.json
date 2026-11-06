@@ -1,0 +1,16 @@
+{
+  "type": "firstworks:cooling_treatment",
+  "ingredient": {
+    "item": "minecraft:iron_nugget"
+  },
+  "input_count": 2,
+  "medium": "firstworks:water",
+  "minimum_entry_temperature": 900,
+  "completion_temperature": 800,
+  "result": {
+    "id": "minecraft:gold_nugget"
+  },
+  "marker": "quenched",
+  "block_reheating": true,
+  "priority": 10
+}

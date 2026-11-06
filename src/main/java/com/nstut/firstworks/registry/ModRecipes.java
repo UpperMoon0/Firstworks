@@ -40,6 +40,8 @@ public final class ModRecipes {
     public static final DeferredHolder<RecipeSerializer<?>, FleeceDyeingRecipe.Serializer> FLEECE_DYEING_SERIALIZER = SERIALIZERS.register("fleece_dyeing", FleeceDyeingRecipe.Serializer::new);
     public static final DeferredHolder<RecipeSerializer<?>, WoolBlockRecipe.Serializer> WOOL_BLOCK_SERIALIZER = SERIALIZERS.register("wool_block", WoolBlockRecipe.Serializer::new);
     public static final DeferredHolder<RecipeSerializer<?>, TextileBedRecipe.Serializer> TEXTILE_BED_SERIALIZER = SERIALIZERS.register("textile_bed", TextileBedRecipe.Serializer::new);
+    public static final DeferredHolder<RecipeType<?>, RecipeType<com.nstut.firstworks.content.workshop.CoolingRecipe>> COOLING_TYPE = TYPES.register("cooling_treatment", () -> RecipeType.simple(Firstworks.id("cooling_treatment")));
+    public static final DeferredHolder<RecipeSerializer<?>, com.nstut.firstworks.content.workshop.CoolingRecipe.Serializer> COOLING_SERIALIZER = SERIALIZERS.register("cooling_treatment", com.nstut.firstworks.content.workshop.CoolingRecipe.Serializer::new);
     public static void register(IEventBus bus) { TYPES.register(bus); SERIALIZERS.register(bus); }
     private ModRecipes() {}
 }

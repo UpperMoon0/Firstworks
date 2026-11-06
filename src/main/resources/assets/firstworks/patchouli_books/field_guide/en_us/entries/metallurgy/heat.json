@@ -23,6 +23,30 @@
       "type": "patchouli:text",
       "title": "Units and Settings",
       "text": "Client heatTemperatureUnit selects CELSIUS, FAHRENHEIT, or KELVIN for item tooltips, Jade, and JEI. All gameplay temperatures remain Celsius. Server settings control crucible ceilings, heating/cooling rates, Bellows hold/decay/cooldown, hunger cost, and item maxima."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Hot Castings",
+      "text": "Crucible outputs leave at actual furnace temperature, capped by their material maximum. Waiting outputs cool. Extraction, hoppers, breaking the station, and dropping never reheat them."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Quenching",
+      "text": "Dropped hot items in water or the filled part of a water cauldron cool ten times faster by default. Hold use on a filled water cauldron with a hot workpiece; release or look away to stop. This physical cooling does not consume water and does not turn copper into annealed copper."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Safe Handling",
+      "text": "At 200°C or above, collect hot workpieces with Primitive Tongs in your other hand, or tagged worn heat protection. Tongs use sticks and twine; no copper is required. Wait for cooling if unprotected. Hoppers can still transfer hot items. Creative players are exempt."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "firstworks:primitive_tongs"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Ambient Cooling",
+      "text": "Colder biomes speed up air cooling; warm biomes slow it. Items keep their last sampled rate while stored. enableAmbientCooling and requireHeatProtection default to true and can each be disabled in server config. The terminal baseline remains 20°C."
     }
   ]
 }

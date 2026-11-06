@@ -25,6 +25,8 @@ public final class WorkshopJeiPlugin implements IModPlugin {
             RecipeType.create(Firstworks.MOD_ID, "crucible_furnace", WorkshopRecipe.class);
     public static final RecipeType<net.minecraft.world.item.ItemStack> KILN_HEATING =
             RecipeType.create(Firstworks.MOD_ID, "kiln_heating", net.minecraft.world.item.ItemStack.class);
+    public static final RecipeType<com.nstut.firstworks.content.workshop.CoolingRecipe> COOLING =
+            RecipeType.create(Firstworks.MOD_ID,"cooling_treatment",com.nstut.firstworks.content.workshop.CoolingRecipe.class);
     private static final ResourceLocation UID = Firstworks.id("workshop_jei_plugin");
 
     @Override public ResourceLocation getPluginUid() { return UID; }
@@ -32,7 +34,7 @@ public final class WorkshopJeiPlugin implements IModPlugin {
     @Override
     public void registerCategories(IRecipeCategoryRegistration registration) {
         var guiHelper = registration.getJeiHelpers().getGuiHelper();
-        registration.addRecipeCategories(new KilnHeatingCategory(guiHelper),
+        registration.addRecipeCategories(new KilnHeatingCategory(guiHelper), new CoolingRecipeCategory(guiHelper),
                 new WorkshopRecipeCategory(guiHelper, POTTERY_WHEEL_PROCESSING, WorkshopRecipe.POTTERY_WHEEL),
                 new WorkshopRecipeCategory(guiHelper, STONE_ANVIL_PROCESSING, WorkshopRecipe.STONE_ANVIL),
                 new WorkshopRecipeCategory(guiHelper, CRUCIBLE_FURNACE_PROCESSING, WorkshopRecipe.CRUCIBLE_FURNACE));
@@ -41,6 +43,7 @@ public final class WorkshopJeiPlugin implements IModPlugin {
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
         if (Minecraft.getInstance().level == null) return;
+        registration.addRecipes(COOLING,Minecraft.getInstance().level.getRecipeManager().getAllRecipesFor(ModRecipes.COOLING_TYPE.get()).stream().map(h->h.value()).toList());
         registration.addRecipes(KILN_HEATING, net.minecraft.core.registries.BuiltInRegistries.ITEM.stream()
                 .map(net.minecraft.world.item.Item::getDefaultInstance)
                 .filter(stack -> com.nstut.firstworks.content.workshop.ItemHeat.capacity(stack, Minecraft.getInstance().level) > 0).toList());
